@@ -83,7 +83,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 .ph{margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
 .ph-title{font-size:18px;font-weight:700;}
 .ph-sub{font-size:12px;color:var(--gray-500);margin-top:2px;}
-.ph-acts{display:flex;gap:6px;flex-wrap:wrap;}
+.ph-acts{display:flex;gap:8px;}
+.dash-filter{display:flex;align-items:center;gap:6px;background:#fff;padding:4px 8px;border-radius:var(--r);border:1px solid var(--gray-100);box-shadow:var(--shadow-sm);}
+.dash-filter input{border:none;font-size:12px;color:var(--gray-600);outline:none;background:transparent;}
+.dash-filter span{color:var(--gray-300);font-size:12px;}
 
 /* FILTER PANEL */
 .filter-panel{background:#fff;border-radius:var(--rl);padding:16px 18px;margin-bottom:14px;box-shadow:var(--sh);}
@@ -244,7 +247,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 
     <!-- SALES: DASHBOARD -->
     <div id="stab-dashboard">
-      <div class="ph"><div><div class="ph-title">Dashboard</div><div class="ph-sub">ภาพรวมสต๊อกและยอดขาย</div></div></div>
+      <div class="ph">
+        <div><div class="ph-title">Dashboard</div><div class="ph-sub">ภาพรวมสต๊อกและยอดขาย</div></div>
+        <div class="dash-filter">
+          <input type="date" id="sd-df" onchange="renderSalesDash(dashData)" title="จากวันที่">
+          <span>-</span>
+          <input type="date" id="sd-dt" onchange="renderSalesDash(dashData)" title="ถึงวันที่">
+          <button class="btn btn-out btn-xs" onclick="resetDashFilter('s')">ล้าง</button>
+        </div>
+      </div>
       <div class="stats-grid" id="s-stats"><div class="loading"><div class="spinner"></div></div></div>
       <div class="charts-grid">
         <div class="chart-card"><div class="chart-title">สต๊อกแยกยี่ห้อ <span class="chart-hint">(คลิกดูรุ่นย่อย)</span></div><div class="chart-wrap"><canvas id="s-chart-brand"></canvas></div></div>
@@ -399,7 +410,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 
     <!-- ADMIN DASHBOARD -->
     <div id="atab-dashboard">
-      <div class="ph"><div><div class="ph-title">Dashboard</div></div></div>
+      <div class="ph">
+        <div><div class="ph-title">Dashboard</div></div>
+        <div class="dash-filter">
+          <input type="date" id="ad-df" onchange="renderAdminDash(dashData)" title="จากวันที่">
+          <span>-</span>
+          <input type="date" id="ad-dt" onchange="renderAdminDash(dashData)" title="ถึงวันที่">
+          <button class="btn btn-out btn-xs" onclick="resetDashFilter('a')">ล้าง</button>
+        </div>
+      </div>
       <div class="stats-grid" id="a-stats"><div class="loading"><div class="spinner"></div></div></div>
       <div class="charts-grid">
         <div class="chart-card"><div class="chart-title">สต๊อกแยกยี่ห้อ <span class="chart-hint">(คลิกดูรุ่นย่อย)</span></div><div class="chart-wrap"><canvas id="chart-brand"></canvas></div></div>
@@ -756,11 +775,10 @@ async function loadAdminData(){
     buildAdminFilters(allCars,soldCars);
     filterAdmin();
     filterSold();
-    renderAdminStats(dashData);
+    renderAdminDash(dashData);
     renderColToggles(allCars);
     if(settings.branches)document.getElementById('set-branches').value=settings.branches;
     if(settings.adminPassword)document.getElementById('set-pwd').value=settings.adminPassword;
-    setTimeout(function(){renderAdminCharts(dashData);},100);
   }catch(e){
     console.error('loadAdminData error:',e);
     showToast('⚠️ โหลดข้อมูลไม่ได้: '+e.message,'e');
@@ -965,6 +983,11 @@ function resetSSF(){
   var first=document.querySelector('#ssf-branch-btns .branch-btn');if(first)first.classList.add('active');
   filterSoldSales();
 }
+function resetDashFilter(p){
+  document.getElementById(p+'d-df').value='';
+  document.getElementById(p+'d-dt').value='';
+  if(p==='s')renderSalesDash(dashData);else renderAdminDash(dashData);
+}
 
 // ===== RENDER SALES LIST =====
 function renderSalesList(cars){
@@ -1086,38 +1109,36 @@ function equipBox(l,v){var has=v&&String(v).trim()&&String(v).trim()!=='-'&&Stri
 // ===== DASHBOARD =====
 function renderSalesDash(d){
   if(!d)return;
-  var sc=document.getElementById('s-stats');
-  if(!sc)return;
-  // แก้ไข: ใช้ soldCars.length เป็น fallback เมื่อ API ไม่ส่ง soldTotal มา
-  var soldCount = (d.soldTotal !== undefined && d.soldTotal !== null) ? d.soldTotal : soldCars.length;
-  var statsHtml='<div class="stat-card g"><div class="stat-val">'+(d.available||d.totalActive||allCars.length)+'</div><div class="stat-lbl">รถว่างในสต๊อก</div></div>'
-    +'<div class="stat-card b"><div class="stat-val">'+(d.totalActive||allCars.length)+'</div><div class="stat-lbl">สต๊อกทั้งหมด</div></div>'
-    +'<div class="stat-card r"><div class="stat-val">'+soldCount+'</div><div class="stat-lbl">รถออกทั้งหมด</div></div>';
-  var bc=d.branchCounts||{};
-  branches.forEach(function(b){statsHtml+='<div class="stat-card a"><div class="stat-val">'+(bc[b]||0)+'</div><div class="stat-lbl">สต๊อก'+b+'</div></div>';});
+  var df=document.getElementById('sd-df').value, dt=document.getElementById('sd-dt').value;
+  var fAll=allCars.filter(function(c){var d=toDate(c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;return true;});
+  var fSold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;return true;});
+  var sc=document.getElementById('s-stats');if(!sc)return;
+  var statsHtml='<div class="stat-card g"><div class="stat-val">'+fAll.length+'</div><div class="stat-lbl">รถเข้าสต๊อกใหม่</div></div>'
+    +'<div class="stat-card r"><div class="stat-val">'+fSold.length+'</div><div class="stat-lbl">รถออกใหม่</div></div>';
+  var bc={};fAll.forEach(function(c){var b=c['_sheet']||'';if(b)bc[b]=(bc[b]||0)+1;});
+  branches.forEach(function(b){statsHtml+='<div class="stat-card a"><div class="stat-val">'+(bc[b]||0)+'</div><div class="stat-lbl">เข้า'+b+'</div></div>';});
   sc.innerHTML=statsHtml;
   setTimeout(function(){
-    var brc=d.brandCount||{};
+    var brc={};fAll.forEach(function(c){var b=c[COL.brand]||'';if(b)brc[b]=(brc[b]||0)+1;});
     var brn=Object.keys(brc).sort(function(a,b){return brc[b]-brc[a];});
-    drawChart('s-chart-brand','bar',brn,brn.map(function(b){return brc[b];}),COLORS,true,allCars);
-    var brNames=branches.length?branches:Object.keys(d.branchCounts||{});
-    var brVals=brNames.map(function(b){return(d.branchCounts||{})[b]||0;});
-    var brColors=brNames.map(function(_,i){return COLORS[i%COLORS.length];});
-    drawChart('s-chart-branch','doughnut',brNames,brVals,brColors,false,null);
+    drawChart('s-chart-brand','bar',brn,brn.map(function(b){return brc[b];}),COLORS,true,fAll);
+    var brNames=branches.length?branches:Object.keys(bc);
+    var brVals=brNames.map(function(b){return bc[b]||0;});
+    drawChart('s-chart-branch','doughnut',brNames,brVals,brNames.map(function(_,i){return COLORS[i%COLORS.length];}),false,null);
     var mths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-    drawChart('s-chart-monthly','bar',mths,d.monthlySold||[],['#1A6B4A'],true,soldCars,'month');
-    renderSoldCharts(d);
+    var mSold=new Array(12).fill(0);fSold.forEach(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);if(d)mSold[d.getMonth()]++;});
+    drawChart('s-chart-monthly','bar',mths,mSold,['#1A6B4A'],true,fSold,'month');
+    renderSoldCharts(d,'s-sold-charts',fSold);
   },80);
 }
 
-function renderSoldCharts(d,containerId){
+function renderSoldCharts(d,containerId,customCars){
   var container=document.getElementById(containerId||'s-sold-charts');if(!container)return;
   var prefix = (containerId==='a-sold-charts') ? 'a-sold-' : 's-sold-';
-  // แก้ไข: ใช้ branches จาก global var หรือคำนวณจาก soldCars ถ้าไม่มี
   var branchList=branches.length?branches:[];
-  if(!branchList.length&&soldCars.length){
-    var bSet={};
-    soldCars.forEach(function(c){var b=c['_branch']||c['_sheet']||'';if(b)bSet[b]=1;});
+  var carsToUse=customCars||soldCars;
+  if(!branchList.length&&carsToUse.length){
+    var bSet={};carsToUse.forEach(function(c){var b=c['_branch']||c['_sheet']||'';if(b)bSet[b]=1;});
     branchList=Object.keys(bSet);
   }
   if(!branchList.length){container.innerHTML='<div class="empty">ยังไม่มีข้อมูลรถออก</div>';return;}
@@ -1126,43 +1147,46 @@ function renderSoldCharts(d,containerId){
   container.innerHTML=html;
   setTimeout(function(){
     branchList.forEach(function(b){
-      var bCars=soldCars.filter(function(c){return(c['_branch']||c['_sheet'])===b;});
+      var bCars=carsToUse.filter(function(c){return(c['_branch']||c['_sheet'])===b;});
       var mc={};bCars.forEach(function(c){var br=String(c[COL.brand]||'').trim();if(br)mc[br]=(mc[br]||0)+1;});
       var mk=Object.keys(mc).sort(function(a,b2){return mc[b2]-mc[a];});
       if(mk.length)drawChart(prefix+b,'bar',mk,mk.map(function(k){return mc[k];}),COLORS,true,bCars);
+      else { var ctx=document.getElementById(prefix+b); if(ctx) ctx.parentElement.innerHTML='<div class="empty">ไม่มีข้อมูลช่วงนี้</div>'; }
     });
   },120);
 }
 
-function renderAdminStats(d){
+
+
+function renderAdminDash(d){
+  if(!d)return;
+  var df=document.getElementById('ad-df').value, dt=document.getElementById('ad-dt').value;
+  var fAll=allCars.filter(function(c){var d=toDate(c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;return true;});
+  var fSold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;return true;});
+  
   var el=document.getElementById('a-stats');if(!el)return;
-  // แก้ไข: ใช้ soldCars.length เป็น fallback
-  var soldCount=(d.soldTotal!==undefined&&d.soldTotal!==null)?d.soldTotal:soldCars.length;
-  var html='<div class="stat-card g"><div class="stat-val">'+(d.available||d.totalActive||allCars.length)+'</div><div class="stat-lbl">รถว่างในสต๊อก</div></div>'
-    +'<div class="stat-card b"><div class="stat-val">'+(d.totalActive||allCars.length)+'</div><div class="stat-lbl">สต๊อกทั้งหมด</div></div>'
-    +'<div class="stat-card r"><div class="stat-val">'+soldCount+'</div><div class="stat-lbl">รถออกทั้งหมด</div></div>';
-  var bc=d.branchCounts||{};
-  var sb=d.soldByBranch||{};
+  var html='<div class="stat-card g"><div class="stat-val">'+fAll.length+'</div><div class="stat-lbl">รถเข้าสต๊อกใหม่</div></div>'
+    +'<div class="stat-card r"><div class="stat-val">'+fSold.length+'</div><div class="stat-lbl">รถออกใหม่</div></div>';
+  var bc={};fAll.forEach(function(c){var b=c['_sheet']||'';if(b)bc[b]=(bc[b]||0)+1;});
+  var sc={};fSold.forEach(function(c){var b=c['_branch']||c['_sheet']||'';if(b)sc[b]=(sc[b]||0)+1;});
   branches.forEach(function(b){
-    html+='<div class="stat-card a"><div class="stat-val">'+(bc[b]||0)+'</div><div class="stat-lbl">สต๊อก'+b+'</div></div>';
-    // แก้ไข: นับจาก soldCars โดยตรงถ้า soldByBranch ไม่มีค่า
-    var sbCount=(sb[b]!==undefined&&sb[b]!==null)?sb[b]:soldCars.filter(function(c){return(c['_branch']||c['_sheet'])===b;}).length;
-    html+='<div class="stat-card r"><div class="stat-val">'+sbCount+'</div><div class="stat-lbl">รถออก'+b+'</div></div>';
+    html+='<div class="stat-card a"><div class="stat-val">'+(bc[b]||0)+'</div><div class="stat-lbl">เข้า'+b+'</div></div>';
+    html+='<div class="stat-card r"><div class="stat-val">'+(sc[b]||0)+'</div><div class="stat-lbl">ออก'+b+'</div></div>';
   });
   el.innerHTML=html;
-}
 
-function renderAdminCharts(d){
-  var brc=d.brandCount||{};
-  var brn=Object.keys(brc).sort(function(a,b){return brc[b]-brc[a];});
-  drawChart('chart-brand','bar',brn,brn.map(function(b){return brc[b];}),COLORS,true,allCars);
-  var brNames=branches.length?branches:Object.keys(d.branchCounts||{});
-  var brVals=brNames.map(function(b){return(d.branchCounts||{})[b]||0;});
-  var brColors=brNames.map(function(_,i){return COLORS[i%COLORS.length];});
-  drawChart('chart-branch','doughnut',brNames,brVals,brColors,false,null);
-  var mths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  drawChart('chart-monthly','bar',mths,d.monthlySold||[],['#1A6B4A'],true,soldCars,'month');
-  renderSoldCharts(d,'a-sold-charts');
+  setTimeout(function(){
+    var brc={};fAll.forEach(function(c){var b=c[COL.brand]||'';if(b)brc[b]=(brc[b]||0)+1;});
+    var brn=Object.keys(brc).sort(function(a,b){return brc[b]-brc[a];});
+    drawChart('chart-brand','bar',brn,brn.map(function(b){return brc[b];}),COLORS,true,fAll);
+    var brNames=branches.length?branches:Object.keys(bc);
+    var brVals=brNames.map(function(b){return bc[b]||0;});
+    drawChart('chart-branch','doughnut',brNames,brVals,brNames.map(function(_,i){return COLORS[i%COLORS.length];}),false,null);
+    var mths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    var mSold=new Array(12).fill(0);fSold.forEach(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);if(d)mSold[d.getMonth()]++;});
+    drawChart('chart-monthly','bar',mths,mSold,['#1A6B4A'],true,fSold,'month');
+    renderSoldCharts(d,'a-sold-charts',fSold);
+  },80);
 }
 
 function showMonthDrill(monthIdx){
