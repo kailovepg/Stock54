@@ -1156,10 +1156,13 @@ function renderSalesDash(d){
   var sc=document.getElementById('s-stats');if(!sc)return;
   var now=new Date(), curM=now.getMonth(), curY=now.getFullYear();
   var curMSold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);return d&&d.getMonth()===curM&&d.getFullYear()===curY;}).length;
-  var statsHtml='<div class="stat-card g"><div class="stat-val">'+fAll.length+'</div><div class="stat-lbl">รถเข้าสต๊อกใหม่</div></div>'
-    +'<div class="stat-card r"><div class="stat-val">'+curMSold+'</div><div class="stat-lbl">รถออกรวม</div></div>';
+  var curMSoldCars=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);return d&&d.getMonth()===curM&&d.getFullYear()===curY;});
+  var statsHtml='<div class="stat-card g clickable" onclick="showDrillDown(\'รถเข้าสต๊อกใหม่\',allCars,true)"><div class="stat-val">'+fAll.length+'</div><div class="stat-lbl">รถเข้าสต๊อกใหม่</div></div>'
+    +'<div class="stat-card r clickable" onclick="showDrillDown(\'รถออกรวม (เดือนนี้)\',curMSoldCars,false)"><div class="stat-val">'+curMSoldCars.length+'</div><div class="stat-lbl">รถออกรวม</div></div>';
   var bc={};fAll.forEach(function(c){var b=c['_sheet']||'';if(b)bc[b]=(bc[b]||0)+1;});
-  branches.forEach(function(b){statsHtml+='<div class="stat-card a"><div class="stat-val">'+(bc[b]||0)+'</div><div class="stat-lbl">เข้า'+b+'</div></div>';});
+  branches.forEach(function(b){
+    statsHtml+='<div class="stat-card a clickable" onclick="showDrillDown(\'รถเข้าสต๊อก — '+b+'\',allCars.filter(function(c){return c[\'_sheet\']===\''+b+'\'}),true)"><div class="stat-val">'+(bc[b]||0)+'</div><div class="stat-lbl">เข้า'+b+'</div></div>';
+  });
   sc.innerHTML=statsHtml;
   setTimeout(function(){
     var brc={};fAll.forEach(function(c){var b=c[COL.brand]||'';if(b)brc[b]=(brc[b]||0)+1;});
@@ -1214,13 +1217,14 @@ function renderAdminDash(d){
   var el=document.getElementById('a-stats');if(!el)return;
   var now=new Date(), curM=now.getMonth(), curY=now.getFullYear();
   var curMSold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);return d&&d.getMonth()===curM&&d.getFullYear()===curY;}).length;
-  var html='<div class="stat-card g"><div class="stat-val">'+fAll.length+'</div><div class="stat-lbl">รถเข้าสต๊อกใหม่</div></div>'
-    +'<div class="stat-card r"><div class="stat-val">'+curMSold+'</div><div class="stat-lbl">รถออกรวม</div></div>';
+  var curMSoldCars=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);return d&&d.getMonth()===curM&&d.getFullYear()===curY;});
+  var html='<div class="stat-card g clickable" onclick="showDrillDown(\'รถเข้าสต๊อกใหม่\',allCars,true)"><div class="stat-val">'+fAll.length+'</div><div class="stat-lbl">รถเข้าสต๊อกใหม่</div></div>'
+    +'<div class="stat-card r clickable" onclick="showDrillDown(\'รถออกรวม (เดือนนี้)\',curMSoldCars,false)"><div class="stat-val">'+curMSoldCars.length+'</div><div class="stat-lbl">รถออกรวม</div></div>';
   var bc={};fAll.forEach(function(c){var b=c['_sheet']||'';if(b)bc[b]=(bc[b]||0)+1;});
   var sc={};fSold.forEach(function(c){var b=c['_branch']||c['_sheet']||'';if(b)sc[b]=(sc[b]||0)+1;});
   branches.forEach(function(b){
-    html+='<div class="stat-card a"><div class="stat-val">'+(bc[b]||0)+'</div><div class="stat-lbl">เข้า'+b+'</div></div>';
-    html+='<div class="stat-card r"><div class="stat-val">'+(sc[b]||0)+'</div><div class="stat-lbl">ออก'+b+'</div></div>';
+    html+='<div class="stat-card a clickable" onclick="showDrillDown(\'รถเข้าสต๊อก — '+b+'\',allCars.filter(function(c){return c[\'_sheet\']===\''+b+'\'}),true)"><div class="stat-val">'+(bc[b]||0)+'</div><div class="stat-lbl">เข้า'+b+'</div></div>';
+    html+='<div class="stat-card r clickable" onclick="showDrillDown(\'รถออก — '+b+'\',soldCars.filter(function(c){return (c[\'_branch\']||c[\'_sheet\'])===\''+b+'\'}),false)"><div class="stat-val">'+(sc[b]||0)+'</div><div class="stat-lbl">ออก'+b+'</div></div>';
   });
   el.innerHTML=html;
 
@@ -1242,30 +1246,18 @@ function renderAdminDash(d){
   },80);
 }
 
-function showMonthDrill(monthIdx){
-  var mths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  var monthName=mths[monthIdx];
-  var selYEl=document.getElementById('ad-year')||document.getElementById('sd-year');
-  var selY=selYEl?parseInt(selYEl.value):new Date().getFullYear();
-  var cars=soldCars.filter(function(c){
-    var d=toDate(c[COL.soldDate]||c[COL.date]);
-    return d && d.getFullYear()===selY && d.getMonth()===monthIdx;
-  });
-  
+function showDrillDown(title,cars,isStock){
   var models={};
   cars.forEach(function(c){
     var m=String(c[COL.brand]||'')+' '+String(c[COL.model]||'');
     models[m]=(models[m]||0)+1;
   });
-  
   var sorted=Object.keys(models).sort(function(a,b){return models[b]-models[a];});
   var total=cars.length;
-  
-  document.getElementById('drill-title').textContent='ยอดขายเดือน '+monthName+' '+ (selY+543);
-  var html='<div style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">ขายได้รวม <strong>'+total+' คัน</strong></div><div style="display:flex;flex-direction:column;gap:7px;">';
-  
+  document.getElementById('drill-title').textContent=title;
+  var html='<div style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">รวม <strong>'+total+' คัน</strong></div><div style="display:flex;flex-direction:column;gap:7px;">';
   if(total===0){
-    html+='<div class="empty">ไม่มีข้อมูลการขายในเดือนนี้</div>';
+    html+='<div class="empty">ไม่มีข้อมูล</div>';
   } else {
     sorted.forEach(function(m){
       var cnt=models[m];var pct=Math.round(cnt/total*100);
@@ -1276,6 +1268,18 @@ function showMonthDrill(monthIdx){
   html+='</div>';
   document.getElementById('drill-body').innerHTML=html;
   openMo('modal-drill');
+}
+
+function showMonthDrill(monthIdx){
+  var mths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  var monthName=mths[monthIdx];
+  var selYEl=document.getElementById('ad-year')||document.getElementById('sd-year');
+  var selY=selYEl?parseInt(selYEl.value):new Date().getFullYear();
+  var cars=soldCars.filter(function(c){
+    var d=toDate(c[COL.soldDate]||c[COL.date]);
+    return d && d.getFullYear()===selY && d.getMonth()===monthIdx;
+  });
+  showDrillDown('ยอดขายเดือน '+monthName+' '+ (selY+543), cars, false);
 }
 
 function drawChart(id,type,labels,data,colors,drillable,carsRef,drillType){
