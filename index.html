@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoStock Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#0D0D0D;--white:#FFFFFF;--bg:#F4F3F0;
+  --gray-50:#F9F8F6;--gray-100:#EEECE8;--gray-200:#DDD9D3;
+  --gray-300:#C2BFB8;--gray-500:#8C8880;--gray-700:#4A4844;
+  --red:#C0392B;--red-light:#FDECEA;
+  --green:#1A6B4A;--green-light:#E6F4EE;
+  --amber:#D97706;--amber-light:#FEF3C7;
+  --blue:#1D4ED8;--blue-light:#EFF6FF;
+  --stripe-even:#F9F8F6;--stripe-odd:#FFFFFF;
+  --font:'IBM Plex Sans Thai',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  --r:8px;--rl:14px;
+  --sh:0 1px 4px rgba(0,0,0,.07);--shl:0 8px 24px rgba(0,0,0,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:var(--bg);color:var(--black);min-height:100vh;font-size:14px;line-height:1.55;}
+.page{display:none;min-height:100vh;flex-direction:column;}
+.page.active{display:flex;}
+
+/* NAV */
+nav{background:var(--black);color:#fff;padding:0 22px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-shrink:0;}
+.nav-logo{font-size:14px;font-weight:700;letter-spacing:.06em;display:flex;align-items:center;gap:9px;}
+.nbadge{font-family:var(--mono);font-size:10px;background:var(--red);color:#fff;padding:2px 8px;border-radius:4px;}
+.nav-r{display:flex;align-items:center;gap:10px;}
+.nav-user{font-size:12px;color:var(--gray-300);}
+.rbadge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;}
+.rbadge.admin{background:var(--red);color:#fff;}
+.rbadge.sales{background:var(--blue);color:#fff;}
+.btn-nav{background:none;border:1px solid var(--gray-700);color:var(--gray-300);padding:4px 12px;border-radius:var(--r);cursor:pointer;font-size:12px;font-family:var(--font);transition:all .15s;}
+.btn-nav:hover{border-color:#fff;color:#fff;}
+
+/* LOGIN */
+#page-login{background:var(--black);align-items:center;justify-content:center;}
+.login-card{background:#fff;border-radius:var(--rl);padding:48px 40px;width:100%;max-width:380px;box-shadow:var(--shl);}
+.login-logo{text-align:center;margin-bottom:30px;}
+.login-logo h1{font-size:20px;font-weight:700;margin-bottom:4px;}
+.login-logo p{font-size:12px;color:var(--gray-500);}
+.lmark{display:inline-block;width:46px;height:46px;background:var(--black);border-radius:var(--r);margin-bottom:14px;position:relative;}
+.lmark::after{content:'';position:absolute;inset:10px;border:3px solid var(--red);border-radius:2px;transform:rotate(12deg);}
+
+/* FORMS */
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:11px;font-weight:700;color:var(--gray-700);margin-bottom:5px;letter-spacing:.04em;text-transform:uppercase;}
+input,select,textarea{width:100%;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--r);font-family:var(--font);font-size:13px;color:var(--black);background:#fff;outline:none;transition:border-color .15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--black);}
+.err{background:var(--red-light);color:var(--red);padding:9px 12px;border-radius:var(--r);font-size:12px;margin-bottom:14px;display:none;}
+
+/* BUTTONS */
+.btn{padding:8px 18px;border:none;border-radius:var(--r);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+.btn-blk{background:var(--black);color:#fff;width:100%;justify-content:center;height:44px;}
+.btn-blk:hover{background:var(--gray-700);}
+.btn-act{background:var(--black);color:#fff;}
+.btn-act:hover{background:var(--gray-700);}
+.btn-out{background:#fff;color:var(--black);border:1.5px solid var(--gray-200);}
+.btn-out:hover{border-color:var(--gray-300);background:var(--gray-50);}
+.btn-sm{padding:5px 11px;font-size:11px;}
+.btn-xs{padding:3px 8px;font-size:10px;}
+
+/* BRANCH FILTER BUTTONS */
+.branch-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.branch-btn{padding:6px 14px;border-radius:20px;border:2px solid var(--gray-200);background:#fff;color:var(--gray-700);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:var(--font);}
+.branch-btn:hover{border-color:var(--gray-700);color:var(--black);}
+.branch-btn.active{background:var(--black);border-color:var(--black);color:#fff;}
+
+/* MAIN */
+.main{flex:1;padding:18px 20px;max-width:1320px;margin:0 auto;width:100%;}
+
+/* TABS */
+.tabs{display:flex;gap:2px;background:var(--gray-100);border-radius:var(--r);padding:3px;margin-bottom:16px;flex-wrap:wrap;}
+.tab{flex:1;padding:7px 14px;border:none;border-radius:calc(var(--r) - 2px);background:none;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;color:var(--gray-500);transition:all .15s;text-align:center;white-space:nowrap;}
+.tab.active{background:#fff;color:var(--black);box-shadow:var(--sh);}
+
+/* PAGE HEADER */
+.ph{margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.ph-title{font-size:18px;font-weight:700;}
+.ph-sub{font-size:12px;color:var(--gray-500);margin-top:2px;}
+.ph-acts{display:flex;gap:6px;flex-wrap:wrap;}
+
+/* FILTER PANEL */
+.filter-panel{background:#fff;border-radius:var(--rl);padding:16px 18px;margin-bottom:14px;box-shadow:var(--sh);}
+.filter-search-row{margin-bottom:12px;}
+.filter-search-row input{font-size:14px;padding:10px 14px;border-radius:var(--r);border:2px solid var(--gray-200);}
+.filter-search-row input:focus{border-color:var(--black);}
+.filter-tags-row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;}
+.filter-group{display:flex;flex-direction:column;gap:4px;}
+.filter-group-label{font-size:10px;font-weight:700;color:var(--gray-500);letter-spacing:.05em;text-transform:uppercase;}
+.filter-group select{font-size:12px;padding:6px 10px;min-width:110px;border:1.5px solid var(--gray-200);border-radius:var(--r);}
+.filter-group select:focus{border-color:var(--black);}
+.filter-divider{width:1px;background:var(--gray-100);align-self:stretch;margin:0 2px;}
+
+/* SORT PILLS */
+.sort-pills{display:flex;gap:4px;flex-wrap:wrap;}
+.sort-pill{padding:5px 11px;border-radius:16px;border:1.5px solid var(--gray-200);background:#fff;color:var(--gray-700);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;font-family:var(--font);}
+.sort-pill:hover{border-color:var(--gray-700);}
+.sort-pill.active{background:var(--black);border-color:var(--black);color:#fff;}
+
+/* LIST TABLE */
+.list-wrap{background:#fff;border-radius:var(--rl);box-shadow:var(--sh);overflow:hidden;}
+.list-table{width:100%;border-collapse:collapse;}
+.list-table thead{background:var(--black);color:#fff;}
+.list-table th{padding:10px 12px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.04em;white-space:nowrap;user-select:none;}
+.list-table tbody tr:nth-child(odd){background:var(--stripe-odd);}
+.list-table tbody tr:nth-child(even){background:var(--stripe-even);}
+.list-table tbody tr{border-bottom:1px solid var(--gray-100);cursor:pointer;transition:background .1s;}
+.list-table tbody tr:hover{background:#EEF2FF!important;}
+.list-table td{padding:9px 12px;font-size:13px;vertical-align:middle;}
+.list-table td.mono{font-family:var(--mono);font-size:12px;}
+
+/* BADGES */
+.bb{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:var(--gray-100);color:var(--gray-700);white-space:nowrap;}
+.bb.ratch{background:#FDE8E8;color:#922B21;}
+.bb.kalpa{background:#DBEAFE;color:#1E40AF;}
+.bb.bangyai{background:#E6F4EE;color:#1A6B4A;}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:18px;}
+.stat-card{background:#fff;border-radius:var(--rl);padding:14px 16px;box-shadow:var(--sh);border-top:3px solid var(--gray-100);}
+.stat-card.g{border-color:var(--green);}
+.stat-card.r{border-color:var(--red);}
+.stat-card.b{border-color:var(--blue);}
+.stat-card.a{border-color:var(--amber);}
+.stat-val{font-size:24px;font-weight:700;font-family:var(--mono);line-height:1.1;margin-bottom:2px;}
+.stat-lbl{font-size:11px;color:var(--gray-500);}
+
+/* CHARTS */
+.charts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:14px;margin-bottom:18px;}
+.chart-card{background:#fff;border-radius:var(--rl);padding:16px;box-shadow:var(--sh);height:260px;display:flex;flex-direction:column;}
+.chart-title{font-size:13px;font-weight:600;margin-bottom:8px;flex-shrink:0;display:flex;align-items:center;gap:6px;}
+.chart-hint{font-size:10px;color:var(--gray-500);font-weight:400;}
+.chart-wrap{flex:1;position:relative;min-height:0;}
+
+/* SETTINGS */
+.set-section{background:#fff;border-radius:var(--rl);padding:18px;box-shadow:var(--sh);margin-bottom:14px;}
+.set-title{font-size:14px;font-weight:700;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--gray-100);}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gray-50);}
+.set-row:last-child{border-bottom:none;}
+.set-info{flex:1;}
+.set-name{font-size:13px;font-weight:500;}
+.set-desc{font-size:11px;color:var(--gray-500);margin-top:1px;}
+.toggle{position:relative;width:40px;height:22px;cursor:pointer;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.tsl{position:absolute;inset:0;background:var(--gray-300);border-radius:11px;transition:.25s;}
+.tsl::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.25s;}
+.toggle input:checked+.tsl{background:var(--green);}
+.toggle input:checked+.tsl::before{transform:translateX(18px);}
+
+/* MODAL */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:16px;}
+.mo.open{display:flex;}
+.modal{background:#fff;border-radius:var(--rl);width:100%;max-width:540px;max-height:92vh;overflow-y:auto;box-shadow:var(--shl);}
+.mh{padding:14px 20px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1;}
+.mh h3{font-size:15px;font-weight:700;}
+.mc{background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray-500);line-height:1;padding:0;}
+.mc:hover{color:var(--black);}
+.mb{padding:18px 20px;}
+.mf{padding:12px 20px;border-top:1px solid var(--gray-100);display:flex;gap:8px;justify-content:flex-end;}
+
+/* DETAIL */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;}
+.drow{background:var(--gray-50);border-radius:var(--r);padding:8px 11px;}
+.drow-lbl{font-size:10px;color:var(--gray-500);font-weight:600;letter-spacing:.03em;margin-bottom:2px;}
+.drow-val{font-size:13px;font-weight:500;}
+.price-box{background:var(--gray-50);border-radius:var(--r);padding:14px;margin-bottom:12px;text-align:center;}
+.price-main{font-size:24px;font-weight:700;font-family:var(--mono);color:var(--red);}
+.price-old{font-size:11px;color:var(--gray-300);font-family:var(--mono);text-decoration:line-through;}
+.equip-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px;}
+.equip-box{border-radius:var(--r);padding:8px;text-align:center;}
+.equip-box.has{background:var(--green-light);}
+.equip-box.no{background:var(--gray-100);}
+.equip-lbl{font-size:10px;color:var(--gray-700);margin-top:3px;}
+.link-row{display:flex;gap:8px;}
+.link-btn{flex:1;padding:9px;border-radius:var(--r);text-align:center;text-decoration:none;font-size:12px;font-weight:600;cursor:pointer;border:none;display:block;transition:all .15s;}
+.link-btn.lk1{background:var(--gray-50);color:var(--black);border:1.5px solid var(--gray-200);}
+.link-btn.lk1:hover{border-color:var(--gray-300);}
+.link-btn.lk2{background:var(--black);color:#fff;}
+.link-btn.lk2:hover{background:var(--gray-700);}
+
+/* MISC */
+.loading{display:flex;align-items:center;justify-content:center;padding:44px;color:var(--gray-500);font-size:13px;gap:8px;}
+.spinner{width:16px;height:16px;border:2px solid var(--gray-100);border-top-color:var(--black);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:44px;color:var(--gray-500);font-size:13px;}
+#toast{position:fixed;bottom:18px;right:18px;background:var(--black);color:#fff;padding:10px 16px;border-radius:var(--r);font-size:12px;z-index:999;transform:translateY(80px);opacity:0;transition:all .3s;max-width:280px;box-shadow:var(--shl);}
+#toast.show{transform:translateY(0);opacity:1;}
+#toast.e{background:var(--red);}
+#toast.s{background:var(--green);}
+.tip{background:var(--amber-light);border-radius:var(--r);padding:10px 13px;font-size:12px;color:#92400e;margin-bottom:12px;}
+.form-2col{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;}
+@media(max-width:640px){
+  .main{padding:12px 14px;}
+  .charts-grid{grid-template-columns:1fr;}
+  .detail-grid,.form-2col{grid-template-columns:1fr;}
+  nav{padding:0 14px;}
+  .login-card{padding:32px 20px;}
+  .list-table th:nth-child(n+5),.list-table td:nth-child(n+5){display:none;}
+  .filter-tags-row{gap:10px;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- LOGIN -->
+<div id="page-login" class="page active">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="lmark"></div>
+      <h1>AutoStock Pro</h1>
+      <p>ระบบจัดการสต๊อกรถยนต์</p>
+    </div>
+    <div id="login-err" class="err"></div>
+    <div class="fg"><label>รหัสผ่าน</label><input type="password" id="lpwd" placeholder="ใส่รหัสผ่าน"></div>
+    <button class="btn btn-blk" id="btn-login"><span id="ltxt">เข้าสู่ระบบ</span></button>
+    <p style="text-align:center;margin-top:12px;font-size:11px;color:var(--gray-500);">Admin ใช้รหัสผ่านที่ตั้งใน _Settings</p>
+    <p style="text-align:center;margin-top:8px;font-size:10px;color:var(--gray-500);"><button onclick="testAPI()" style="background:none;border:none;color:var(--gray-500);cursor:pointer;font-size:10px;text-decoration:underline;">ทดสอบการเชื่อมต่อ API</button></p>
+  </div>
+</div>
+
+<!-- SALES PAGE -->
+<div id="page-sales" class="page">
+  <nav>
+    <div class="nav-logo">AutoStock Pro <span class="nbadge">SALES</span></div>
+    <div class="nav-r">
+      <div class="nav-user"><span id="sales-name"></span> <span class="rbadge sales">พนักงานขาย</span></div>
+      <button class="btn-nav" onclick="loadSalesData()" title="โหลดข้อมูลใหม่">รีเฟรช</button>
+      <button class="btn-nav" onclick="logout()">ออก</button>
+    </div>
+  </nav>
+  <div class="main">
+    <div class="tabs" id="sales-tabs">
+      <button class="tab active" onclick="switchSalesTab('dashboard')">📊 Dashboard</button>
+      <button class="tab" onclick="switchSalesTab('stock')">🚗 ค้นหารถ</button>
+      <button class="tab" onclick="switchSalesTab('sold')">✅ รถออก</button>
+    </div>
+
+    <!-- SALES: DASHBOARD -->
+    <div id="stab-dashboard">
+      <div class="ph"><div><div class="ph-title">Dashboard</div><div class="ph-sub">ภาพรวมสต๊อกและยอดขาย</div></div></div>
+      <div class="stats-grid" id="s-stats"><div class="loading"><div class="spinner"></div></div></div>
+      <div class="charts-grid">
+        <div class="chart-card"><div class="chart-title">สต๊อกแยกยี่ห้อ <span class="chart-hint">(คลิกดูรุ่นย่อย)</span></div><div class="chart-wrap"><canvas id="s-chart-brand"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">แยกตามสาขา</div><div class="chart-wrap"><canvas id="s-chart-branch"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">ยอดขายรายเดือน <span class="chart-hint">(คลิกดูรุ่น)</span></div><div class="chart-wrap"><canvas id="s-chart-monthly"></canvas></div></div>
+      </div>
+      <div class="ph" style="margin-top:4px;"><div style="font-size:15px;font-weight:700;">รถออกแยกสาขา</div></div>
+      <div class="charts-grid" id="s-sold-charts"></div>
+    </div>
+
+    <!-- SALES: STOCK -->
+    <div id="stab-stock" style="display:none;">
+      <div class="ph">
+        <div><div class="ph-title">ค้นหารถ</div><div class="ph-sub" id="sales-count"></div></div>
+        <div class="ph-acts">
+          <button class="btn btn-out btn-sm" onclick="exportPDF(filteredCars,'รายการรถ')">📄 PDF</button>
+          <button class="btn btn-out btn-sm" onclick="exportCSV(filteredCars,'stock')">📤 CSV</button>
+        </div>
+      </div>
+
+      <!-- FILTER PANEL -->
+      <div class="filter-panel">
+        <div class="filter-search-row">
+          <input type="text" id="sf-q" placeholder="🔍  ค้นหา ยี่ห้อ รุ่น ทะเบียน สี เลขไมล์..." oninput="filterSales()">
+        </div>
+        <div class="filter-tags-row">
+          <!-- สาขา -->
+          <div class="filter-group">
+            <div class="filter-group-label">สาขา</div>
+            <div class="branch-btns" id="sf-branch-btns">
+              <button class="branch-btn active" onclick="setBranch(this,'')" data-val="">ทั้งหมด</button>
+            </div>
+          </div>
+          <div class="filter-divider"></div>
+          <!-- ยี่ห้อ -->
+          <div class="filter-group">
+            <div class="filter-group-label">ยี่ห้อ</div>
+            <select id="sf-brand" onchange="filterSales();updateModelFilter()"><option value="">ทั้งหมด</option></select>
+          </div>
+          <!-- รุ่น -->
+          <div class="filter-group">
+            <div class="filter-group-label">รุ่น</div>
+            <select id="sf-model" onchange="filterSales()"><option value="">ทั้งหมด</option></select>
+          </div>
+          <!-- ปี -->
+          <div class="filter-group">
+            <div class="filter-group-label">ปี</div>
+            <select id="sf-year" onchange="filterSales()"><option value="">ทั้งหมด</option></select>
+          </div>
+          <!-- สี -->
+          <div class="filter-group">
+            <div class="filter-group-label">สี</div>
+            <select id="sf-color" onchange="filterSales()"><option value="">ทั้งหมด</option></select>
+          </div>
+          <!-- เกียร์ -->
+          <div class="filter-group">
+            <div class="filter-group-label">เกียร์</div>
+            <select id="sf-gear" onchange="filterSales()"><option value="">ทั้งหมด</option></select>
+          </div>
+          <div class="filter-divider"></div>
+          <!-- เรียงลำดับ -->
+          <div class="filter-group">
+            <div class="filter-group-label">เรียงลำดับ</div>
+            <div class="sort-pills">
+              <button class="sort-pill active" onclick="setSort(this,'')" data-val="">ล่าสุด</button>
+              <button class="sort-pill" onclick="setSort(this,'oldest')" data-val="oldest">เก่าสุด</button>
+              <button class="sort-pill" onclick="setSort(this,'price_asc')" data-val="price_asc">ราคาต่ำ→สูง</button>
+              <button class="sort-pill" onclick="setSort(this,'price_desc')" data-val="price_desc">ราคาสูง→ต่ำ</button>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button class="btn btn-out btn-sm" onclick="resetSF()">รีเซ็ต</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="list-wrap">
+        <table class="list-table">
+          <thead><tr>
+            <th>วันที่เข้า</th><th>ยี่ห้อ</th><th>รุ่น</th><th>ปี</th>
+            <th>สี / เกียร์</th><th>ทะเบียน</th><th>เลขไมล์ล่าสุด</th><th>สาขา</th><th>ราคา</th>
+          </tr></thead>
+          <tbody id="sales-tbody"><tr><td colspan="9"><div class="loading"><div class="spinner"></div>กำลังโหลด...</div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SALES: SOLD -->
+    <div id="stab-sold" style="display:none;">
+      <div class="ph">
+        <div><div class="ph-title">รถออก</div><div class="ph-sub" id="s-sold-count"></div></div>
+        <button class="btn btn-out btn-sm" onclick="exportCSV(filteredSoldSales,'รถออก')">📤 CSV</button>
+      </div>
+      <div class="filter-panel">
+        <div class="filter-search-row">
+          <input type="text" id="ssf-q" placeholder="🔍  ค้นหา ยี่ห้อ รุ่น ทะเบียน..." oninput="filterSoldSales()">
+        </div>
+        <div class="filter-tags-row">
+          <div class="filter-group">
+            <div class="filter-group-label">สาขา</div>
+            <div class="branch-btns" id="ssf-branch-btns">
+              <button class="branch-btn active" onclick="setSoldBranch(this,'')" data-val="">ทั้งหมด</button>
+            </div>
+          </div>
+          <div class="filter-divider"></div>
+          <div class="filter-group">
+            <div class="filter-group-label">ยี่ห้อ</div>
+            <select id="ssf-brand" onchange="updateSsfModelFilter()"><option value="">ทั้งหมด</option></select>
+          </div>
+          <div class="filter-group">
+            <div class="filter-group-label">รุ่น</div>
+            <select id="ssf-model" onchange="filterSoldSales()"><option value="">ทั้งหมด</option></select>
+          </div>
+          <div class="filter-divider"></div>
+          <div class="filter-group">
+            <div class="filter-group-label">วันที่ออก จาก</div>
+            <input type="date" id="ssf-df" onchange="filterSoldSales()" style="min-width:130px;">
+          </div>
+          <div class="filter-group">
+            <div class="filter-group-label">ถึง</div>
+            <input type="date" id="ssf-dt" onchange="filterSoldSales()" style="min-width:130px;">
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button class="btn btn-out btn-sm" onclick="resetSSF()">รีเซ็ต</button>
+          </div>
+        </div>
+      </div>
+      <div class="list-wrap">
+        <table class="list-table">
+          <thead><tr><th>สาขา</th><th>วันที่ออก</th><th>ยี่ห้อ</th><th>รุ่น</th><th>ปี</th><th>สี</th><th>ทะเบียน</th><th>ราคา</th></tr></thead>
+          <tbody id="s-sold-tbody"><tr><td colspan="8"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PAGE -->
+<div id="page-admin" class="page">
+  <nav>
+    <div class="nav-logo">AutoStock Pro <span class="nbadge">ADMIN</span></div>
+    <div class="nav-r"><span class="rbadge admin">Admin</span><button class="btn-nav" onclick="loadAdminData()" title="โหลดข้อมูลใหม่">รีเฟรช</button><button class="btn-nav" onclick="logout()">ออก</button></div>
+  </nav>
+  <div class="main">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+      <button class="tab" onclick="switchTab('stock')">🚗 สต๊อกรถ</button>
+      <button class="tab" onclick="switchTab('sold')">✅ รถออก</button>
+      <button class="tab" onclick="switchTab('settings')">⚙️ ตั้งค่า</button>
+      <button class="tab" onclick="switchTab('users')">👥 พนักงาน</button>
+    </div>
+
+    <!-- ADMIN DASHBOARD -->
+    <div id="atab-dashboard">
+      <div class="ph"><div><div class="ph-title">Dashboard</div></div></div>
+      <div class="stats-grid" id="a-stats"><div class="loading"><div class="spinner"></div></div></div>
+      <div class="charts-grid">
+        <div class="chart-card"><div class="chart-title">สต๊อกแยกยี่ห้อ <span class="chart-hint">(คลิกดูรุ่นย่อย)</span></div><div class="chart-wrap"><canvas id="chart-brand"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">แยกตามสาขา</div><div class="chart-wrap"><canvas id="chart-branch"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">ยอดขายรายเดือน <span class="chart-hint">(คลิกดูรุ่น)</span></div><div class="chart-wrap"><canvas id="chart-monthly"></canvas></div></div>
+      </div>
+      <div class="ph" style="margin-top:4px;"><div style="font-size:15px;font-weight:700;">รถออกแยกสาขา</div></div>
+      <div class="charts-grid" id="a-sold-charts"></div>
+    </div>
+
+    <!-- ADMIN STOCK -->
+    <div id="atab-stock" style="display:none;">
+      <div class="ph">
+        <div><div class="ph-title">สต๊อกรถ</div><div class="ph-sub" id="admin-count"></div></div>
+        <div class="ph-acts">
+          <button class="btn btn-out btn-sm" onclick="exportPDF(adminFiltered,'สต๊อกรถ (Admin)')">📄 PDF</button>
+          <button class="btn btn-out btn-sm" onclick="exportCSV(adminFiltered,'stock_admin')">📤 CSV</button>
+        </div>
+      </div>
+      <div class="filter-panel">
+        <div class="filter-search-row">
+          <input type="text" id="af-q" placeholder="🔍  ค้นหา ยี่ห้อ รุ่น ทะเบียน..." oninput="filterAdmin()">
+        </div>
+        <div class="filter-tags-row">
+          <div class="filter-group">
+            <div class="filter-group-label">สาขา</div>
+            <div class="branch-btns" id="af-branch-btns">
+              <button class="branch-btn active" onclick="setAdminBranch(this,'')" data-val="">ทั้งหมด</button>
+            </div>
+          </div>
+          <div class="filter-divider"></div>
+          <div class="filter-group">
+            <div class="filter-group-label">ยี่ห้อ</div>
+            <select id="af-brand" onchange="updateAdminModelFilter()"><option value="">ทั้งหมด</option></select>
+          </div>
+          <div class="filter-group">
+            <div class="filter-group-label">รุ่น</div>
+            <select id="af-model" onchange="filterAdmin()"><option value="">ทั้งหมด</option></select>
+          </div>
+          <div class="filter-group">
+            <div class="filter-group-label">ปี</div>
+            <select id="af-year" onchange="filterAdmin()"><option value="">ทั้งหมด</option></select>
+          </div>
+          <div class="filter-divider"></div>
+          <div class="filter-group">
+            <div class="filter-group-label">เรียงลำดับ</div>
+            <div class="sort-pills">
+              <button class="sort-pill active" onclick="setAdminSort(this,'')" data-val="">ล่าสุด</button>
+              <button class="sort-pill" onclick="setAdminSort(this,'oldest')" data-val="oldest">เก่าสุด</button>
+              <button class="sort-pill" onclick="setAdminSort(this,'price_asc')" data-val="price_asc">ราคาต่ำ→สูง</button>
+              <button class="sort-pill" onclick="setAdminSort(this,'price_desc')" data-val="price_desc">ราคาสูง→ต่ำ</button>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button class="btn btn-out btn-sm" onclick="resetAF()">รีเซ็ต</button>
+          </div>
+        </div>
+      </div>
+      <div class="list-wrap">
+        <table class="list-table">
+          <thead><tr>
+            <th>วันที่เข้า</th><th>ยี่ห้อ</th><th>รุ่น</th><th>ปี</th>
+            <th>สี</th><th>เกียร์</th><th>ทะเบียน</th><th>เลขไมล์ล่าสุด</th>
+            <th>สาขา</th><th>ราคา</th><th>ลิงก์</th>
+          </tr></thead>
+          <tbody id="admin-tbody"><tr><td colspan="11"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ADMIN SOLD -->
+    <div id="atab-sold" style="display:none;">
+      <div class="ph">
+        <div><div class="ph-title">รถออก</div><div class="ph-sub" id="admin-sold-count"></div></div>
+        <button class="btn btn-out btn-sm" onclick="exportCSV(filteredSold,'รถออก')">📤 CSV</button>
+      </div>
+      <div class="filter-panel">
+        <div class="filter-search-row">
+          <input type="text" id="asd-q" placeholder="🔍  ค้นหา ยี่ห้อ รุ่น ทะเบียน..." oninput="filterSold()">
+        </div>
+        <div class="filter-tags-row">
+          <div class="filter-group">
+            <div class="filter-group-label">สาขา</div>
+            <div class="branch-btns" id="asd-branch-btns">
+              <button class="branch-btn active" onclick="setSoldAdminBranch(this,'')" data-val="">ทั้งหมด</button>
+            </div>
+          </div>
+          <div class="filter-divider"></div>
+          <div class="filter-group">
+            <div class="filter-group-label">ยี่ห้อ</div>
+            <select id="asd-brand" onchange="updateAsdModelFilter()"><option value="">ทั้งหมด</option></select>
+          </div>
+          <div class="filter-group">
+            <div class="filter-group-label">รุ่น</div>
+            <select id="asd-model" onchange="filterSold()"><option value="">ทั้งหมด</option></select>
+          </div>
+          <div class="filter-group">
+            <div class="filter-group-label">วันที่ออก จาก</div>
+            <input type="date" id="asd-df" onchange="filterSold()" style="min-width:130px;">
+          </div>
+          <div class="filter-group">
+            <div class="filter-group-label">ถึง</div>
+            <input type="date" id="asd-dt" onchange="filterSold()" style="min-width:130px;">
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button class="btn btn-out btn-sm" onclick="resetASD()">รีเซ็ต</button>
+          </div>
+        </div>
+      </div>
+      <div class="list-wrap">
+        <table class="list-table">
+          <thead><tr><th>สาขา</th><th>วันที่ออก</th><th>ยี่ห้อ</th><th>รุ่น</th><th>ปี</th><th>สี</th><th>เกียร์</th><th>ทะเบียน</th><th>ราคา</th></tr></thead>
+          <tbody id="admin-sold-tbody"><tr><td colspan="9"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ADMIN SETTINGS -->
+    <div id="atab-settings" style="display:none;">
+      <div class="set-section">
+        <div class="set-title">🔐 รหัสผ่าน Admin</div>
+        <div class="fg" style="max-width:240px;"><label>รหัสผ่านใหม่</label><input type="text" id="set-pwd" placeholder="admin1234"></div>
+        <button class="btn btn-act btn-sm" onclick="saveAdminPwd()">บันทึก</button>
+      </div>
+      <div class="set-section">
+        <div class="set-title">🏢 สาขา (branches)</div>
+        <p style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">แก้ไขในไฟล์ _Settings ใน Google Sheets<br>รูปแบบ: <strong>ราชพฤกษ์:รถออกราชฯ,กัลปพฤกษ์:รถออกกัลฯ,บางใหญ่:รถออกบางใหญ่</strong></p>
+        <div class="fg"><label>ค่าปัจจุบัน (branches)</label><input type="text" id="set-branches" placeholder="ราชพฤกษ์:รถออกราชฯ,กัลปพฤกษ์:รถออกกัลฯ"></div>
+        <button class="btn btn-act btn-sm" onclick="saveBranches()">บันทึกสาขา</button>
+      </div>
+      <div class="set-section">
+        <div class="set-title">👁️ คอลัมน์ที่ซ่อนจากพนักงานขาย</div>
+        <p style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">ปิด toggle = ซ่อนจาก Sales</p>
+        <div id="col-toggles"><div class="loading"><div class="spinner"></div></div></div>
+        <div style="margin-top:12px;"><button class="btn btn-act btn-sm" onclick="saveColSettings()">💾 บันทึก</button></div>
+      </div>
+    </div>
+
+    <!-- ADMIN USERS -->
+    <div id="atab-users" style="display:none;">
+      <div class="ph">
+        <div><div class="ph-title">จัดการพนักงาน</div></div>
+        <button class="btn btn-act btn-sm" onclick="openMo('modal-user')">+ เพิ่มพนักงาน</button>
+      </div>
+      <div class="tip">💡 ข้อมูลเก็บใน Google Sheets แท็บ <strong>_Users</strong></div>
+      <div id="user-list"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: รายละเอียดรถ -->
+<div class="mo" id="modal-detail">
+  <div class="modal">
+    <div class="mh"><h3 id="detail-title">รายละเอียด</h3><button class="mc" onclick="closeMo('modal-detail')">✕</button></div>
+    <div class="mb" id="detail-body"></div>
+    <div class="mf"><button class="btn btn-out" onclick="closeMo('modal-detail')">ปิด</button></div>
+  </div>
+</div>
+<!-- MODAL: Drill-down -->
+<div class="mo" id="modal-drill">
+  <div class="modal" style="max-width:360px;">
+    <div class="mh"><h3 id="drill-title">รุ่นย่อย</h3><button class="mc" onclick="closeMo('modal-drill')">✕</button></div>
+    <div class="mb" id="drill-body"></div>
+    <div class="mf"><button class="btn btn-out" onclick="closeMo('modal-drill')">ปิด</button></div>
+  </div>
+</div>
+<!-- MODAL: เพิ่มพนักงาน -->
+<div class="mo" id="modal-user">
+  <div class="modal" style="max-width:360px;">
+    <div class="mh"><h3>เพิ่มพนักงานขาย</h3><button class="mc" onclick="closeMo('modal-user')">✕</button></div>
+    <div class="mb">
+      <div class="fg"><label>ชื่อ *</label><input type="text" id="u-name" placeholder="สมชาย ดีมาก"></div>
+      <div class="fg"><label>รหัสผ่าน *</label><input type="text" id="u-pwd" placeholder="sales1234"></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-out" onclick="closeMo('modal-user')">ยกเลิก</button>
+      <button class="btn btn-act" onclick="addUser()">เพิ่ม</button>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbyEoXCQB1jbKvyiq2dakpC18UeFJP9JudbnGgv9SEyDZlD7QgMZR2tvREHReEIiZdphHQ/exec';
+const COL = {
+  date:'วันที่', brand:'ยี่ห้อ', model:'รุ่น', year:'ปี', color:'สี',
+  gear:'เกียร์', fuel:'เชื้อเพลิง', plate:'ทะเบียน', price:'Price',
+  bookService:'Book Sevice', manual:'คู่มือ', spareKey:'กุญแจสำรอง',
+  mileFirst:'ไมล์แรกเข้า', mileCenter:'ไมล์ศูนย์', mileLast:'เลขไมล์xxx', remark:'หมายเหตุ',
+  one2car:'one2car', siteUrl:'54niwat', soldDate:'วันที่ออก',
+};
+const COLORS=['#C0392B','#1D4ED8','#1A6B4A','#D97706','#6D28D9','#0891B2','#BE185D','#059669','#7C3AED','#0369A1'];
+const BRANCH_COLORS={'ราชพฤกษ์':'#FDE8E8','กัลปพฤกษ์':'#DBEAFE','บางใหญ่':'#E6F4EE'};
+const BRANCH_TEXT_COLORS={'ราชพฤกษ์':'#922B21','กัลปพฤกษ์':'#1E40AF','บางใหญ่':'#1A6B4A'};
+const BRANCH_CSS={'ราชพฤกษ์':'ratch','กัลปพฤกษ์':'kalpa','บางใหญ่':'bangyai'};
+
+var role='', userName='', branches=[];
+var allCars=[], soldCars=[], dashData={}, settings={hiddenCols:[]};
+var filteredCars=[], adminFiltered=[], filteredSold=[], filteredSoldSales=[];
+var sfBranch='', afBranch='', asdBranch='', ssfBranch='';
+var sfSort='', afSort='';
+var charts={};
+
+// ===== INIT =====
+(function(){
+  var s=sessionStorage.getItem('as_s');
+  if(s){try{var d=JSON.parse(s);role=d.r;userName=d.n;route();}catch(e){}}
+})();
+
+// ===== AUTH =====
+document.getElementById('btn-login').addEventListener('click',doLogin);
+document.getElementById('lpwd').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+
+async function doLogin(){
+  var pwd=document.getElementById('lpwd').value.trim();
+  var errEl=document.getElementById('login-err');
+  var txtEl=document.getElementById('ltxt');
+  if(!pwd){errEl.textContent='กรุณาใส่รหัสผ่าน';errEl.style.display='block';return;}
+  errEl.style.display='none';txtEl.textContent='กำลังตรวจสอบ...';
+  try{
+    var res=await fetch(API+'?action=login&password='+encodeURIComponent(pwd));
+    var d=await res.json();
+    if(d.success){role=d.role;userName=d.name;sessionStorage.setItem('as_s',JSON.stringify({r:role,n:userName}));txtEl.textContent='เข้าสู่ระบบ';route();}
+    else{errEl.textContent=d.error||'รหัสผ่านไม่ถูกต้อง';errEl.style.display='block';txtEl.textContent='เข้าสู่ระบบ';}
+  }catch(e){errEl.textContent='เชื่อมต่อ API ไม่ได้: '+e.message;errEl.style.display='block';txtEl.textContent='เข้าสู่ระบบ';}
+}
+function logout(){sessionStorage.removeItem('as_s');role='';userName='';allCars=[];showPage('login');document.getElementById('lpwd').value='';}
+async function route(){
+  if(role==='admin'){showPage('admin');loadAdminData();}
+  else{showPage('sales');document.getElementById('sales-name').textContent=userName;loadSalesData();}
+}
+
+// ===== API =====
+async function apiGet(action,params){
+  var url=API+'?action='+action;
+  if(params)Object.keys(params).forEach(function(k){url+='&'+k+'='+encodeURIComponent(params[k]);});
+  var controller=new AbortController();
+  var tid=setTimeout(function(){controller.abort();},30000);
+  try{
+    var res=await fetch(url,{signal:controller.signal});
+    clearTimeout(tid);
+    var text=await res.text();
+    try{return JSON.parse(text);}
+    catch(pe){console.error('JSON parse error for action='+action+':',text.substring(0,300));throw new Error('API ตอบกลับข้อมูลไม่ถูกต้อง ('+action+'): '+text.substring(0,80));}
+  }catch(fe){
+    clearTimeout(tid);
+    if(fe.name==='AbortError')throw new Error('เชื่อมต่อหมดเวลา (timeout) กรุณาลองใหม่');
+    throw fe;
+  }
+}
+async function apiPost(data){
+  var res=await fetch(API,{method:'POST',body:JSON.stringify(data),headers:{'Content-Type':'text/plain;charset=utf-8'}});
+  var text=await res.text();
+  try{return JSON.parse(text);}
+  catch(e){console.error('POST parse error:',text.substring(0,200));return{success:false,error:'ตอบกลับไม่ถูกต้อง'};}
+}
+
+// ===== PRICE HELPERS =====
+function toFullP(s){var n=parseFloat(String(s).replace(/[^\d.]/g,''));if(isNaN(n)||n===0)return null;return n<10000?n*1000:n;}
+function fmtM(n){if(!n&&n!==0)return null;return Number(n).toLocaleString('th-TH');}
+function parsePNums(raw){return String(raw||'').split('/').map(function(p){return toFullP(p.trim());}).filter(function(n){return n!==null;});}
+function latestP(raw){var p=parsePNums(raw);return p.length?p[p.length-1]:null;}
+function getNum(raw){return latestP(raw)||0;}
+function getDisplayMile(c){
+  var last=String(c[COL.mileLast]||'').trim();
+  if(last && last!=='' && last!=='-') return last;
+  return c[COL.mileFirst]||'—';
+}
+function priceDisplay(raw){
+  var nums=parsePNums(raw);
+  if(!nums.length)return '<span style="color:var(--gray-500);">—</span>';
+  var latest=nums[nums.length-1];
+  var prev=nums.length>=2?nums[nums.length-2]:null;
+  return '<span style="color:var(--red);font-weight:700;font-family:var(--mono);">฿'+fmtM(latest)+'</span>'
+    +(prev?'<br><span style="font-size:10px;color:var(--gray-300);font-family:var(--mono);text-decoration:line-through;">฿'+fmtM(prev)+'</span>':'');
+}
+
+// ===== DATE HELPERS =====
+function fmtDate(v){
+  if(!v||v===''||v==='—')return'—';
+  var s=String(v).trim();
+  var m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if(m){var yr=parseInt(m[3]);if(yr<100)yr+=2000;return parseInt(m[1])+'/'+(parseInt(m[2]))+'/'+yr;}
+  var d=new Date(s);
+  if(!isNaN(d))return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
+  return s;
+}
+function toDate(v){
+  if(!v)return null;var s=String(v).trim();
+  var m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if(m){var yr=parseInt(m[3]);if(yr<100)yr+=2000;return new Date(yr,parseInt(m[2])-1,parseInt(m[1]));}
+  var d=new Date(s);return isNaN(d)?null:d;
+}
+
+// ===== BRANCH BADGE =====
+function branchBadge(name){
+  var cssClass=BRANCH_CSS[name]||'';
+  return '<span class="bb '+cssClass+'">'+String(name||'—')+'</span>';
+}
+
+// ===== LOAD DATA =====
+async function loadSalesData(){
+  // แสดง loading state
+  var sStats=document.getElementById('s-stats');
+  if(sStats)sStats.innerHTML='<div class="loading"><div class="spinner"></div>กำลังโหลดข้อมูล...</div>';
+  try{
+    // ดึงข้อมูลทั้ง  3 อย่างพร้อมกัน (parallel)
+    var results=await Promise.all([
+      apiGet('getCars',{role:'sales'}),
+      apiGet('getSoldCars'),
+      apiGet('getDashboard')
+    ]);
+    var cd=results[0], sd=results[1], dd=results[2];
+    allCars  = (cd && cd.cars)  ? cd.cars  : [];
+    soldCars = (sd && sd.cars)  ? sd.cars  : [];
+    dashData = dd || {};
+    branches = (dd && dd.branches) ? dd.branches : [];
+    if(sd && sd.debug && sd.debug.length) console.log('getSoldCars debug:',sd.debug);
+    if(!allCars.length) console.warn('⚠️ getCars คืนค่าว่าง ตรวจสอบชื่อ Sheet ใน _Settings', cd);
+    if(!soldCars.length) console.warn('⚠️ getSoldCars คืนค่าว่าง ตรวจสอบชื่อ Sheet รถออกใน _Settings', sd);
+    buildBranchBtns();
+    buildFilters(allCars);
+    filterSales();
+    filterSoldSales();
+    renderSalesDash(dashData);
+  }catch(e){
+    console.error('loadSalesData error:',e);
+    showToast('⚠️ โหลดข้อมูลไม่ได้: '+e.message,'e');
+    if(sStats)sStats.innerHTML='<div class="empty">❌ ไม่สามารถโหลดข้อมูล: '+e.message+'<br><button class="btn btn-act btn-sm" style="margin-top:10px" onclick="loadSalesData()">ลองใหม่</button></div>';
+  }
+}
+
+async function loadAdminData(){
+  var aStats=document.getElementById('a-stats');
+  if(aStats)aStats.innerHTML='<div class="loading"><div class="spinner"></div>กำลังโหลดข้อมูล...</div>';
+  try{
+    var results=await Promise.all([
+      apiGet('getCars',{role:'admin'}),
+      apiGet('getSoldCars'),
+      apiGet('getDashboard'),
+      apiGet('getSettings')
+    ]);
+    var cd=results[0], sd=results[1], dd=results[2], st=results[3];
+    allCars  = (cd && cd.cars) ? cd.cars : [];
+    soldCars = (sd && sd.cars) ? sd.cars : [];
+    dashData = dd || {};
+    branches = (dd && dd.branches) ? dd.branches : [];
+    settings = st || {hiddenCols:[]};
+    if(sd && sd.debug && sd.debug.length) console.log('getSoldCars debug:',sd.debug);
+    if(!allCars.length) console.warn('⚠️ getCars คืนค่าว่าง', cd);
+    if(!soldCars.length) console.warn('⚠️ getSoldCars คืนค่าว่าง', sd);
+    buildBranchBtns();
+    buildAdminFilters(allCars,soldCars);
+    filterAdmin();
+    filterSold();
+    renderAdminStats(dashData);
+    renderColToggles(allCars);
+    if(settings.branches)document.getElementById('set-branches').value=settings.branches;
+    if(settings.adminPassword)document.getElementById('set-pwd').value=settings.adminPassword;
+    setTimeout(function(){renderAdminCharts(dashData);},100);
+  }catch(e){
+    console.error('loadAdminData error:',e);
+    showToast('⚠️ โหลดข้อมูลไม่ได้: '+e.message,'e');
+    if(aStats)aStats.innerHTML='<div class="empty">❌ ไม่สามารถโหลดข้อมูล: '+e.message+'<br><button class="btn btn-act btn-sm" style="margin-top:10px" onclick="loadAdminData()">ลองใหม่</button></div>';
+  }
+}
+
+// ===== BUILD BRANCH BUTTONS =====
+function buildBranchBtns(){
+  var sets=[
+    {id:'sf-branch-btns',fn:'setBranch'},
+    {id:'ssf-branch-btns',fn:'setSoldBranch'},
+    {id:'af-branch-btns',fn:'setAdminBranch'},
+    {id:'asd-branch-btns',fn:'setSoldAdminBranch'},
+  ];
+  sets.forEach(function(s){
+    var el=document.getElementById(s.id);if(!el)return;
+    var html='<button class="branch-btn active" onclick="'+s.fn+'(this,\'\')" data-val="">ทั้งหมด</button>';
+    branches.forEach(function(b){
+      html+='<button class="branch-btn" onclick="'+s.fn+'(this,\''+b+'\')" data-val="'+b+'">'+b+'</button>';
+    });
+    el.innerHTML=html;
+  });
+}
+
+function setBranch(btn,val){sfBranch=val;activateBtn(btn,'sf-branch-btns');filterSales();}
+function setSoldBranch(btn,val){ssfBranch=val;activateBtn(btn,'ssf-branch-btns');filterSoldSales();}
+function setAdminBranch(btn,val){afBranch=val;activateBtn(btn,'af-branch-btns');filterAdmin();}
+function setSoldAdminBranch(btn,val){asdBranch=val;activateBtn(btn,'asd-branch-btns');filterSold();}
+function activateBtn(btn,containerId){
+  var c=document.getElementById(containerId);if(!c)return;
+  c.querySelectorAll('.branch-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+}
+function setSort(btn,val){sfSort=val;document.querySelectorAll('#stab-stock .sort-pill').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');filterSales();}
+function setAdminSort(btn,val){afSort=val;document.querySelectorAll('#atab-stock .sort-pill').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');filterAdmin();}
+
+// ===== BUILD FILTERS =====
+function uniq(arr){return[...new Set(arr.filter(Boolean))];}
+function fillSel(id,vals){
+  var el=document.getElementById(id);if(!el)return;
+  el.innerHTML='<option value="">ทั้งหมด</option>'+vals.map(function(v){return'<option>'+v+'</option>';}).join('');
+}
+function buildFilters(cars){
+  fillSel('sf-brand',uniq(cars.map(function(c){return c[COL.brand];})).sort());
+  fillSel('sf-model',uniq(cars.map(function(c){return c[COL.model];})).sort());
+  fillSel('sf-year',uniq(cars.map(function(c){return String(c[COL.year]||'');})).sort(function(a,b){return b-a;}));
+  fillSel('sf-color',uniq(cars.map(function(c){return c[COL.color];})).sort());
+  fillSel('sf-gear',uniq(cars.map(function(c){return String(c[COL.gear]||'');})).sort());
+}
+function buildAdminFilters(cars,sold){
+  fillSel('af-brand',uniq(cars.map(function(c){return c[COL.brand];})).sort());
+  fillSel('af-model',uniq(cars.map(function(c){return c[COL.model];})).sort());
+  fillSel('af-year',uniq(cars.map(function(c){return String(c[COL.year]||'');})).sort(function(a,b){return b-a;}));
+  fillSel('asd-brand',uniq(sold.map(function(c){return c[COL.brand];})).sort());
+  fillSel('asd-model',uniq(sold.map(function(c){return c[COL.model];})).sort());
+  fillSel('ssf-brand',uniq(sold.map(function(c){return c[COL.brand];})).sort());
+  fillSel('ssf-model',uniq(sold.map(function(c){return c[COL.model];})).sort());
+}
+function updateModelFilter(){
+  var brand=document.getElementById('sf-brand').value;
+  var source=brand?allCars.filter(function(c){return c[COL.brand]===brand;}):allCars;
+  fillSel('sf-model',uniq(source.map(function(c){return c[COL.model];})).sort());
+  filterSales();
+}
+function updateAdminModelFilter(){
+  var brand=document.getElementById('af-brand').value;
+  var source=brand?allCars.filter(function(c){return c[COL.brand]===brand;}):allCars;
+  fillSel('af-model',uniq(source.map(function(c){return c[COL.model];})).sort());
+  filterAdmin();
+}
+function updateAsdModelFilter(){
+  var brand=document.getElementById('asd-brand').value;
+  var source=brand?soldCars.filter(function(c){return c[COL.brand]===brand;}):soldCars;
+  fillSel('asd-model',uniq(source.map(function(c){return c[COL.model];})).sort());
+  filterSold();
+}
+function updateSsfModelFilter(){
+  var brand=document.getElementById('ssf-brand').value;
+  var source=brand?soldCars.filter(function(c){return c[COL.brand]===brand;}):soldCars;
+  fillSel('ssf-model',uniq(source.map(function(c){return c[COL.model];})).sort());
+  filterSoldSales();
+}
+
+// ===== APPLY SORT =====
+function applySort(cars,sort){
+  var c=cars.slice();
+  if(sort==='price_asc')c.sort(function(a,b){return getNum(a[COL.price])-getNum(b[COL.price]);});
+  else if(sort==='price_desc')c.sort(function(a,b){return getNum(b[COL.price])-getNum(a[COL.price]);});
+  else if(sort==='oldest')c.sort(function(a,b){var da=toDate(a[COL.date])||new Date(0),db=toDate(b[COL.date])||new Date(0);return da-db;});
+  else c.sort(function(a,b){var da=toDate(a[COL.date])||new Date(0),db=toDate(b[COL.date])||new Date(0);return db-da;});
+  return c;
+}
+
+// ===== FILTER SALES =====
+function filterSales(){
+  var q=document.getElementById('sf-q').value.toLowerCase();
+  var brand=document.getElementById('sf-brand').value;
+  var model=document.getElementById('sf-model').value;
+  var year=document.getElementById('sf-year').value;
+  var color=document.getElementById('sf-color').value;
+  var gear=document.getElementById('sf-gear').value;
+  var res=allCars.filter(function(c){
+    if(sfBranch&&c['_sheet']!==sfBranch)return false;
+    if(q){var s=((c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'')+' '+(c[COL.mileFirst]||'')).toLowerCase();if(s.indexOf(q)===-1)return false;}
+    if(brand&&c[COL.brand]!==brand)return false;
+    if(model&&c[COL.model]!==model)return false;
+    if(year&&String(c[COL.year])!==year)return false;
+    if(color&&c[COL.color]!==color)return false;
+    if(gear&&String(c[COL.gear])!==gear)return false;
+    return true;
+  });
+  filteredCars=applySort(res,sfSort);
+  document.getElementById('sales-count').textContent=filteredCars.length+' คัน';
+  renderSalesList(filteredCars);
+}
+function resetSF(){
+  sfBranch='';sfSort='';
+  ['sf-q','sf-brand','sf-model','sf-year','sf-color','sf-gear'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  document.querySelectorAll('#sf-branch-btns .branch-btn').forEach(function(b){b.classList.remove('active');});
+  var first=document.querySelector('#sf-branch-btns .branch-btn');if(first)first.classList.add('active');
+  document.querySelectorAll('#stab-stock .sort-pill').forEach(function(b){b.classList.remove('active');});
+  var fp=document.querySelector('#stab-stock .sort-pill');if(fp)fp.classList.add('active');
+  filterSales();
+}
+
+// ===== FILTER ADMIN =====
+function filterAdmin(){
+  var q=document.getElementById('af-q').value.toLowerCase();
+  var brand=document.getElementById('af-brand').value;
+  var model=document.getElementById('af-model').value;
+  var year=document.getElementById('af-year').value;
+  var res=allCars.filter(function(c){
+    if(afBranch&&c['_sheet']!==afBranch)return false;
+    if(q){var s=((c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'')).toLowerCase();if(s.indexOf(q)===-1)return false;}
+    if(brand&&c[COL.brand]!==brand)return false;
+    if(model&&c[COL.model]!==model)return false;
+    if(year&&String(c[COL.year])!==year)return false;
+    return true;
+  });
+  adminFiltered=applySort(res,afSort);
+  document.getElementById('admin-count').textContent=adminFiltered.length+' คัน';
+  renderAdminList(adminFiltered);
+}
+function resetAF(){
+  afBranch='';afSort='';
+  ['af-q','af-brand','af-model','af-year'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  document.querySelectorAll('#af-branch-btns .branch-btn').forEach(function(b){b.classList.remove('active');});
+  var first=document.querySelector('#af-branch-btns .branch-btn');if(first)first.classList.add('active');
+  document.querySelectorAll('#atab-stock .sort-pill').forEach(function(b){b.classList.remove('active');});
+  var fp=document.querySelector('#atab-stock .sort-pill');if(fp)fp.classList.add('active');
+  filterAdmin();
+}
+
+// ===== FILTER SOLD =====
+function filterSold(){
+  var q=document.getElementById('asd-q').value.toLowerCase();
+  var brand=document.getElementById('asd-brand').value;
+  var model=document.getElementById('asd-model').value;
+  var df=document.getElementById('asd-df').value;
+  var dt=document.getElementById('asd-dt').value;
+  filteredSold=soldCars.filter(function(c){
+    var cb=c['_branch']||c['_sheet']||'';
+    if(asdBranch&&cb!==asdBranch)return false;
+    if(q){var s=((c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'')).toLowerCase();if(s.indexOf(q)===-1)return false;}
+    if(brand&&c[COL.brand]!==brand)return false;
+    if(model&&c[COL.model]!==model)return false;
+    if(df||dt){var d=toDate(c[COL.soldDate]||c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;}
+    return true;
+  });
+  document.getElementById('admin-sold-count').textContent=filteredSold.length+' คัน';
+  renderSoldList(filteredSold,'admin-sold-tbody',9,true);
+}
+function resetASD(){
+  asdBranch='';['asd-q','asd-brand','asd-model','asd-df','asd-dt'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  document.querySelectorAll('#asd-branch-btns .branch-btn').forEach(function(b){b.classList.remove('active');});
+  var first=document.querySelector('#asd-branch-btns .branch-btn');if(first)first.classList.add('active');
+  filterSold();
+}
+
+function filterSoldSales(){
+  var q=document.getElementById('ssf-q').value.toLowerCase();
+  var brand=document.getElementById('ssf-brand').value;
+  var model=document.getElementById('ssf-model').value;
+  var df=document.getElementById('ssf-df').value;
+  var dt=document.getElementById('ssf-dt').value;
+  filteredSoldSales=soldCars.filter(function(c){
+    var cb=c['_branch']||c['_sheet']||'';
+    if(ssfBranch&&cb!==ssfBranch)return false;
+    if(q){var s=((c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'')).toLowerCase();if(s.indexOf(q)===-1)return false;}
+    if(brand&&c[COL.brand]!==brand)return false;
+    if(model&&c[COL.model]!==model)return false;
+    if(df||dt){var d=toDate(c[COL.soldDate]||c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;}
+    return true;
+  });
+  document.getElementById('s-sold-count').textContent=filteredSoldSales.length+' คัน';
+  renderSoldList(filteredSoldSales,'s-sold-tbody',8,false);
+}
+function resetSSF(){
+  ssfBranch='';['ssf-q','ssf-brand','ssf-model','ssf-df','ssf-dt'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  document.querySelectorAll('#ssf-branch-btns .branch-btn').forEach(function(b){b.classList.remove('active');});
+  var first=document.querySelector('#ssf-branch-btns .branch-btn');if(first)first.classList.add('active');
+  filterSoldSales();
+}
+
+// ===== RENDER SALES LIST =====
+function renderSalesList(cars){
+  var tbody=document.getElementById('sales-tbody');
+  if(!cars.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty">🚗 ไม่พบรถ</div></td></tr>';return;}
+  var html='';
+  cars.forEach(function(car){
+    var idx=allCars.indexOf(car);
+    html+='<tr onclick="showDetail('+idx+')">'
+      +'<td class="mono">'+fmtDate(car[COL.date])+'</td>'
+      +'<td><strong>'+String(car[COL.brand]||'')+'</strong></td>'
+      +'<td>'+String(car[COL.model]||'')+'</td>'
+      +'<td class="mono">'+String(car[COL.year]||'—')+'</td>'
+      +'<td>'+String(car[COL.color]||'—')+' / '+String(car[COL.gear]||'—')+'</td>'
+      +'<td class="mono">'+String(car[COL.plate]||'—')+'</td>'
+      +'<td class="mono">'+String(car[COL.mileFirst]||'—')+'</td>'
+      +'<td>'+branchBadge(car['_sheet'])+'</td>'
+      +'<td>'+priceDisplay(car[COL.price])+'</td>'
+      +'</tr>';
+  });
+  tbody.innerHTML=html;
+}
+
+// ===== RENDER ADMIN LIST =====
+function renderAdminList(cars){
+  var tbody=document.getElementById('admin-tbody');
+  if(!cars.length){tbody.innerHTML='<tr><td colspan="11"><div class="empty">ไม่มีข้อมูล</div></td></tr>';return;}
+  var html='';
+  cars.forEach(function(c){
+    var idx=allCars.indexOf(c);
+    var o2c=String(c[COL.one2car]||'').trim();
+    var niwat=String(c[COL.siteUrl]||'').trim();
+    html+='<tr onclick="showDetail('+idx+')" style="cursor:pointer;">'
+      +'<td class="mono">'+fmtDate(c[COL.date])+'</td>'
+      +'<td><strong>'+String(c[COL.brand]||'')+'</strong></td>'
+      +'<td>'+String(c[COL.model]||'')+'</td>'
+      +'<td class="mono">'+String(c[COL.year]||'—')+'</td>'
+      +'<td>'+String(c[COL.color]||'—')+'</td>'
+      +'<td>'+String(c[COL.gear]||'—')+'</td>'
+      +'<td class="mono">'+String(c[COL.plate]||'—')+'</td>'
+      +'<td class="mono">'+String(c[COL.mileFirst]||'—')+'</td>'
+      +'<td>'+branchBadge(c['_sheet'])+'</td>'
+      +'<td>'+priceDisplay(c[COL.price])+'</td>'
+      +'<td onclick="event.stopPropagation()" style="display:flex;gap:4px;padding:6px 8px;flex-wrap:wrap;">'
+      +(o2c&&o2c.indexOf('http')===0?'<a href="'+o2c+'" target="_blank" class="btn btn-out btn-xs">🔗 one2car</a>':'')
+      +(niwat&&niwat.indexOf('http')===0?'<a href="'+niwat+'" target="_blank" class="btn btn-act btn-xs">🔗 54niwat</a>':'')
+      +'</td></tr>';
+  });
+  tbody.innerHTML=html;
+}
+
+// ===== RENDER SOLD LIST =====
+function renderSoldList(cars,tbodyId,cols,showGear){
+  var tbody=document.getElementById(tbodyId);
+  if(!cars.length){tbody.innerHTML='<tr><td colspan="'+cols+'"><div class="empty">ยังไม่มีรถออก</div></td></tr>';return;}
+  var html='';
+  cars.forEach(function(c){
+    var pnums=parsePNums(c[COL.price]);
+    var latest=pnums.length?'฿'+fmtM(pnums[pnums.length-1]):'—';
+    html+='<tr>'
+      +'<td>'+branchBadge(c['_branch']||c['_sheet'])+'</td>'
+      +'<td class="mono">'+fmtDate(c[COL.soldDate]||c[COL.date])+'</td>'
+      +'<td><strong>'+String(c[COL.brand]||'')+'</strong></td>'
+      +'<td>'+String(c[COL.model]||'')+'</td>'
+      +'<td class="mono">'+String(c[COL.year]||'—')+'</td>'
+      +'<td>'+String(c[COL.color]||'—')+'</td>'
+      +(showGear?'<td>'+String(c[COL.gear]||'—')+'</td>':'')
+      +'<td class="mono">'+String(c[COL.plate]||'—')+'</td>'
+      +'<td class="mono" style="color:var(--red);font-weight:700;">'+latest+'</td>'
+      +'</tr>';
+  });
+  tbody.innerHTML=html;
+}
+
+// ===== SHOW DETAIL =====
+function showDetail(idx){
+  var car=allCars[idx];if(!car)return;
+  var pnums=parsePNums(car[COL.price]);
+  var latest=pnums.length?pnums[pnums.length-1]:null;
+  var prev=pnums.length>=2?pnums[pnums.length-2]:null;
+  var photo=String(car[COL.one2car]||'').trim();
+  var niwat=String(car[COL.siteUrl]||'').trim();
+  document.getElementById('detail-title').textContent=(car[COL.brand]||'')+' '+(car[COL.model]||'')+' ปี '+(car[COL.year]||'');
+  var html='';
+  if(photo&&photo.indexOf('http')===0)html+='<img src="'+photo+'" style="width:100%;border-radius:var(--r);max-height:190px;object-fit:cover;margin-bottom:12px;" onerror="this.style.display=\'none\'">';
+  html+='<div class="detail-grid">';
+  html+=drow('ยี่ห้อ',car[COL.brand])+drow('รุ่น',car[COL.model]);
+  html+=drow('ปี',car[COL.year])+drow('สี',car[COL.color]);
+  html+=drow('เกียร์',car[COL.gear])+drow('เชื้อเพลิง',car[COL.fuel]||'—');
+  var mileInfo='';
+  if(role==='admin'){
+    mileInfo = drow('ไมล์แรกเข้า',car[COL.mileFirst]||'—')+drow('ไมล์ศูนย์',car[COL.mileCenter]||'—')+drow('เลขไมล์xxx',car[COL.mileLast]||'—');
+  } else {
+    mileInfo = drow('เลขไมล์ล่าสุด',getDisplayMile(car));
+  }
+  html+=drow('ทะเบียน',car[COL.plate]||'—')+mileInfo;
+  html+=drow('วันที่เข้า',fmtDate(car[COL.date]))+drow('สาขา',car['_sheet']||'—');
+  html+='</div>';
+  html+='<div class="price-box">';
+  if(latest){
+    html+='<div class="price-main">฿'+fmtM(latest)+'</div>';
+    if(prev)html+='<div style="margin-top:4px;"><span class="price-old">฿'+fmtM(prev)+'</span></div><div style="font-size:10px;color:var(--gray-500);margin-top:2px;">ราคาปัจจุบัน · ราคาก่อนหน้า (ขีดฆ่า)</div>';
+  }else html+='<div style="color:var(--gray-500);">ไม่ระบุราคา</div>';
+  html+='</div>';
+  html+='<div style="font-size:10px;font-weight:700;color:var(--gray-500);letter-spacing:.05em;margin-bottom:6px;">📦 อุปกรณ์ประกอบ</div>';
+  html+='<div class="equip-grid">'+equipBox('Book Service',car[COL.bookService])+equipBox('คู่มือ',car[COL.manual])+equipBox('กุญแจสำรอง',car[COL.spareKey])+'</div>';
+  var rem=car[COL.remark];
+  if(rem&&String(rem).trim()&&String(rem).trim()!=='-')html+='<div style="background:var(--amber-light);border-radius:var(--r);padding:8px 12px;font-size:12px;color:#92400e;margin-bottom:10px;">📝 '+rem+'</div>';
+  html+='<div class="link-row">';
+  if(photo&&photo.indexOf('http')===0)html+='<a href="'+photo+'" target="_blank" class="link-btn lk1">🔗 one2car</a>';
+  if(niwat&&niwat.indexOf('http')===0)html+='<a href="'+niwat+'" target="_blank" class="link-btn lk2">🔗 54niwat.com</a>';
+  html+='</div>';
+  document.getElementById('detail-body').innerHTML=html;
+  openMo('modal-detail');
+}
+function drow(l,v){return'<div class="drow"><div class="drow-lbl">'+l+'</div><div class="drow-val">'+(v||'—')+'</div></div>';}
+function equipBox(l,v){var has=v&&String(v).trim()&&String(v).trim()!=='-'&&String(v).toUpperCase()!=='FALSE'&&String(v).toUpperCase()!=='ไม่มี';return'<div class="equip-box '+(has?'has':'no')+'"><div>'+(has?'✅':'❌')+'</div><div class="equip-lbl">'+l+'</div></div>';}
+
+// ===== DASHBOARD =====
+function renderSalesDash(d){
+  if(!d)return;
+  var sc=document.getElementById('s-stats');
+  if(!sc)return;
+  // แก้ไข: ใช้ soldCars.length เป็น fallback เมื่อ API ไม่ส่ง soldTotal มา
+  var soldCount = (d.soldTotal !== undefined && d.soldTotal !== null) ? d.soldTotal : soldCars.length;
+  var statsHtml='<div class="stat-card g"><div class="stat-val">'+(d.available||d.totalActive||allCars.length)+'</div><div class="stat-lbl">รถว่างในสต๊อก</div></div>'
+    +'<div class="stat-card b"><div class="stat-val">'+(d.totalActive||allCars.length)+'</div><div class="stat-lbl">สต๊อกทั้งหมด</div></div>'
+    +'<div class="stat-card r"><div class="stat-val">'+soldCount+'</div><div class="stat-lbl">รถออกทั้งหมด</div></div>';
+  var bc=d.branchCounts||{};
+  branches.forEach(function(b){statsHtml+='<div class="stat-card a"><div class="stat-val">'+(bc[b]||0)+'</div><div class="stat-lbl">สต๊อก'+b+'</div></div>';});
+  sc.innerHTML=statsHtml;
+  setTimeout(function(){
+    var brc=d.brandCount||{};
+    var brn=Object.keys(brc).sort(function(a,b){return brc[b]-brc[a];});
+    drawChart('s-chart-brand','bar',brn,brn.map(function(b){return brc[b];}),COLORS,true,allCars);
+    var brNames=branches.length?branches:Object.keys(d.branchCounts||{});
+    var brVals=brNames.map(function(b){return(d.branchCounts||{})[b]||0;});
+    var brColors=brNames.map(function(_,i){return COLORS[i%COLORS.length];});
+    drawChart('s-chart-branch','doughnut',brNames,brVals,brColors,false,null);
+    var mths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    drawChart('s-chart-monthly','bar',mths,d.monthlySold||[],['#1A6B4A'],true,soldCars,'month');
+    renderSoldCharts(d);
+  },80);
+}
+
+function renderSoldCharts(d,containerId){
+  var container=document.getElementById(containerId||'s-sold-charts');if(!container)return;
+  var prefix = (containerId==='a-sold-charts') ? 'a-sold-' : 's-sold-';
+  // แก้ไข: ใช้ branches จาก global var หรือคำนวณจาก soldCars ถ้าไม่มี
+  var branchList=branches.length?branches:[];
+  if(!branchList.length&&soldCars.length){
+    var bSet={};
+    soldCars.forEach(function(c){var b=c['_branch']||c['_sheet']||'';if(b)bSet[b]=1;});
+    branchList=Object.keys(bSet);
+  }
+  if(!branchList.length){container.innerHTML='<div class="empty">ยังไม่มีข้อมูลรถออก</div>';return;}
+  var html='';
+  branchList.forEach(function(b){html+='<div class="chart-card"><div class="chart-title">รถออก — '+b+' <span class="chart-hint">(คลิกดูรุ่น)</span></div><div class="chart-wrap"><canvas id="'+prefix+b+'"></canvas></div></div>';});
+  container.innerHTML=html;
+  setTimeout(function(){
+    branchList.forEach(function(b){
+      var bCars=soldCars.filter(function(c){return(c['_branch']||c['_sheet'])===b;});
+      var mc={};bCars.forEach(function(c){var br=String(c[COL.brand]||'').trim();if(br)mc[br]=(mc[br]||0)+1;});
+      var mk=Object.keys(mc).sort(function(a,b2){return mc[b2]-mc[a];});
+      if(mk.length)drawChart(prefix+b,'bar',mk,mk.map(function(k){return mc[k];}),COLORS,true,bCars);
+    });
+  },120);
+}
+
+function renderAdminStats(d){
+  var el=document.getElementById('a-stats');if(!el)return;
+  // แก้ไข: ใช้ soldCars.length เป็น fallback
+  var soldCount=(d.soldTotal!==undefined&&d.soldTotal!==null)?d.soldTotal:soldCars.length;
+  var html='<div class="stat-card g"><div class="stat-val">'+(d.available||d.totalActive||allCars.length)+'</div><div class="stat-lbl">รถว่างในสต๊อก</div></div>'
+    +'<div class="stat-card b"><div class="stat-val">'+(d.totalActive||allCars.length)+'</div><div class="stat-lbl">สต๊อกทั้งหมด</div></div>'
+    +'<div class="stat-card r"><div class="stat-val">'+soldCount+'</div><div class="stat-lbl">รถออกทั้งหมด</div></div>';
+  var bc=d.branchCounts||{};
+  var sb=d.soldByBranch||{};
+  branches.forEach(function(b){
+    html+='<div class="stat-card a"><div class="stat-val">'+(bc[b]||0)+'</div><div class="stat-lbl">สต๊อก'+b+'</div></div>';
+    // แก้ไข: นับจาก soldCars โดยตรงถ้า soldByBranch ไม่มีค่า
+    var sbCount=(sb[b]!==undefined&&sb[b]!==null)?sb[b]:soldCars.filter(function(c){return(c['_branch']||c['_sheet'])===b;}).length;
+    html+='<div class="stat-card r"><div class="stat-val">'+sbCount+'</div><div class="stat-lbl">รถออก'+b+'</div></div>';
+  });
+  el.innerHTML=html;
+}
+
+function renderAdminCharts(d){
+  var brc=d.brandCount||{};
+  var brn=Object.keys(brc).sort(function(a,b){return brc[b]-brc[a];});
+  drawChart('chart-brand','bar',brn,brn.map(function(b){return brc[b];}),COLORS,true,allCars);
+  var brNames=branches.length?branches:Object.keys(d.branchCounts||{});
+  var brVals=brNames.map(function(b){return(d.branchCounts||{})[b]||0;});
+  var brColors=brNames.map(function(_,i){return COLORS[i%COLORS.length];});
+  drawChart('chart-branch','doughnut',brNames,brVals,brColors,false,null);
+  var mths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  drawChart('chart-monthly','bar',mths,d.monthlySold||[],['#1A6B4A'],true,soldCars,'month');
+  renderSoldCharts(d,'a-sold-charts');
+}
+
+function showMonthDrill(monthIdx){
+  var mths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  var monthName=mths[monthIdx];
+  var thisYear=new Date().getFullYear();
+  var cars=soldCars.filter(function(c){
+    var d=toDate(c[COL.soldDate]||c[COL.date]);
+    return d && d.getFullYear()===thisYear && d.getMonth()===monthIdx;
+  });
+  
+  var models={};
+  cars.forEach(function(c){
+    var m=String(c[COL.brand]||'')+' '+String(c[COL.model]||'');
+    models[m]=(models[m]||0)+1;
+  });
+  
+  var sorted=Object.keys(models).sort(function(a,b){return models[b]-models[a];});
+  var total=cars.length;
+  
+  document.getElementById('drill-title').textContent='ยอดขายเดือน '+monthName+' '+ (thisYear+543);
+  var html='<div style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">ขายได้รวม <strong>'+total+' คัน</strong></div><div style="display:flex;flex-direction:column;gap:7px;">';
+  
+  if(total===0){
+    html+='<div class="empty">ไม่มีข้อมูลการขายในเดือนนี้</div>';
+  } else {
+    sorted.forEach(function(m){
+      var cnt=models[m];var pct=Math.round(cnt/total*100);
+      html+='<div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="font-weight:500;">'+m+'</span><span style="font-family:var(--mono);color:var(--red);">'+cnt+' คัน</span></div>'
+        +'<div style="background:var(--gray-100);border-radius:3px;height:6px;"><div style="background:var(--green);height:6px;border-radius:3px;width:'+pct+'%;"></div></div></div>';
+    });
+  }
+  html+='</div>';
+  document.getElementById('drill-body').innerHTML=html;
+  openMo('modal-drill');
+}
+
+function drawChart(id,type,labels,data,colors,drillable,carsRef,drillType){
+  if(charts[id]){charts[id].destroy();charts[id]=null;}
+  var wrap=document.getElementById(id);if(!wrap)return;
+  var par=wrap.parentElement;
+  var c=document.createElement('canvas');c.id=id;
+  par.innerHTML='';par.appendChild(c);
+  var bg=labels.length>1?labels.map(function(_,i){return colors[i%colors.length];}):colors[0];
+  var opts={
+    responsive:true,maintainAspectRatio:false,animation:false,
+    plugins:{
+      legend:{display:type==='doughnut',position:'bottom',labels:{font:{family:'IBM Plex Sans Thai',size:11},padding:8,boxWidth:10}},
+      tooltip:{callbacks:{label:function(ctx){var v=type==='doughnut'?ctx.parsed:ctx.parsed.y;return' '+(v||0)+' คัน';}}}
+    },
+    scales:type!=='doughnut'?{
+      y:{beginAtZero:true,ticks:{precision:0,font:{family:'IBM Plex Sans Thai',size:10}},grid:{color:'#EEECE8'}},
+      x:{ticks:{font:{family:'IBM Plex Sans Thai',size:10},maxRotation:30},grid:{display:false}}
+    }:{}
+  };
+  if(drillable&&carsRef){
+    opts.onClick=function(e,els){
+      if(els.length){
+        var idx=els[0].index;
+        if(drillType==='month') showMonthDrill(idx);
+        else showBrandDrill(labels[idx],carsRef);
+      }
+    };
+    // เปลี่ยน cursor เป็น pointer เมื่อ hover เหนือแท่งกราฟที่คลิกได้
+    opts.onHover=function(e,els){
+      e.native.target.style.cursor = els.length ? 'pointer' : 'default';
+    };
+  }
+  charts[id]=new Chart(c,{type:type,data:{labels:labels,datasets:[{data:data,backgroundColor:bg,borderWidth:0,borderRadius:type!=='doughnut'?3:0}]},options:opts});
+}
+
+function showBrandDrill(brand,src){
+  var models={};
+  (src||allCars).filter(function(c){return c[COL.brand]===brand;}).forEach(function(c){var m=String(c[COL.model]||'ไม่ระบุ');models[m]=(models[m]||0)+1;});
+  var sorted=Object.keys(models).sort(function(a,b){return models[b]-models[a];});
+  var total=sorted.reduce(function(s,k){return s+models[k];},0);
+  document.getElementById('drill-title').textContent=brand+' — รุ่นย่อย';
+  var html='<div style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">รวม <strong>'+total+' คัน</strong></div><div style="display:flex;flex-direction:column;gap:7px;">';
+  sorted.forEach(function(m){
+    var cnt=models[m];var pct=Math.round(cnt/total*100);
+    html+='<div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="font-weight:500;">'+m+'</span><span style="font-family:var(--mono);color:var(--red);">'+cnt+' คัน</span></div>'
+      +'<div style="background:var(--gray-100);border-radius:3px;height:6px;"><div style="background:var(--red);height:6px;border-radius:3px;width:'+pct+'%;"></div></div></div>';
+  });
+  html+='</div>';
+  document.getElementById('drill-body').innerHTML=html;
+  openMo('modal-drill');
+}
+
+// ===== SETTINGS =====
+function renderColToggles(cars){
+  if(!cars.length)return;
+  var allCols=[];
+  cars.forEach(function(c){Object.keys(c).forEach(function(k){if(k.indexOf('_')!==0&&allCols.indexOf(k)===-1)allCols.push(k);});});
+  var hidden=(settings&&settings.hiddenCols)?settings.hiddenCols:[];
+  var html='';
+  allCols.forEach(function(col){
+    var vis=hidden.indexOf(col)===-1;
+    html+='<div class="set-row"><div class="set-info"><div class="set-name">'+col+'</div><div class="set-desc">'+(vis?'แสดงให้ Sales เห็น':'ซ่อนจาก Sales')+'</div></div>'
+      +'<label class="toggle"><input type="checkbox" id="tog-'+col+'" '+(vis?'checked':'')+'><span class="tsl"></span></label></div>';
+  });
+  document.getElementById('col-toggles').innerHTML=html;
+}
+async function saveColSettings(){
+  var els=document.querySelectorAll('#col-toggles input[type=checkbox]');
+  var hidden=[];els.forEach(function(el){if(!el.checked)hidden.push(el.id.replace('tog-',''));});
+  var res=await apiPost({action:'saveSettings',data:{hiddenCols:hidden.join(',')}});
+  showToast(res.success?'บันทึกแล้ว ✅':'ไม่สำเร็จ',res.success?'s':'e');
+}
+async function saveAdminPwd(){
+  var pwd=document.getElementById('set-pwd').value.trim();
+  if(!pwd){showToast('กรุณาใส่รหัสผ่าน','e');return;}
+  var res=await apiPost({action:'saveSettings',data:{adminPassword:pwd}});
+  showToast(res.success?'บันทึกแล้ว ✅':'ไม่สำเร็จ',res.success?'s':'e');
+}
+async function saveBranches(){
+  var val=document.getElementById('set-branches').value.trim();
+  if(!val){showToast('กรุณาใส่ข้อมูลสาขา','e');return;}
+  var res=await apiPost({action:'saveSettings',data:{branches:val}});
+  showToast(res.success?'บันทึกสาขาแล้ว ✅ โหลดหน้าใหม่เพื่อดูผล':'ไม่สำเร็จ',res.success?'s':'e');
+}
+async function addUser(){
+  var name=document.getElementById('u-name').value.trim();
+  var pwd=document.getElementById('u-pwd').value.trim();
+  if(!name||!pwd){showToast('กรุณากรอกให้ครบ','e');return;}
+  var res=await apiPost({action:'addUser',data:{name:name,password:pwd}});
+  if(res.success){closeMo('modal-user');showToast('เพิ่มพนักงานแล้ว ✅','s');}
+  else showToast('ไม่สำเร็จ','e');
+}
+
+// ===== EXPORT =====
+function exportCSV(cars,name){
+  if(!cars||!cars.length){showToast('ไม่มีข้อมูล','e');return;}
+  var hdrs = (role==='admin') ? ['สาขา','วันที่','ยี่ห้อ','รุ่น','ปี','สี','เกียร์','ทะเบียน','ไมล์แรกเข้า','ไมล์ศูนย์','เลขไมล์xxx','ราคา'] : ['สาขา','วันที่','ยี่ห้อ','รุ่น','ปี','สี','เกียร์','ทะเบียน','เลขไมล์ล่าสุด','ราคา'];
+  var rows=cars.map(function(c){
+    if(role==='admin'){
+      return [c['_sheet']||c['_branch']||'',fmtDate(c[COL.date]),c[COL.brand]||'',c[COL.model]||'',c[COL.year]||'',c[COL.color]||'',c[COL.gear]||'',c[COL.plate]||'',c[COL.mileFirst]||'',c[COL.mileCenter]||'',c[COL.mileLast]||'',latestP(c[COL.price])?'฿'+fmtM(latestP(c[COL.price])):'—'];
+    } else {
+      return [c['_sheet']||c['_branch']||'',fmtDate(c[COL.date]),c[COL.brand]||'',c[COL.model]||'',c[COL.year]||'',c[COL.color]||'',c[COL.gear]||'',c[COL.plate]||'',getDisplayMile(c),latestP(c[COL.price])?'฿'+fmtM(latestP(c[COL.price])):'—'];
+    }
+  });
+  var csv='\uFEFF'+[hdrs].concat(rows).map(function(r){return r.map(function(v){return'"'+String(v).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=(name||'export')+'_'+new Date().toLocaleDateString('th-TH')+'.csv';a.click();
+  showToast('Export แล้ว ✅','s');
+}
+function exportPDF(cars,title){
+  if(!cars||!cars.length){showToast('ไม่มีข้อมูล','e');return;}
+  var now=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+  var rows='';
+  cars.forEach(function(c,i){
+    var pnums=parsePNums(c[COL.price]);
+    var latest=pnums.length?'฿'+fmtM(pnums[pnums.length-1]):'—';
+    var prev=pnums.length>=2?'<span style="text-decoration:line-through;color:#aaa;">฿'+fmtM(pnums[pnums.length-2])+'</span>':'';
+    rows+='<tr><td>'+(i+1)+'</td><td>'+fmtDate(c[COL.date])+'</td>'
+      +'<td><strong>'+(c[COL.brand]||'')+' '+(c[COL.model]||'')+'</strong></td>'
+      +'<td>'+(c[COL.year]||'—')+'</td><td>'+(c[COL.color]||'—')+'</td>'
+      +'<td>'+(c[COL.plate]||'—')+'</td><td>'+getDisplayMile(c)+'</td>'
+      +'<td>'+(c['_sheet']||'—')+'</td>'
+      +'<td style="color:#C0392B;font-weight:600;">'+latest+'<br>'+prev+'</td></tr>';
+  });
+  var win=window.open('','_blank');
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title>'
+    +'<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">'
+    +'<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Sarabun,sans-serif;font-size:10.5px;color:#111;padding:16px;}h1{font-size:15px;font-weight:700;margin-bottom:3px;}.sub{font-size:10px;color:#666;margin-bottom:12px;}table{width:100%;border-collapse:collapse;}th{background:#0D0D0D;color:#fff;padding:6px 8px;text-align:left;font-size:9.5px;}td{padding:5px 8px;border-bottom:1px solid #E8E6E1;vertical-align:top;}tr:nth-child(even)td{background:#F8F7F4;}.foot{text-align:right;font-size:11px;font-weight:600;margin-top:8px;}@media print{body{padding:8px;}@page{margin:12mm;}}</style>'
+    +'</head><body><h1>'+title+'</h1><div class="sub">พิมพ์: '+now+' · '+cars.length+' คัน</div>'
+    +'<table><thead><tr><th>#</th><th>วันที่</th><th>ยี่ห้อ/รุ่น</th><th>ปี</th><th>สี</th><th>ทะเบียน</th><th>เลขไมล์ล่าสุด</th><th>สาขา</th><th>ราคา</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody></table><div class="foot">รวม '+cars.length+' คัน</div>'
+    +'<script>window.onload=function(){window.print();}<\/script></body></html>');
+  win.document.close();
+}
+
+// ===== TAB SWITCHING =====
+function switchSalesTab(tab){
+  ['dashboard','stock','sold'].forEach(function(t){var el=document.getElementById('stab-'+t);if(el)el.style.display=t===tab?'':'none';});
+  document.querySelectorAll('#sales-tabs .tab').forEach(function(t,i){t.classList.toggle('active',['dashboard','stock','sold'][i]===tab);});
+  if(tab==='dashboard')setTimeout(function(){renderSalesDash(dashData);},60);
+  if(tab==='sold'){filterSoldSales();}
+}
+function switchTab(tab){
+  ['dashboard','stock','sold','settings','users'].forEach(function(t){var el=document.getElementById('atab-'+t);if(el)el.style.display=t===tab?'':'none';});
+  document.querySelectorAll('#page-admin .tab').forEach(function(t,i){t.classList.toggle('active',['dashboard','stock','sold','settings','users'][i]===tab);});
+  if(tab==='dashboard')setTimeout(function(){renderAdminCharts(dashData);},60);
+  if(tab==='stock')filterAdmin();
+  if(tab==='sold')filterSold();
+}
+
+// ===== UTILS =====
+function showPage(n){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});document.getElementById('page-'+n).classList.add('active');}
+function openMo(id){document.getElementById(id).classList.add('open');}
+function closeMo(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.mo').forEach(function(o){o.addEventListener('click',function(e){if(e.target===o)o.classList.remove('open');});});
+var toastT;
+function showToast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='show '+(type||'');clearTimeout(toastT);toastT=setTimeout(function(){t.className='';},3500);}
+
+// ===== API TEST (DEBUG) =====
+async function testAPI(){
+  var errEl=document.getElementById('login-err');
+  errEl.style.display='block';
+  errEl.style.background='#EFF6FF';
+  errEl.style.color='#1D4ED8';
+  errEl.textContent='กำลังทดสอบ...';
+  try{
+    var res=await fetch(API+'?action=getDashboard');
+    var text=await res.text();
+    var data=JSON.parse(text);
+    errEl.style.background='#E6F4EE';
+    errEl.style.color='#1A6B4A';
+    errEl.innerHTML='✅ เชื่อมต่อสำเร็จ! branches: ['+(data.branches||[]).join(', ')+'] | สต๊อก: '+(data.totalActive||0)+' | รถออก: '+(data.soldTotal||0);
+  }catch(e){
+    errEl.style.background='#FDECEA';
+    errEl.style.color='#C0392B';
+    errEl.innerHTML='❌ ไม่สามารถเชื่อมต่อ API: '+e.message+'<br>ตรวจสอบ URL: '+API;
+  }
+}
+</script>
+</body>
+</html>
