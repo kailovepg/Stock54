@@ -1140,8 +1140,10 @@ function renderSalesDash(d){
   var fAll=allCars.filter(function(c){var d=toDate(c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;return true;});
   var fSold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;return true;});
   var sc=document.getElementById('s-stats');if(!sc)return;
+  var now=new Date(), curM=now.getMonth(), curY=now.getFullYear();
+  var curMSold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);return d&&d.getMonth()===curM&&d.getFullYear()===curY;}).length;
   var statsHtml='<div class="stat-card g"><div class="stat-val">'+fAll.length+'</div><div class="stat-lbl">รถเข้าสต๊อกใหม่</div></div>'
-    +'<div class="stat-card r"><div class="stat-val">'+fSold.length+'</div><div class="stat-lbl">รถออกใหม่</div></div>';
+    +'<div class="stat-card r"><div class="stat-val">'+curMSold+'</div><div class="stat-lbl">รถออกรวม</div></div>';
   var bc={};fAll.forEach(function(c){var b=c['_sheet']||'';if(b)bc[b]=(bc[b]||0)+1;});
   branches.forEach(function(b){statsHtml+='<div class="stat-card a"><div class="stat-val">'+(bc[b]||0)+'</div><div class="stat-lbl">เข้า'+b+'</div></div>';});
   sc.innerHTML=statsHtml;
@@ -1194,8 +1196,10 @@ function renderAdminDash(d){
   var fSold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;return true;});
   
   var el=document.getElementById('a-stats');if(!el)return;
+  var now=new Date(), curM=now.getMonth(), curY=now.getFullYear();
+  var curMSold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);return d&&d.getMonth()===curM&&d.getFullYear()===curY;}).length;
   var html='<div class="stat-card g"><div class="stat-val">'+fAll.length+'</div><div class="stat-lbl">รถเข้าสต๊อกใหม่</div></div>'
-    +'<div class="stat-card r"><div class="stat-val">'+fSold.length+'</div><div class="stat-lbl">รถออกใหม่</div></div>';
+    +'<div class="stat-card r"><div class="stat-val">'+curMSold+'</div><div class="stat-lbl">รถออกรวม</div></div>';
   var bc={};fAll.forEach(function(c){var b=c['_sheet']||'';if(b)bc[b]=(bc[b]||0)+1;});
   var sc={};fSold.forEach(function(c){var b=c['_branch']||c['_sheet']||'';if(b)sc[b]=(sc[b]||0)+1;});
   branches.forEach(function(b){
