@@ -249,6 +249,21 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
     <div id="stab-dashboard">
       <div class="ph">
         <div><div class="ph-title">Dashboard</div><div class="ph-sub">ภาพรวมสต๊อกและยอดขาย</div></div>
+      </div>
+      <div class="stats-grid" id="s-stats"><div class="loading"><div class="spinner"></div></div></div>
+      <div class="charts-grid">
+        <div class="chart-card"><div class="chart-title">สต๊อกแยกยี่ห้อ <span class="chart-hint">(คลิกดูรุ่นย่อย)</span></div><div class="chart-wrap"><canvas id="s-chart-brand"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">แยกตามสาขา</div><div class="chart-wrap"><canvas id="s-chart-branch"></canvas></div></div>
+        <div class="chart-card">
+          <div class="chart-title" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>ยอดขายรายเดือน <span class="chart-hint">(คลิกดูรุ่น)</span></span>
+            <select id="sd-year" onchange="renderSalesDash(dashData)" style="font-size:11px;padding:1px 4px;border-radius:4px;border:1px solid #ddd;"></select>
+          </div>
+          <div class="chart-wrap"><canvas id="s-chart-monthly"></canvas></div>
+        </div>
+      </div>
+      <div class="ph" style="margin-top:10px;justify-content:space-between;align-items:center;">
+        <div style="font-size:15px;font-weight:700;">รถออกแยกสาขา</div>
         <div class="dash-filter">
           <input type="date" id="sd-df" onchange="renderSalesDash(dashData)" title="จากวันที่">
           <span>-</span>
@@ -256,13 +271,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
           <button class="btn btn-out btn-xs" onclick="resetDashFilter('s')">ล้าง</button>
         </div>
       </div>
-      <div class="stats-grid" id="s-stats"><div class="loading"><div class="spinner"></div></div></div>
-      <div class="charts-grid">
-        <div class="chart-card"><div class="chart-title">สต๊อกแยกยี่ห้อ <span class="chart-hint">(คลิกดูรุ่นย่อย)</span></div><div class="chart-wrap"><canvas id="s-chart-brand"></canvas></div></div>
-        <div class="chart-card"><div class="chart-title">แยกตามสาขา</div><div class="chart-wrap"><canvas id="s-chart-branch"></canvas></div></div>
-        <div class="chart-card"><div class="chart-title">ยอดขายรายเดือน <span class="chart-hint">(คลิกดูรุ่น)</span></div><div class="chart-wrap"><canvas id="s-chart-monthly"></canvas></div></div>
-      </div>
-      <div class="ph" style="margin-top:4px;"><div style="font-size:15px;font-weight:700;">รถออกแยกสาขา</div></div>
       <div class="charts-grid" id="s-sold-charts"></div>
     </div>
 
@@ -412,6 +420,21 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
     <div id="atab-dashboard">
       <div class="ph">
         <div><div class="ph-title">Dashboard</div></div>
+      </div>
+      <div class="stats-grid" id="a-stats"><div class="loading"><div class="spinner"></div></div></div>
+      <div class="charts-grid">
+        <div class="chart-card"><div class="chart-title">สต๊อกแยกยี่ห้อ <span class="chart-hint">(คลิกดูรุ่นย่อย)</span></div><div class="chart-wrap"><canvas id="chart-brand"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">แยกตามสาขา</div><div class="chart-wrap"><canvas id="chart-branch"></canvas></div></div>
+        <div class="chart-card">
+          <div class="chart-title" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>ยอดขายรายเดือน <span class="chart-hint">(คลิกดูรุ่น)</span></span>
+            <select id="ad-year" onchange="renderAdminDash(dashData)" style="font-size:11px;padding:1px 4px;border-radius:4px;border:1px solid #ddd;"></select>
+          </div>
+          <div class="chart-wrap"><canvas id="chart-monthly"></canvas></div>
+        </div>
+      </div>
+      <div class="ph" style="margin-top:10px;justify-content:space-between;align-items:center;">
+        <div style="font-size:15px;font-weight:700;">รถออกแยกสาขา</div>
         <div class="dash-filter">
           <input type="date" id="ad-df" onchange="renderAdminDash(dashData)" title="จากวันที่">
           <span>-</span>
@@ -419,13 +442,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
           <button class="btn btn-out btn-xs" onclick="resetDashFilter('a')">ล้าง</button>
         </div>
       </div>
-      <div class="stats-grid" id="a-stats"><div class="loading"><div class="spinner"></div></div></div>
-      <div class="charts-grid">
-        <div class="chart-card"><div class="chart-title">สต๊อกแยกยี่ห้อ <span class="chart-hint">(คลิกดูรุ่นย่อย)</span></div><div class="chart-wrap"><canvas id="chart-brand"></canvas></div></div>
-        <div class="chart-card"><div class="chart-title">แยกตามสาขา</div><div class="chart-wrap"><canvas id="chart-branch"></canvas></div></div>
-        <div class="chart-card"><div class="chart-title">ยอดขายรายเดือน <span class="chart-hint">(คลิกดูรุ่น)</span></div><div class="chart-wrap"><canvas id="chart-monthly"></canvas></div></div>
-      </div>
-      <div class="ph" style="margin-top:4px;"><div style="font-size:15px;font-weight:700;">รถออกแยกสาขา</div></div>
       <div class="charts-grid" id="a-sold-charts"></div>
     </div>
 
@@ -802,6 +818,17 @@ function buildBranchBtns(){
     });
     el.innerHTML=html;
   });
+  fillDashYears();
+}
+function fillDashYears(){
+  var years=uniq(soldCars.map(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);return d?d.getFullYear():null;})).sort(function(a,b){return b-a;});
+  var nowY=new Date().getFullYear();if(!years.includes(nowY))years.unshift(nowY);
+  ['sd-year','ad-year'].forEach(function(id){
+    var el=document.getElementById(id);if(!el)return;
+    var current=el.value;
+    el.innerHTML=years.map(function(y){return'<option value="'+y+'" '+(y==nowY?'selected':'')+'>ปี '+(y+543)+'</option>';}).join('');
+    if(current)el.value=current;
+  });
 }
 
 function setBranch(btn,val){sfBranch=val;activateBtn(btn,'sf-branch-btns');filterSales();}
@@ -1126,8 +1153,10 @@ function renderSalesDash(d){
     var brVals=brNames.map(function(b){return bc[b]||0;});
     drawChart('s-chart-branch','doughnut',brNames,brVals,brNames.map(function(_,i){return COLORS[i%COLORS.length];}),false,null);
     var mths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-    var mSold=new Array(12).fill(0);fSold.forEach(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);if(d)mSold[d.getMonth()]++;});
-    drawChart('s-chart-monthly','bar',mths,mSold,['#1A6B4A'],true,fSold,'month');
+    var selY=parseInt(document.getElementById('sd-year').value);
+    var ySold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);return d&&d.getFullYear()===selY;});
+    var mSold=new Array(12).fill(0);ySold.forEach(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);if(d)mSold[d.getMonth()]++;});
+    drawChart('s-chart-monthly','bar',mths,mSold,['#1A6B4A'],true,ySold,'month');
     renderSoldCharts(d,'s-sold-charts',fSold);
   },80);
 }
@@ -1183,8 +1212,10 @@ function renderAdminDash(d){
     var brVals=brNames.map(function(b){return bc[b]||0;});
     drawChart('chart-branch','doughnut',brNames,brVals,brNames.map(function(_,i){return COLORS[i%COLORS.length];}),false,null);
     var mths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-    var mSold=new Array(12).fill(0);fSold.forEach(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);if(d)mSold[d.getMonth()]++;});
-    drawChart('chart-monthly','bar',mths,mSold,['#1A6B4A'],true,fSold,'month');
+    var selY=parseInt(document.getElementById('ad-year').value);
+    var ySold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);return d&&d.getFullYear()===selY;});
+    var mSold=new Array(12).fill(0);ySold.forEach(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);if(d)mSold[d.getMonth()]++;});
+    drawChart('chart-monthly','bar',mths,mSold,['#1A6B4A'],true,ySold,'month');
     renderSoldCharts(d,'a-sold-charts',fSold);
   },80);
 }
@@ -1192,10 +1223,11 @@ function renderAdminDash(d){
 function showMonthDrill(monthIdx){
   var mths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
   var monthName=mths[monthIdx];
-  var thisYear=new Date().getFullYear();
+  var selYEl=document.getElementById('ad-year')||document.getElementById('sd-year');
+  var selY=selYEl?parseInt(selYEl.value):new Date().getFullYear();
   var cars=soldCars.filter(function(c){
     var d=toDate(c[COL.soldDate]||c[COL.date]);
-    return d && d.getFullYear()===thisYear && d.getMonth()===monthIdx;
+    return d && d.getFullYear()===selY && d.getMonth()===monthIdx;
   });
   
   var models={};
@@ -1207,7 +1239,7 @@ function showMonthDrill(monthIdx){
   var sorted=Object.keys(models).sort(function(a,b){return models[b]-models[a];});
   var total=cars.length;
   
-  document.getElementById('drill-title').textContent='ยอดขายเดือน '+monthName+' '+ (thisYear+543);
+  document.getElementById('drill-title').textContent='ยอดขายเดือน '+monthName+' '+ (selY+543);
   var html='<div style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">ขายได้รวม <strong>'+total+' คัน</strong></div><div style="display:flex;flex-direction:column;gap:7px;">';
   
   if(total===0){
