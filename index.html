@@ -736,6 +736,18 @@ function branchBadge(name){
   return '<span class="bb '+cssClass+'">'+String(name||'—')+'</span>';
 }
 
+// ===== AUTO REFRESH =====
+var refreshTimer=null;
+function startAutoRefresh(){
+  if(refreshTimer)clearInterval(refreshTimer);
+  refreshTimer=setInterval(function(){
+    var dashboardTab=document.getElementById('stab-dashboard')||document.getElementById('atab-dashboard');
+    if(dashboardTab && dashboardTab.style.display !== 'none'){
+      if(userRole==='admin') loadAdminData(); else loadSalesData();
+    }
+  },120000); // 2 นาที
+}
+
 // ===== LOAD DATA =====
 async function loadSalesData(){
   // แสดง loading state
@@ -761,6 +773,7 @@ async function loadSalesData(){
     filterSales();
     filterSoldSales();
     renderSalesDash(dashData);
+    startAutoRefresh();
   }catch(e){
     console.error('loadSalesData error:',e);
     showToast('⚠️ โหลดข้อมูลไม่ได้: '+e.message,'e');
@@ -795,6 +808,7 @@ async function loadAdminData(){
     renderColToggles(allCars);
     if(settings.branches)document.getElementById('set-branches').value=settings.branches;
     if(settings.adminPassword)document.getElementById('set-pwd').value=settings.adminPassword;
+    startAutoRefresh();
   }catch(e){
     console.error('loadAdminData error:',e);
     showToast('⚠️ โหลดข้อมูลไม่ได้: '+e.message,'e');
@@ -1158,7 +1172,9 @@ function renderSalesDash(d){
     var selY=parseInt(document.getElementById('sd-year').value);
     var ySold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);return d&&d.getFullYear()===selY;});
     var mSold=new Array(12).fill(0);ySold.forEach(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);if(d)mSold[d.getMonth()]++;});
-    drawChart('s-chart-monthly','bar',mths,mSold,['#1A6B4A'],true,ySold,'month');
+    var now=new Date(), curM=now.getMonth(), curY=now.getFullYear();
+    var mColors=mths.map(function(_,i){return(i===curM&&selY===curY)?'#D97706':'#1A6B4A';});
+    drawChart('s-chart-monthly','bar',mths,mSold,mColors,true,ySold,'month');
     renderSoldCharts(d,'s-sold-charts',fSold);
   },80);
 }
@@ -1219,7 +1235,9 @@ function renderAdminDash(d){
     var selY=parseInt(document.getElementById('ad-year').value);
     var ySold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);return d&&d.getFullYear()===selY;});
     var mSold=new Array(12).fill(0);ySold.forEach(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);if(d)mSold[d.getMonth()]++;});
-    drawChart('chart-monthly','bar',mths,mSold,['#1A6B4A'],true,ySold,'month');
+    var now=new Date(), curM=now.getMonth(), curY=now.getFullYear();
+    var mColors=mths.map(function(_,i){return(i===curM&&selY===curY)?'#D97706':'#1A6B4A';});
+    drawChart('chart-monthly','bar',mths,mSold,mColors,true,ySold,'month');
     renderSoldCharts(d,'a-sold-charts',fSold);
   },80);
 }
