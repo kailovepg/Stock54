@@ -1422,31 +1422,78 @@ function exportCSV(cars,name){
   a.download=(name||'export')+'_'+new Date().toLocaleDateString('th-TH')+'.csv';a.click();
   showToast('Export แล้ว ✅','s');
 }
-function exportPDF(cars,title){
-  if(!cars||!cars.length){showToast('ไม่มีข้อมูล','e');return;}
-  var now=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
-  var rows='';
-  cars.forEach(function(c,i){
-    var pnums=parsePNums(c[COL.price]);
-    var latest=pnums.length?'฿'+fmtM(pnums[pnums.length-1]):'—';
-    var prev=pnums.length>=2?'<span style="text-decoration:line-through;color:#aaa;">฿'+fmtM(pnums[pnums.length-2])+'</span>':'';
-    rows+='<tr><td>'+(i+1)+'</td><td>'+fmtDate(c[COL.date])+'</td>'
-      +'<td><strong>'+(c[COL.brand]||'')+' '+(c[COL.model]||'')+'</strong></td>'
-      +'<td>'+(c[COL.year]||'—')+'</td><td>'+(c[COL.color]||'—')+'</td>'
-      +'<td>'+(c[COL.plate]||'—')+'</td><td>'+getDisplayMile(c)+'</td>'
-      +'<td>'+(c['_sheet']||'—')+'</td>'
-      +'<td style="color:#C0392B;font-weight:600;">'+latest+'<br>'+prev+'</td></tr>';
-  });
-  var win=window.open('','_blank');
-  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title>'
-    +'<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">'
-    +'<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Sarabun,sans-serif;font-size:10.5px;color:#111;padding:16px;}h1{font-size:15px;font-weight:700;margin-bottom:3px;}.sub{font-size:10px;color:#666;margin-bottom:12px;}table{width:100%;border-collapse:collapse;}th{background:#0D0D0D;color:#fff;padding:6px 8px;text-align:left;font-size:9.5px;}td{padding:5px 8px;border-bottom:1px solid #E8E6E1;vertical-align:top;}tr:nth-child(even)td{background:#F8F7F4;}.foot{text-align:right;font-size:11px;font-weight:600;margin-top:8px;}@media print{body{padding:8px;}@page{margin:12mm;}}</style>'
-    +'</head><body><h1>'+title+'</h1><div class="sub">พิมพ์: '+now+' · '+cars.length+' คัน</div>'
-    +'<table><thead><tr><th>#</th><th>วันที่</th><th>ยี่ห้อ/รุ่น</th><th>ปี</th><th>สี</th><th>ทะเบียน</th><th>เลขไมล์ล่าสุด</th><th>สาขา</th><th>ราคา</th></tr></thead>'
-    +'<tbody>'+rows+'</tbody></table><div class="foot">รวม '+cars.length+' คัน</div>'
-    +'<script>window.onload=function(){window.print();}<\/script></body></html>');
-  win.document.close();
-}
+	function exportPDF(cars,title){
+	  if(!cars||!cars.length){showToast('ไม่มีข้อมูล','e');return;}
+	  var now=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+	  var rows='';
+	  cars.forEach(function(c,i){
+	    var pnums=parsePNums(c[COL.price]);
+	    var latest=pnums.length?'฿'+fmtM(pnums[pnums.length-1]):'—';
+	    var prev=pnums.length>=2?'<div style="text-decoration:line-through;color:#aaa;font-size:9px;">฿'+fmtM(pnums[pnums.length-2])+'</div>':'';
+	    
+	    // อุปกรณ์ประกอบ
+	    var eq = [];
+	    if(isHas(c[COL.bookService])) eq.push('Book');
+	    if(isHas(c[COL.manual])) eq.push('คู่มือ');
+	    if(isHas(c[COL.spareKey])) eq.push('กุญแจ');
+	    var eqTxt = eq.length ? '<div style="font-size:9px;color:#666;margin-top:2px;">📦 '+eq.join(',')+'</div>' : '';
+	    
+	    // หมายเหตุ
+	    var rem = String(c[COL.remark]||'').trim();
+	    var remTxt = (rem && rem !== '-') ? '<div style="font-size:9px;color:#D97706;margin-top:2px;">📝 '+rem+'</div>' : '';
+
+	    rows+='<tr>'
+	      +'<td style="text-align:center;">'+(i+1)+'</td>'
+	      +'<td>'+fmtDate(c[COL.date])+'</td>'
+	      +'<td>'
+	        +'<div style="font-weight:700;">'+(c[COL.brand]||'')+' '+(c[COL.model]||'')+'</div>'
+	        +'<div style="font-size:9px;color:#555;">เกียร์: '+(c[COL.gear]||'—')+' | เชื้อเพลิง: '+(c[COL.fuel]||'—')+'</div>'
+	        +eqTxt + remTxt
+	      +'</td>'
+	      +'<td style="text-align:center;">'+(c[COL.year]||'—')+'</td>'
+	      +'<td>'+(c[COL.color]||'—')+'</td>'
+	      +'<td>'+(c[COL.plate]||'—')+'</td>'
+	      +'<td style="text-align:right;">'+getDisplayMile(c)+'</td>'
+	      +'<td>'+(c['_sheet']||c['_branch']||'—')+'</td>'
+	      +'<td style="color:#C0392B;font-weight:700;text-align:right;">'+latest+prev+'</td>'
+	      +'</tr>';
+	  });
+	  
+	  function isHas(v){
+	    if(!v) return false;
+	    var s = String(v).trim().toUpperCase();
+	    return s!=='' && s!=='-' && s!=='FALSE' && s!=='ไม่มี';
+	  }
+
+	  var win=window.open('','_blank');
+	  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title>'
+	    +'<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">'
+	    +'<style>'
+	    +'*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Sarabun,sans-serif;font-size:10px;color:#111;padding:15px;line-height:1.3;}'
+	    +'h1{font-size:16px;font-weight:700;margin-bottom:2px;}.sub{font-size:10px;color:#666;margin-bottom:12px;}'
+	    +'table{width:100%;border-collapse:collapse;margin-bottom:10px;}th{background:#0D0D0D;color:#fff;padding:6px 5px;text-align:left;font-size:9px;border:1px solid #0D0D0D;}'
+	    +'td{padding:5px;border:1px solid #DDD;vertical-align:top;}'
+	    +'tr:nth-child(even) td{background:#FAFAFA;}'
+	    +'.foot{text-align:right;font-size:11px;font-weight:700;margin-top:5px;}'
+	    +'@media print{body{padding:5px;}@page{margin:10mm;size:landscape;}}'
+	    +'</style>'
+	    +'</head><body>'
+	    +'<h1>'+title+'</h1><div class="sub">ข้อมูล ณ วันที่: '+now+' | ทั้งหมด '+cars.length+' คัน</div>'
+	    +'<table><thead><tr>'
+	    +'<th style="width:30px;text-align:center;">#</th>'
+	    +'<th style="width:70px;">วันที่เข้า</th>'
+	    +'<th>รายละเอียดรถ</th>'
+	    +'<th style="width:45px;text-align:center;">ปี</th>'
+	    +'<th style="width:70px;">สี</th>'
+	    +'<th style="width:90px;">ทะเบียน</th>'
+	    +'<th style="width:80px;text-align:right;">เลขไมล์</th>'
+	    +'<th style="width:80px;">สาขา</th>'
+	    +'<th style="width:90px;text-align:right;">ราคา</th>'
+	    +'</tr></thead><tbody>'+rows+'</tbody></table>'
+	    +'<div class="foot">รวมทั้งสิ้น '+cars.length+' คัน</div>'
+	    +'<script>window.onload=function(){setTimeout(function(){window.print();},500);}<\/script></body></html>');
+	  win.document.close();
+	}
 
 // ===== TAB SWITCHING =====
 function switchSalesTab(tab){
