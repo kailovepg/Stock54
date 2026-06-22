@@ -610,7 +610,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 <div id="toast"></div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbwudI1tvSuiDIdcSCHnRFGlV2zlaAev75Mkyh7CnGRdoUPFJCIkBtqau1C8X25vBvqu_A/exec';
+const API = 'https://script.google.com/macros/s/AKfycbyEoXCQB1jbKvyiq2dakpC18UeFJP9JudbnGgv9SEyDZlD7QgMZR2tvREHReEIiZdphHQ/exec';
 const COL = {
   date:'วันที่', brand:'ยี่ห้อ', model:'รุ่น', year:'ปี', color:'สี',
   gear:'เกียร์', fuel:'เชื้อเพลิง', plate:'ทะเบียน', price:'Price',
@@ -792,11 +792,16 @@ async function loadSalesData(){
       apiGet('getSoldCars'),
       apiGet('getDashboard')
     ]);
-    var cd=results[0], sd=results[1], dd=results[2];
-    allCars  = (cd && cd.cars)  ? cd.cars  : [];
-    soldCars = (sd && sd.cars)  ? sd.cars  : [];
-    dashData = dd || {};
-    branches = (dd && dd.branches) ? dd.branches : [];
+	    var cd=results[0], sd=results[1], dd=results[2];
+	    allCars  = (cd && Array.isArray(cd.cars)) ? cd.cars : [];
+	    soldCars = (sd && Array.isArray(sd.cars)) ? sd.cars : [];
+	    dashData = dd || {};
+	    branches = (dd && Array.isArray(dd.branches)) ? dd.branches : [];
+	    
+	    // กรณีไม่มีข้อมูลสาขาจาก API ให้ดึงจากข้อมูลรถ
+	    if(branches.length === 0 && allCars.length > 0) {
+	      branches = [...new Set(allCars.map(c => c._sheet))];
+	    }
     if(sd && sd.debug && sd.debug.length) console.log('getSoldCars debug:',sd.debug);
     if(!allCars.length) console.warn('⚠️ getCars คืนค่าว่าง ตรวจสอบชื่อ Sheet ใน _Settings', cd);
     if(!soldCars.length) console.warn('⚠️ getSoldCars คืนค่าว่าง ตรวจสอบชื่อ Sheet รถออกใน _Settings', sd);
@@ -823,12 +828,17 @@ async function loadAdminData(){
       apiGet('getDashboard'),
       apiGet('getSettings')
     ]);
-    var cd=results[0], sd=results[1], dd=results[2], st=results[3];
-    allCars  = (cd && cd.cars) ? cd.cars : [];
-    soldCars = (sd && sd.cars) ? sd.cars : [];
-    dashData = dd || {};
-    branches = (dd && dd.branches) ? dd.branches : [];
-    settings = st || {hiddenCols:[]};
+	    var cd=results[0], sd=results[1], dd=results[2], st=results[3];
+	    allCars  = (cd && Array.isArray(cd.cars)) ? cd.cars : [];
+	    soldCars = (sd && Array.isArray(sd.cars)) ? sd.cars : [];
+	    dashData = dd || {};
+	    branches = (dd && Array.isArray(dd.branches)) ? dd.branches : [];
+	    
+	    if(branches.length === 0 && allCars.length > 0) {
+	      branches = [...new Set(allCars.map(c => c._sheet))];
+	    }
+	    
+	    settings = st || {hiddenCols:[]};
     if(sd && sd.debug && sd.debug.length) console.log('getSoldCars debug:',sd.debug);
     if(!allCars.length) console.warn('⚠️ getCars คืนค่าว่าง', cd);
     if(!soldCars.length) console.warn('⚠️ getSoldCars คืนค่าว่าง', sd);
