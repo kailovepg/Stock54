@@ -187,8 +187,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 .link-btn.lk2{background:var(--black);color:#fff;}
 .link-btn.lk2:hover{background:var(--gray-700);}
 
-/* MISC */
-.loading{display:flex;align-items:center;justify-content:center;padding:44px;color:var(--gray-500);font-size:13px;gap:8px;}
+	/* MISC */
+	.admin-access-btn{position:fixed;bottom:20px;right:20px;z-index:999;width:44px;height:44px;border-radius:50%;background:var(--black);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shl);opacity:0.2;transition:all 0.3s;}
+	.admin-access-btn:hover{opacity:1;transform:scale(1.1);}
+	.loading{display:flex;align-items:center;justify-content:center;padding:44px;color:var(--gray-500);font-size:13px;gap:8px;}
 .spinner{width:16px;height:16px;border:2px solid var(--gray-100);border-top-color:var(--black);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;padding:44px;color:var(--gray-500);font-size:13px;}
@@ -212,31 +214,20 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 <body>
 <div id="app">
 
-<!-- LOGIN -->
-<div id="page-login" class="page active">
-  <div class="login-card">
-    <div class="login-logo">
-      <div class="lmark"></div>
-      <h1>AutoStock Pro</h1>
-      <p>ระบบจัดการสต๊อกรถยนต์</p>
-    </div>
-    <div id="login-err" class="err"></div>
-    <div class="fg"><label>รหัสผ่าน</label><input type="password" id="lpwd" placeholder="ใส่รหัสผ่าน"></div>
-    <button class="btn btn-blk" id="btn-login"><span id="ltxt">เข้าสู่ระบบ</span></button>
-    <p style="text-align:center;margin-top:12px;font-size:11px;color:var(--gray-500);">Admin ใช้รหัสผ่านที่ตั้งใน _Settings</p>
-    <p style="text-align:center;margin-top:8px;font-size:10px;color:var(--gray-500);"><button onclick="testAPI()" style="background:none;border:none;color:var(--gray-500);cursor:pointer;font-size:10px;text-decoration:underline;">ทดสอบการเชื่อมต่อ API</button></p>
-  </div>
-</div>
+	<!-- ADMIN ACCESS BUTTON -->
+	<button class="admin-access-btn" id="btn-admin-access" onclick="promptAdminLogin()" title="เข้าสู่โหมดแก้ไข (Admin)">
+	  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+	</button>
 
 <!-- SALES PAGE -->
 <div id="page-sales" class="page">
   <nav>
     <div class="nav-logo">AutoStock Pro <span class="nbadge">SALES</span></div>
-    <div class="nav-r">
-      <div class="nav-user"><span id="sales-name"></span> <span class="rbadge sales">พนักงานขาย</span></div>
-      <button class="btn-nav" onclick="loadSalesData()" title="โหลดข้อมูลใหม่">รีเฟรช</button>
-      <button class="btn-nav" onclick="logout()">ออก</button>
-    </div>
+	    <div class="nav-r">
+	      <div class="nav-user"><span id="sales-name"></span> <span class="rbadge sales">พนักงานขาย</span></div>
+	      <button class="btn-nav" onclick="loadSalesData()" title="โหลดข้อมูลใหม่">รีเฟรช</button>
+	      <button id="sales-logout-btn" class="btn-nav" onclick="logout()" style="display:none;">ออก</button>
+	    </div>
   </nav>
   <div class="main">
     <div class="tabs" id="sales-tabs">
@@ -639,34 +630,75 @@ var sfBranch='', afBranch='', asdBranch='', ssfBranch='';
 var sfSort='', afSort='';
 var charts={};
 
-// ===== INIT =====
-(function(){
-  var s=sessionStorage.getItem('as_s');
-  if(s){try{var d=JSON.parse(s);role=d.r;userName=d.n;route();}catch(e){}}
-})();
-
-// ===== AUTH =====
-document.getElementById('btn-login').addEventListener('click',doLogin);
-document.getElementById('lpwd').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
-
-async function doLogin(){
-  var pwd=document.getElementById('lpwd').value.trim();
-  var errEl=document.getElementById('login-err');
-  var txtEl=document.getElementById('ltxt');
-  if(!pwd){errEl.textContent='กรุณาใส่รหัสผ่าน';errEl.style.display='block';return;}
-  errEl.style.display='none';txtEl.textContent='กำลังตรวจสอบ...';
-  try{
-    var res=await fetch(API+'?action=login&password='+encodeURIComponent(pwd));
-    var d=await res.json();
-    if(d.success){role=d.role;userName=d.name;sessionStorage.setItem('as_s',JSON.stringify({r:role,n:userName}));txtEl.textContent='เข้าสู่ระบบ';route();}
-    else{errEl.textContent=d.error||'รหัสผ่านไม่ถูกต้อง';errEl.style.display='block';txtEl.textContent='เข้าสู่ระบบ';}
-  }catch(e){errEl.textContent='เชื่อมต่อ API ไม่ได้: '+e.message;errEl.style.display='block';txtEl.textContent='เข้าสู่ระบบ';}
-}
-function logout(){sessionStorage.removeItem('as_s');role='';userName='';allCars=[];showPage('login');document.getElementById('lpwd').value='';}
-async function route(){
-  if(role==='admin'){showPage('admin');loadAdminData();}
-  else{showPage('sales');document.getElementById('sales-name').textContent=userName;loadSalesData();}
-}
+	// ===== INIT =====
+	(function(){
+	  var s=sessionStorage.getItem('as_s');
+	  if(s){
+	    try{
+	      var d=JSON.parse(s);
+	      role=d.r;
+	      userName=d.n;
+	    }catch(e){
+	      role='sales';
+	      userName='Guest';
+	    }
+	  } else {
+	    role='sales';
+	    userName='Guest';
+	  }
+	  route();
+	})();
+	
+	// ===== AUTH =====
+	async function promptAdminLogin(){
+	  var pwd = prompt("กรุณาใส่รหัสผ่านเพื่อเข้าสู่โหมดแก้ไข:");
+	  if(pwd === null) return; // User cancelled
+	  if(!pwd.trim()){
+	    showToast('กรุณาใส่รหัสผ่าน','e');
+	    return;
+	  }
+	  
+	  showToast('กำลังตรวจสอบรหัสผ่าน...','');
+	  try{
+	    var res=await fetch(API+'?action=login&password='+encodeURIComponent(pwd));
+	    var d=await res.json();
+	    if(d.success){
+	      role=d.role;
+	      userName=d.name;
+	      sessionStorage.setItem('as_s',JSON.stringify({r:role,n:userName}));
+	      showToast('เข้าสู่ระบบสำเร็จ','s');
+	      route();
+	    } else {
+	      showToast(d.error||'รหัสผ่านไม่ถูกต้อง','e');
+	    }
+	  }catch(e){
+	    showToast('เชื่อมต่อ API ไม่ได้: '+e.message,'e');
+	  }
+	}
+	
+	function logout(){
+	  sessionStorage.removeItem('as_s');
+	  role='sales';
+	  userName='Guest';
+	  allCars=[];
+	  route();
+	  showToast('ออกจากระบบโหมดแก้ไขแล้ว','');
+	}
+	async function route(){
+	  if(role==='admin'){
+	    showPage('admin');
+	    loadAdminData();
+	    document.getElementById('btn-admin-access').style.display = 'none';
+	  } else {
+	    showPage('sales');
+	    document.getElementById('sales-name').textContent = userName;
+	    // แสดงปุ่มออกเฉพาะเมื่อไม่ได้เป็น Guest
+	    var logoutBtn = document.getElementById('sales-logout-btn');
+	    if(logoutBtn) logoutBtn.style.display = (userName === 'Guest') ? 'none' : 'block';
+	    document.getElementById('btn-admin-access').style.display = 'flex';
+	    loadSalesData();
+	  }
+	}
 
 // ===== API =====
 async function apiGet(action,params){
