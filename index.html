@@ -90,10 +90,13 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 
 /* FILTER PANEL */
 .filter-panel{background:#fff;border-radius:var(--rl);padding:16px 18px;margin-bottom:14px;box-shadow:var(--sh);}
-.filter-search-row{margin-bottom:12px;}
-.filter-search-row input{font-size:14px;padding:10px 14px;border-radius:var(--r);border:2px solid var(--gray-200);}
+.filter-search-row{margin-bottom:12px;display:flex;gap:8px;}
+.filter-search-row input{flex:1;font-size:14px;padding:10px 14px;border-radius:var(--r);border:2px solid var(--gray-200);transition:border-color .15s;}
 .filter-search-row input:focus{border-color:var(--black);}
-.filter-tags-row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;}
+.btn-filter-toggle{display:none;align-items:center;justify-content:center;padding:0 12px;border-radius:var(--r);border:2px solid var(--gray-200);background:#fff;color:var(--gray-700);cursor:pointer;transition:all .15s;}
+.btn-filter-toggle:hover{border-color:var(--black);color:var(--black);}
+.btn-filter-toggle.active{background:var(--black);color:#fff;border-color:var(--black);}
+.filter-tags-row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;transition:all .3s;}
 .filter-group{display:flex;flex-direction:column;gap:4px;}
 .filter-group-label{font-size:10px;font-weight:700;color:var(--gray-500);letter-spacing:.05em;text-transform:uppercase;}
 .filter-group select{font-size:12px;padding:6px 10px;min-width:110px;border:1.5px solid var(--gray-200);border-radius:var(--r);}
@@ -207,7 +210,19 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
   nav{padding:0 14px;}
   .login-card{padding:32px 20px;}
   .list-table th:nth-child(n+5),.list-table td:nth-child(n+5){display:none;}
-  .filter-tags-row{gap:10px;}
+  .btn-filter-toggle{display:flex;}
+  .filter-tags-row{display:none;grid-template-columns:1fr 1fr;gap:10px;padding-top:14px;border-top:1px dashed var(--gray-200);margin-top:4px;}
+  .filter-tags-row.show{display:grid;}
+  .filter-tags-row .filter-group{min-width:0;}
+  .filter-tags-row .filter-group select,.filter-tags-row .filter-group input{min-width:0;width:100%;}
+  .filter-divider{display:none;}
+  .filter-search-row input{font-size:13px;padding:10px 12px;}
+  .branch-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+  .branch-btn{padding:8px 4px;font-size:11px;text-align:center;}
+  .sort-pills{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .sort-pill{padding:8px 4px;font-size:11px;text-align:center;}
+  .filter-tags-row > div:last-child { grid-column: 1 / -1; justify-content: center; margin-top: 4px; }
+  .filter-tags-row > div:last-child .btn { width: 100%; justify-content: center; padding: 10px; }
 }
 </style>
 </head>
@@ -279,6 +294,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       <div class="filter-panel">
         <div class="filter-search-row">
           <input type="text" id="sf-q" placeholder="🔍  ค้นหา ยี่ห้อ รุ่น ทะเบียน สี เลขไมล์..." oninput="filterSales()">
+          <button class="btn-filter-toggle" onclick="this.parentElement.nextElementSibling.classList.toggle('show'); this.classList.toggle('active');"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg></button>
         </div>
         <div class="filter-tags-row">
           <!-- สาขา -->
@@ -351,6 +367,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       <div class="filter-panel">
         <div class="filter-search-row">
           <input type="text" id="ssf-q" placeholder="🔍  ค้นหา ยี่ห้อ รุ่น ทะเบียน..." oninput="filterSoldSales()">
+          <button class="btn-filter-toggle" onclick="this.parentElement.nextElementSibling.classList.toggle('show'); this.classList.toggle('active');"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg></button>
         </div>
         <div class="filter-tags-row">
           <div class="filter-group">
@@ -448,6 +465,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       <div class="filter-panel">
         <div class="filter-search-row">
           <input type="text" id="af-q" placeholder="🔍  ค้นหา ยี่ห้อ รุ่น ทะเบียน..." oninput="filterAdmin()">
+          <button class="btn-filter-toggle" onclick="this.parentElement.nextElementSibling.classList.toggle('show'); this.classList.toggle('active');"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg></button>
         </div>
         <div class="filter-tags-row">
           <div class="filter-group">
@@ -505,6 +523,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       <div class="filter-panel">
         <div class="filter-search-row">
           <input type="text" id="asd-q" placeholder="🔍  ค้นหา ยี่ห้อ รุ่น ทะเบียน..." oninput="filterSold()">
+          <button class="btn-filter-toggle" onclick="this.parentElement.nextElementSibling.classList.toggle('show'); this.classList.toggle('active');"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg></button>
         </div>
         <div class="filter-tags-row">
           <div class="filter-group">
