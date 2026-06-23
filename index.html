@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>AutoStock Pro</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -22,7 +22,8 @@
   --sh:0 1px 4px rgba(0,0,0,.07);--shl:0 8px 24px rgba(0,0,0,.10);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:var(--font);background:var(--bg);color:var(--black);min-height:100vh;font-size:14px;line-height:1.55;}
+body{font-family:var(--font);background:var(--bg);color:var(--black);min-height:100vh;font-size:14px;line-height:1.55;overflow-x:hidden;width:100%;}
+html{overflow-x:hidden;width:100%;}
 .page{display:none;min-height:100vh;flex-direction:column;}
 .page.active{display:flex;}
 
@@ -110,7 +111,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 .sort-pill.active{background:var(--black);border-color:var(--black);color:#fff;}
 
 /* LIST TABLE */
-.list-wrap{background:#fff;border-radius:var(--rl);box-shadow:var(--sh);overflow:hidden;}
+.list-wrap{background:#fff;border-radius:var(--rl);box-shadow:var(--sh);overflow-x:auto;}
 .list-table{width:100%;border-collapse:collapse;}
 .list-table thead{background:var(--black);color:#fff;}
 .list-table th{padding:10px 12px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.04em;white-space:nowrap;user-select:none;}
@@ -142,7 +143,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 .chart-card{background:#fff;border-radius:var(--rl);padding:16px;box-shadow:var(--sh);height:260px;display:flex;flex-direction:column;}
 .chart-title{font-size:13px;font-weight:600;margin-bottom:8px;flex-shrink:0;display:flex;align-items:center;gap:6px;}
 .chart-hint{font-size:10px;color:var(--gray-500);font-weight:400;}
-.chart-wrap{flex:1;position:relative;min-height:0;}
+.chart-wrap{flex:1;position:relative;min-height:0;min-width:0;width:100%;}
 
 /* SETTINGS */
 .set-section{background:#fff;border-radius:var(--rl);padding:18px;box-shadow:var(--sh);margin-bottom:14px;}
@@ -204,8 +205,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 .tip{background:var(--amber-light);border-radius:var(--r);padding:10px 13px;font-size:12px;color:#92400e;margin-bottom:12px;}
 .form-2col{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;}
 @media(max-width:640px){
+  html,body{overflow-x:hidden;width:100%;}
   .main{padding:12px 14px;}
-  .charts-grid{grid-template-columns:1fr;}
+  .charts-grid{grid-template-columns:1fr;min-width:0;}
+  .dash-filter{flex-wrap:wrap;justify-content:center;margin-top:8px;}
+  .dash-filter input{width:110px;}
   .detail-grid,.form-2col{grid-template-columns:1fr;}
   nav{padding:0 14px;}
   .login-card{padding:32px 20px;}
