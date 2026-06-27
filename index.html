@@ -36,6 +36,7 @@ nav{background:var(--black);color:#fff;padding:0 22px;height:54px;display:flex;a
 .rbadge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;}
 .rbadge.admin{background:var(--red);color:#fff;}
 .rbadge.sales{background:var(--blue);color:#fff;}
+.rbadge.ceo{background:var(--black);color:#fff;}
 .btn-nav{background:none;border:1px solid var(--gray-700);color:var(--gray-300);padding:4px 12px;border-radius:var(--r);cursor:pointer;font-size:12px;font-family:var(--font);transition:all .15s;}
 .btn-nav:hover{border-color:#fff;color:#fff;}
 
@@ -203,6 +204,35 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 #toast.e{background:var(--red);}
 #toast.s{background:var(--green);}
 .tip{background:var(--amber-light);border-radius:var(--r);padding:10px 13px;font-size:12px;color:#92400e;margin-bottom:12px;}
+.ss-input{width:64px;padding:6px 8px;text-align:center;font-family:var(--mono);font-size:13px;}
+.ss-table-wrap{overflow-x:auto;}
+.ss-table th{white-space:nowrap;}
+.ss-name-cell{font-weight:600;white-space:nowrap;}
+.ss-pct{font-family:var(--mono);font-size:12px;color:var(--gray-700);}
+.ss-pct.hi{color:var(--green);font-weight:700;}
+.ss-pending-display{text-align:center;font-family:var(--mono);font-size:14px;}
+.ss-deal-cell{text-align:center;min-width:120px;}
+.ss-deal-count{font-family:var(--mono);font-size:13px;margin-bottom:5px;color:var(--gray-700);}
+.ss-deal-count strong{color:var(--black);font-size:14px;}
+.btn-xs{padding:4px 10px;font-size:11px;}
+.dd-result-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:1px solid var(--gray-200);border-radius:var(--r);margin-bottom:8px;}
+.dd-result-info{font-size:13px;}
+.dd-result-info .plate{font-family:var(--mono);font-weight:700;color:var(--black);}
+.dd-result-info .meta{font-size:11px;color:var(--gray-500);margin-top:2px;}
+.dd-resolve-actions{display:flex;gap:6px;}
+.ss-foot-row td{font-weight:700;background:var(--gray-50)!important;border-top:2px solid var(--gray-200);}
+.ss-month-pick{display:flex;align-items:center;gap:8px;}
+.ss-month-pick input{width:auto;min-width:150px;}
+.ss-save-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap;}
+.ss-savemsg{font-size:12px;color:var(--gray-500);}
+.ss-num-strip-label{font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;}
+.ss-num-strip{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
+.ss-num-card{background:#fff;border:1.5px solid var(--gray-200);border-radius:var(--r);padding:10px 16px;min-width:88px;text-align:center;}
+.ss-num-card .nm{font-size:11px;color:var(--gray-500);margin-bottom:3px;white-space:nowrap;}
+.ss-num-card .vl{font-size:20px;font-weight:700;font-family:var(--mono);color:var(--black);}
+.ss-num-card.tot{background:var(--black);border-color:var(--black);}
+.ss-num-card.tot .nm{color:#ccc;}
+.ss-num-card.tot .vl{color:#fff;}
 .form-2col{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;}
 @media(max-width:640px){
   html,body{overflow-x:hidden;width:100%;}
@@ -257,8 +287,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 
     <!-- SALES: DASHBOARD -->
     <div id="stab-dashboard">
-      <div class="ph">
+      <div class="ph" style="justify-content:space-between;align-items:center;">
         <div><div class="ph-title">Dashboard</div><div class="ph-sub">ภาพรวมสต๊อกและยอดขาย</div></div>
+        <div class="dash-filter">
+          <input type="date" id="sd-df" onchange="renderSalesDash(dashData)" title="จากวันที่">
+          <span>-</span>
+          <input type="date" id="sd-dt" onchange="renderSalesDash(dashData)" title="ถึงวันที่">
+          <button class="btn btn-out btn-xs" onclick="resetDashFilter('s')">ล้าง</button>
+        </div>
       </div>
       <div class="stats-grid" id="s-stats"><div class="loading"><div class="spinner"></div></div></div>
       <div class="charts-grid">
@@ -273,12 +309,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
         </div>
       </div>
       <div class="ph" style="margin-top:10px;justify-content:space-between;align-items:center;">
-        <div style="font-size:15px;font-weight:700;">รถออกแยกสาขา</div>
+        <div><div style="font-size:15px;font-weight:700;">รถออกแยกสาขา</div><div style="font-size:11px;color:var(--gray-500);">ค่าเริ่มต้น: เดือนล่าสุดที่มีข้อมูล (ปรับช่วงวันที่เองได้)</div></div>
         <div class="dash-filter">
-          <input type="date" id="sd-df" onchange="renderSalesDash(dashData)" title="จากวันที่">
+          <input type="date" id="sds-df" onchange="renderSoldChartsSection()" title="จากวันที่">
           <span>-</span>
-          <input type="date" id="sd-dt" onchange="renderSalesDash(dashData)" title="ถึงวันที่">
-          <button class="btn btn-out btn-xs" onclick="resetDashFilter('s')">ล้าง</button>
+          <input type="date" id="sds-dt" onchange="renderSoldChartsSection()" title="ถึงวันที่">
+          <button class="btn btn-out btn-xs" onclick="resetSoldSectionFilter()">ล้าง</button>
         </div>
       </div>
       <div class="charts-grid" id="s-sold-charts"></div>
@@ -416,22 +452,29 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 <!-- ADMIN PAGE -->
 <div id="page-admin" class="page">
   <nav>
-    <div class="nav-logo">AutoStock Pro <span class="nbadge">ADMIN</span></div>
-    <div class="nav-r"><span class="rbadge admin">Admin</span><button class="btn-nav" onclick="loadAdminData()" title="โหลดข้อมูลใหม่">รีเฟรช</button><button class="btn-nav" onclick="logout()">ออก</button></div>
+    <div class="nav-logo">AutoStock Pro <span class="nbadge" id="nav-role-badge">ADMIN</span></div>
+    <div class="nav-r"><span class="rbadge admin" id="nav-role-pill">Admin</span><button class="btn-nav" onclick="loadAdminData()" title="โหลดข้อมูลใหม่">รีเฟรช</button><button class="btn-nav" onclick="logout()">ออก</button></div>
   </nav>
   <div class="main">
     <div class="tabs">
       <button class="tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
       <button class="tab" onclick="switchTab('stock')">🚗 สต๊อกรถ</button>
       <button class="tab" onclick="switchTab('sold')">✅ รถออก</button>
-      <button class="tab" onclick="switchTab('settings')">⚙️ ตั้งค่า</button>
-      <button class="tab" onclick="switchTab('users')">👥 พนักงาน</button>
+      <button class="tab" id="tab-btn-salesstats" onclick="switchTab('salesstats')">📝 บันทึกยอดขาย</button>
+      <button class="tab" id="tab-btn-settings" onclick="switchTab('settings')">⚙️ ตั้งค่า</button>
+      <button class="tab" id="tab-btn-users" onclick="switchTab('users')">👥 พนักงาน</button>
     </div>
 
     <!-- ADMIN DASHBOARD -->
     <div id="atab-dashboard">
-      <div class="ph">
+      <div class="ph" style="justify-content:space-between;align-items:center;">
         <div><div class="ph-title">Dashboard</div></div>
+        <div class="dash-filter">
+          <input type="date" id="ad-df" onchange="renderAdminDash(dashData)" title="จากวันที่">
+          <span>-</span>
+          <input type="date" id="ad-dt" onchange="renderAdminDash(dashData)" title="ถึงวันที่">
+          <button class="btn btn-out btn-xs" onclick="resetDashFilter('a')">ล้าง</button>
+        </div>
       </div>
       <div class="stats-grid" id="a-stats"><div class="loading"><div class="spinner"></div></div></div>
       <div class="charts-grid">
@@ -445,16 +488,24 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
           <div class="chart-wrap"><canvas id="chart-monthly"></canvas></div>
         </div>
       </div>
-      <div class="ph" style="margin-top:10px;justify-content:space-between;align-items:center;">
-        <div style="font-size:15px;font-weight:700;">รถออกแยกสาขา</div>
-        <div class="dash-filter">
-          <input type="date" id="ad-df" onchange="renderAdminDash(dashData)" title="จากวันที่">
-          <span>-</span>
-          <input type="date" id="ad-dt" onchange="renderAdminDash(dashData)" title="ถึงวันที่">
-          <button class="btn btn-out btn-xs" onclick="resetDashFilter('a')">ล้าง</button>
-        </div>
+      <div class="ph" style="margin-top:26px;">
+        <div><div class="ph-title">ผลงานเซลล์</div><div class="ph-sub" id="ss-dash-sub">สรุปผลงานรายเดือน</div></div>
+        <div class="ss-month-pick"><input type="month" id="ss-month" onchange="loadSalesStatsDashboard()"></div>
       </div>
-      <div class="charts-grid" id="a-sold-charts"></div>
+
+      <div class="ss-num-strip-label">เบอร์ที่ได้รับ (ต่อคน)</div>
+      <div class="ss-num-strip" id="ss-num-strip"></div>
+
+      <div class="chart-card" style="height:300px;margin-bottom:14px;">
+        <div class="chart-title">จบ / ปล่อย / หลุด / รอผล ต่อคน</div>
+        <div class="chart-wrap"><canvas id="ss-chart"></canvas></div>
+      </div>
+      <div class="ss-table-wrap">
+        <table class="list-table" id="ss-summary-table">
+          <thead><tr><th>พนักงาน</th><th>รวมเบอร์</th><th>จบ</th><th>ปล่อย</th><th>หลุด</th><th>รอผล</th><th>%จบ</th><th>%ปล่อย</th></tr></thead>
+          <tbody id="ss-summary-body"><tr><td colspan="8"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- ADMIN STOCK -->
@@ -587,6 +638,24 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       </div>
     </div>
 
+    <!-- ADMIN SALES STATS -->
+    <div id="atab-salesstats" style="display:none;">
+      <div class="ph">
+        <div><div class="ph-title">บันทึกยอดขายรายวัน</div><div class="ph-sub">กรอกจำนวนเบอร์ที่ได้รับของวันนั้น และกดปุ่ม "+ จบ" เพื่อเลือกรถที่จบดีล / "ปล่อย-หลุด" เพื่อปิดผลรถที่รอผลอยู่</div></div>
+        <div class="fg" style="margin:0;max-width:170px;"><input type="date" id="ss-date" onchange="loadSalesStatsForm()"></div>
+      </div>
+      <div class="ss-table-wrap">
+        <table class="list-table ss-table">
+          <thead><tr><th>พนักงาน</th><th>จำนวนเบอร์<br><span style="font-weight:400;opacity:.7;">(วันที่เลือก)</span></th><th>จบ<br><span style="font-weight:400;opacity:.7;">(เดือนนี้)</span></th><th>ปล่อย / หลุด<br><span style="font-weight:400;opacity:.7;">(เดือนนี้)</span></th><th>รอผล<br><span style="font-weight:400;opacity:.7;">(สะสมปัจจุบัน)</span></th></tr></thead>
+          <tbody id="ss-form-body"><tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+        </table>
+      </div>
+      <div class="ss-save-bar">
+        <span class="ss-savemsg" id="ss-save-msg"></span>
+        <button class="btn btn-act" onclick="saveSalesStatsForm()">💾 บันทึกจำนวนเบอร์วันนี้</button>
+      </div>
+    </div>
+
     <!-- ADMIN USERS -->
     <div id="atab-users" style="display:none;">
       <div class="ph">
@@ -622,7 +691,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
     <div class="mh"><h3>เพิ่มพนักงานขาย</h3><button class="mc" onclick="closeMo('modal-user')">✕</button></div>
     <div class="mb">
       <div class="fg"><label>ชื่อ *</label><input type="text" id="u-name" placeholder="สมชาย ดีมาก"></div>
-      <div class="fg"><label>รหัสผ่าน *</label><input type="text" id="u-pwd" placeholder="sales1234"></div>
+      <div class="fg"><label>รหัสผ่าน (ไม่จำเป็น)</label><input type="text" id="u-pwd" placeholder="เว้นว่างได้ถ้าไม่ต้องการให้ login เข้าระบบ"></div>
+      <p style="font-size:12px;color:var(--gray-500);margin-top:-6px;">💡 ถ้าเว้นรหัสผ่านว่าง ชื่อนี้จะใช้สำหรับบันทึกยอดขายเท่านั้น จะ login เข้าเว็บแอปไม่ได้</p>
+      <pre id="u-debug" style="display:none;white-space:pre-wrap;background:#F8F7F4;border:1px solid var(--gray-200);border-radius:8px;padding:10px;font-size:11px;margin-top:10px;max-height:160px;overflow:auto;"></pre>
     </div>
     <div class="mf">
       <button class="btn btn-out" onclick="closeMo('modal-user')">ยกเลิก</button>
@@ -630,10 +701,50 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
     </div>
   </div>
 </div>
+
+<!-- MODAL: ค้นหารถเพื่อบันทึก "จบ" -->
+<div class="mo" id="modal-deal-search">
+  <div class="modal" style="max-width:480px;">
+    <div class="mh"><h3>บันทึก "จบ" — <span id="dd-search-name"></span></h3><button class="mc" onclick="closeMo('modal-deal-search')">✕</button></div>
+    <div class="mb">
+      <div class="fg" style="margin-bottom:10px;"><input type="text" id="dd-search-q" placeholder="พิมพ์รุ่น/ทะเบียน เช่น civic2569" oninput="onDealSearchInput()" autocomplete="off"></div>
+      <div id="dd-search-results"><div class="empty" style="padding:20px 0;">พิมพ์เพื่อค้นหารถในสต๊อก</div></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-out" onclick="closeMo('modal-deal-search')">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: เลือกรถเพื่อปิดผล "ปล่อย/หลุด" -->
+<div class="mo" id="modal-deal-resolve">
+  <div class="modal" style="max-width:480px;">
+    <div class="mh"><h3>ปิดผล ปล่อย/หลุด — <span id="dr-resolve-name"></span></h3><button class="mc" onclick="closeMo('modal-deal-resolve')">✕</button></div>
+    <div class="mb">
+      <div id="dd-resolve-list"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-out" onclick="closeMo('modal-deal-resolve')">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: รายชื่อรถ (คลิกจากแท่งกราฟ Dashboard) -->
+<div class="mo" id="modal-deal-detail">
+  <div class="modal" style="max-width:480px;">
+    <div class="mh"><h3 id="ddt-title">รายชื่อรถ</h3><button class="mc" onclick="closeMo('modal-deal-detail')">✕</button></div>
+    <div class="mb">
+      <div id="ddt-list"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-out" onclick="closeMo('modal-deal-detail')">ปิด</button>
+    </div>
+  </div>
+</div>
 <div id="toast"></div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbyEoXCQB1jbKvyiq2dakpC18UeFJP9JudbnGgv9SEyDZlD7QgMZR2tvREHReEIiZdphHQ/exec';
+const API = 'https://script.google.com/macros/s/AKfycbz1UAd4ZinBWHddeL1QGA9XYY4KmuBg9stsgMC0tAsDjfSG3pxT8PZL1Six7y55_uAvYQ/exec';
 const COL = {
   date:'วันที่', brand:'ยี่ห้อ', model:'รุ่น', year:'ปี', color:'สี',
   gear:'เกียร์', fuel:'เชื้อเพลิง', plate:'ทะเบียน', price:'Price',
@@ -708,8 +819,9 @@ var charts={};
 	  showToast('ออกจากระบบโหมดแก้ไขแล้ว','');
 	}
 	async function route(){
-	  if(role==='admin'){
+	  if(role==='admin'||role==='ceo'){
 	    showPage('admin');
+	    applyRolePermissions();
 	    loadAdminData();
 	    document.getElementById('btn-admin-access').style.display = 'none';
 	  } else {
@@ -722,6 +834,18 @@ var charts={};
 	    loadSalesData();
 	  }
 	}
+
+function applyRolePermissions(){
+  var isCeo = (role==='ceo');
+  var badge = document.getElementById('nav-role-badge');
+  var pill = document.getElementById('nav-role-pill');
+  if(badge) badge.textContent = isCeo ? 'CEO' : 'ADMIN';
+  if(pill){ pill.textContent = isCeo ? 'CEO' : 'Admin'; pill.classList.toggle('ceo', isCeo); pill.classList.toggle('admin', !isCeo); }
+  ['salesstats','settings','users'].forEach(function(t){
+    var btn = document.getElementById('tab-btn-'+t);
+    if(btn) btn.style.display = isCeo ? 'none' : '';
+  });
+}
 
 // ===== API =====
 async function apiGet(action,params){
@@ -791,6 +915,29 @@ function branchBadge(name){
   return '<span class="bb '+cssClass+'">'+String(name||'—')+'</span>';
 }
 
+/**
+ * ตั้งค่า default ช่องกรองวันที่ "รถออกแยกสาขา" (หน้า Sales) ให้เป็นเดือนล่าสุด
+ * ที่มีข้อมูลรถออกจริง (ไม่ใช่เดือนปัจจุบันตามปฏิทิน เผื่อเดือนนี้ยังไม่มีรถออกเลย)
+ * ตั้งแค่ครั้งแรกเท่านั้น — ถ้าผู้ใช้กรอกช่องกรองเองแล้วจะไม่ไปแก้ทับ
+ */
+function setDefaultSoldMonthFilter(){
+  var dfEl=document.getElementById('sds-df'), dtEl=document.getElementById('sds-dt');
+  if(!dfEl||!dtEl) return;
+  if(dfEl.value||dtEl.value) return; // ผู้ใช้ตั้งค่าเองแล้ว ไม่ไปแก้ทับ
+  if(!soldCars.length) return;
+  var latest=null;
+  soldCars.forEach(function(c){
+    var d=toDate(c[COL.soldDate]||c[COL.date]);
+    if(d&&(!latest||d>latest))latest=d;
+  });
+  if(!latest)return;
+  var y=latest.getFullYear(), m=latest.getMonth();
+  var first=new Date(y,m,1), last=new Date(y,m+1,0);
+  function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+  dfEl.value=iso(first);
+  dtEl.value=iso(last);
+}
+
 // ===== AUTO REFRESH =====
 var refreshTimer=null;
 function startAutoRefresh(){
@@ -832,6 +979,7 @@ async function loadSalesData(){
     buildFilters(allCars);
     filterSales();
     filterSoldSales();
+    setDefaultSoldMonthFilter();
     renderSalesDash(dashData);
     startAutoRefresh();
   }catch(e){
@@ -871,6 +1019,8 @@ async function loadAdminData(){
     filterSold();
     renderAdminDash(dashData);
     renderColToggles(allCars);
+    initSalesStatsDashboardDefaults();
+    loadSalesStatsDashboard();
     if(settings.branches)document.getElementById('set-branches').value=settings.branches;
     if(settings.adminPassword)document.getElementById('set-pwd').value=settings.adminPassword;
     startAutoRefresh();
@@ -1184,7 +1334,7 @@ function showDetail(idx){
   html+=drow('ปี',car[COL.year])+drow('สี',car[COL.color]);
   html+=drow('เกียร์',car[COL.gear])+drow('เชื้อเพลิง',car[COL.fuel]||'—');
   var mileInfo='';
-  if(role==='admin'){
+  if(role==='admin'||role==='ceo'){
     mileInfo = drow('ไมล์แรกเข้า',car[COL.mileFirst]||'—')+drow('ไมล์ศูนย์',car[COL.mileCenter]||'—')+drow('เลขไมล์xxx',car[COL.mileLast]||'—');
   } else {
     mileInfo = drow('เลขไมล์ล่าสุด',getDisplayMile(car));
@@ -1217,7 +1367,6 @@ function renderSalesDash(d){
   if(!d)return;
   var df=document.getElementById('sd-df').value, dt=document.getElementById('sd-dt').value;
   var fAll=allCars.filter(function(c){var d=toDate(c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;return true;});
-  var fSold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;return true;});
   var sc=document.getElementById('s-stats');if(!sc)return;
   var now=new Date(), curM=now.getMonth(), curY=now.getFullYear();
   var curMSold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);return d&&d.getMonth()===curM&&d.getFullYear()===curY;}).length;
@@ -1243,8 +1392,23 @@ function renderSalesDash(d){
     var now=new Date(), curM=now.getMonth(), curY=now.getFullYear();
     var mColors=mths.map(function(_,i){return(i===curM&&selY===curY)?'#D97706':'#1A6B4A';});
     drawChart('s-chart-monthly','bar',mths,mSold,mColors,true,ySold,'month');
-    renderSoldCharts(d,'s-sold-charts',fSold);
+    renderSoldChartsSection();
   },80);
+}
+
+/** เรนเดอร์เฉพาะส่วน "รถออกแยกสาขา" — ใช้ตัวกรองวันที่ของตัวเอง (sds-df/sds-dt) แยกจากการ์ดสต๊อกด้านบน */
+function renderSoldChartsSection(){
+  var dfEl=document.getElementById('sds-df'), dtEl=document.getElementById('sds-dt');
+  var df=dfEl?dfEl.value:'', dt=dtEl?dtEl.value:'';
+  var fSold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;return true;});
+  renderSoldCharts(dashData,'s-sold-charts',fSold);
+}
+
+function resetSoldSectionFilter(){
+  var dfEl=document.getElementById('sds-df'), dtEl=document.getElementById('sds-dt');
+  if(dfEl)dfEl.value='';
+  if(dtEl)dtEl.value='';
+  renderSoldChartsSection();
 }
 
 function renderSoldCharts(d,containerId,customCars){
@@ -1307,7 +1471,6 @@ function renderAdminDash(d){
     var now=new Date(), curM=now.getMonth(), curY=now.getFullYear();
     var mColors=mths.map(function(_,i){return(i===curM&&selY===curY)?'#D97706':'#1A6B4A';});
     drawChart('chart-monthly','bar',mths,mSold,mColors,true,ySold,'month');
-    renderSoldCharts(d,'a-sold-charts',fSold);
   },80);
 }
 
@@ -1433,18 +1596,38 @@ async function saveBranches(){
 async function addUser(){
   var name=document.getElementById('u-name').value.trim();
   var pwd=document.getElementById('u-pwd').value.trim();
-  if(!name||!pwd){showToast('กรุณากรอกให้ครบ','e');return;}
-  var res=await apiPost({action:'addUser',data:{name:name,password:pwd}});
-  if(res.success){closeMo('modal-user');showToast('เพิ่มพนักงานแล้ว ✅','s');}
-  else showToast('ไม่สำเร็จ','e');
+  var dbg=document.getElementById('u-debug');
+  if(!name){showToast('กรุณากรอกชื่อ','e');return;}
+  var payload={action:'addUser',data:{name:name,password:pwd}};
+  dbg.style.display='block';
+  dbg.textContent='⏳ กำลังส่ง...\nส่งไป: '+JSON.stringify(payload);
+  try{
+    var rawRes=await fetch(API,{method:'POST',body:JSON.stringify(payload),headers:{'Content-Type':'text/plain;charset=utf-8'}});
+    var rawText=await rawRes.text();
+    var res;
+    try{res=JSON.parse(rawText);}catch(pe){res=null;}
+    dbg.textContent='ส่งไป: '+JSON.stringify(payload)+'\n\nได้รับกลับ (raw): '+rawText.substring(0,500);
+    if(res&&res.success){
+      showToast('เพิ่มพนักงานแล้ว ✅ '+name,'s');
+      document.getElementById('u-name').value='';
+      document.getElementById('u-pwd').value='';
+      var atabSS=document.getElementById('atab-salesstats');
+      if(atabSS&&atabSS.style.display!=='none'){loadSalesStatsForm();loadSalesStatsDashboard();}
+    }else{
+      showToast('⚠️ ไม่สำเร็จ: '+((res&&res.error)||'ดูรายละเอียดในกล่องด้านล่าง'),'e');
+    }
+  }catch(e){
+    dbg.textContent='ส่งไป: '+JSON.stringify(payload)+'\n\n❌ เกิด error ตอนเชื่อมต่อ: '+e.message;
+    showToast('⚠️ เชื่อมต่อ API ไม่ได้: '+e.message,'e');
+  }
 }
 
 // ===== EXPORT =====
 function exportCSV(cars,name){
   if(!cars||!cars.length){showToast('ไม่มีข้อมูล','e');return;}
-  var hdrs = (role==='admin') ? ['สาขา','วันที่','ยี่ห้อ','รุ่น','ปี','สี','เกียร์','ทะเบียน','ไมล์แรกเข้า','ไมล์ศูนย์','เลขไมล์xxx','ราคา'] : ['สาขา','วันที่','ยี่ห้อ','รุ่น','ปี','สี','เกียร์','ทะเบียน','เลขไมล์ล่าสุด','ราคา'];
+  var hdrs = (role==='admin'||role==='ceo') ? ['สาขา','วันที่','ยี่ห้อ','รุ่น','ปี','สี','เกียร์','ทะเบียน','ไมล์แรกเข้า','ไมล์ศูนย์','เลขไมล์xxx','ราคา'] : ['สาขา','วันที่','ยี่ห้อ','รุ่น','ปี','สี','เกียร์','ทะเบียน','เลขไมล์ล่าสุด','ราคา'];
   var rows=cars.map(function(c){
-    if(role==='admin'){
+    if(role==='admin'||role==='ceo'){
       return [c['_sheet']||c['_branch']||'',fmtDate(c[COL.date]),c[COL.brand]||'',c[COL.model]||'',c[COL.year]||'',c[COL.color]||'',c[COL.gear]||'',c[COL.plate]||'',c[COL.mileFirst]||'',c[COL.mileCenter]||'',c[COL.mileLast]||'',latestP(c[COL.price])?'฿'+fmtM(latestP(c[COL.price])):'—'];
     } else {
       return [c['_sheet']||c['_branch']||'',fmtDate(c[COL.date]),c[COL.brand]||'',c[COL.model]||'',c[COL.year]||'',c[COL.color]||'',c[COL.gear]||'',c[COL.plate]||'',getDisplayMile(c),latestP(c[COL.price])?'฿'+fmtM(latestP(c[COL.price])):'—'];
@@ -1536,11 +1719,12 @@ function switchSalesTab(tab){
   if(tab==='sold'){filterSoldSales();}
 }
 function switchTab(tab){
-  ['dashboard','stock','sold','settings','users'].forEach(function(t){var el=document.getElementById('atab-'+t);if(el)el.style.display=t===tab?'':'none';});
-  document.querySelectorAll('#page-admin .tab').forEach(function(t,i){t.classList.toggle('active',['dashboard','stock','sold','settings','users'][i]===tab);});
-  if(tab==='dashboard')setTimeout(function(){renderAdminCharts(dashData);},60);
+  ['dashboard','stock','sold','salesstats','settings','users'].forEach(function(t){var el=document.getElementById('atab-'+t);if(el)el.style.display=t===tab?'':'none';});
+  document.querySelectorAll('#page-admin .tab').forEach(function(t,i){t.classList.toggle('active',['dashboard','stock','sold','salesstats','settings','users'][i]===tab);});
+  if(tab==='dashboard'){setTimeout(function(){renderAdminCharts(dashData);},60);initSalesStatsDashboardDefaults();loadSalesStatsDashboard();}
   if(tab==='stock')filterAdmin();
   if(tab==='sold')filterSold();
+  if(tab==='salesstats')initSalesStatsTab();
 }
 
 // ===== UTILS =====
@@ -1549,7 +1733,7 @@ function openMo(id){document.getElementById(id).classList.add('open');}
 function closeMo(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.mo').forEach(function(o){o.addEventListener('click',function(e){if(e.target===o)o.classList.remove('open');});});
 var toastT;
-function showToast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='show '+(type||'');clearTimeout(toastT);toastT=setTimeout(function(){t.className='';},3500);}
+function showToast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='show '+(type||'');clearTimeout(toastT);var dur=(type==='e')?6500:3500;toastT=setTimeout(function(){t.className='';},dur);}
 
 // ===== API TEST (DEBUG) =====
 async function testAPI(){
@@ -1569,6 +1753,332 @@ async function testAPI(){
     errEl.style.background='#FDECEA';
     errEl.style.color='#C0392B';
     errEl.innerHTML='❌ ไม่สามารถเชื่อมต่อ API: '+e.message+'<br>ตรวจสอบ URL: '+API;
+  }
+}
+// ===== SALES STATS (บันทึกยอดขายรายวัน + Dashboard เซลล์) =====
+var ssCurrentEntries = [];
+var ssChart = null;
+var THAI_MONTHS=['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+function todayISO(){
+  var d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function thMonthLabel(yyyyMM){
+  if(!yyyyMM)return '';
+  var p=yyyyMM.split('-');var y=parseInt(p[0])+543;var m=parseInt(p[1]);
+  return (THAI_MONTHS[m]||m)+' '+y;
+}
+
+function initSalesStatsTab(){
+  var dEl=document.getElementById('ss-date');
+  if(!dEl.value)dEl.value=todayISO();
+  loadSalesStatsForm();
+}
+function initSalesStatsDashboardDefaults(){
+  var mEl=document.getElementById('ss-month');
+  if(mEl&&!mEl.value)mEl.value=todayISO().substring(0,7);
+}
+
+async function loadSalesStatsForm(){
+  var dateStr=document.getElementById('ss-date').value||todayISO();
+  var body=document.getElementById('ss-form-body');
+  body.innerHTML='<tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr>';
+  document.getElementById('ss-save-msg').textContent='';
+  try{
+    var res=await apiGet('getSalesStatsForm',{date:dateStr});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'โหลดไม่สำเร็จ');
+    ssCurrentEntries=res.entries||[];
+    renderSalesStatsFormTable(ssCurrentEntries);
+  }catch(e){
+    body.innerHTML='<tr><td colspan="5"><div class="empty">❌ โหลดข้อมูลไม่ได้: '+e.message+'</div></td></tr>';
+  }
+}
+
+function renderSalesStatsFormTable(entries){
+  var body=document.getElementById('ss-form-body');
+  if(!entries.length){body.innerHTML='<tr><td colspan="5"><div class="empty">ยังไม่มีรายชื่อพนักงานขาย — เพิ่มได้ที่แท็บ พนักงาน</div></td></tr>';return;}
+  var html='';
+  entries.forEach(function(e,i){
+    html+='<tr>'
+      +'<td class="ss-name-cell">'+e.name+'</td>'
+      +'<td><input type="number" min="0" class="ss-input" data-i="'+i+'" data-f="received" value="'+(e.received||0)+'"></td>'
+      +'<td class="ss-deal-cell"><div class="ss-deal-count"><strong>'+(e.monthClosed||0)+'</strong> คัน</div><button class="btn btn-out btn-xs" onclick="openDealSearchModal(\''+e.name.replace(/'/g,"\\'")+'\')">+ จบ</button></td>'
+      +'<td class="ss-deal-cell"><div class="ss-deal-count">ปล่อย <strong>'+(e.monthReleased||0)+'</strong> / หลุด <strong>'+(e.monthLost||0)+'</strong></div><button class="btn btn-out btn-xs" onclick="openDealResolveModal(\''+e.name.replace(/'/g,"\\'")+'\')">ปล่อย / หลุด</button></td>'
+      +'<td class="ss-pending-display"><strong>'+(e.pending||0)+'</strong></td>'
+      +'</tr>';
+  });
+  body.innerHTML=html;
+}
+
+async function saveSalesStatsForm(){
+  var dateStr=document.getElementById('ss-date').value||todayISO();
+  document.querySelectorAll('#ss-form-body input').forEach(function(inp){
+    var i=parseInt(inp.getAttribute('data-i'));var f=inp.getAttribute('data-f');
+    if(ssCurrentEntries[i])ssCurrentEntries[i][f]=parseInt(inp.value)||0;
+  });
+  var msg=document.getElementById('ss-save-msg');
+  msg.textContent='กำลังบันทึก...';
+  try{
+    var res=await apiPost({action:'saveSalesStats',date:dateStr,entries:ssCurrentEntries});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
+    showToast('✅ บันทึกข้อมูลสำเร็จ','s');
+    msg.textContent='บันทึกล่าสุด: '+new Date().toLocaleTimeString('th-TH');
+    await loadSalesStatsForm(); // โหลดใหม่: รีเซ็ตช่อง +เพิ่มวันนี้ กลับเป็น 0 และอัปเดตยอดรอผลล่าสุด
+    loadSalesStatsDashboard();
+  }catch(e){
+    showToast('⚠️ บันทึกไม่สำเร็จ: '+e.message,'e');
+    msg.textContent='';
+  }
+}
+
+async function loadSalesStatsDashboard(){
+  var monthStr=document.getElementById('ss-month').value||todayISO().substring(0,7);
+  var body=document.getElementById('ss-summary-body');
+  body.innerHTML='<tr><td colspan="8"><div class="loading"><div class="spinner"></div></div></td></tr>';
+  document.getElementById('ss-dash-sub').textContent='สรุปผลงานเดือน '+thMonthLabel(monthStr);
+  try{
+    var res=await apiGet('getSalesStats',{month:monthStr});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'โหลดไม่สำเร็จ');
+    renderSalesStatsNumStrip(res.summary||[]);
+    renderSalesStatsChart(res.summary||[]);
+    renderSalesStatsTable(res.summary||[]);
+  }catch(e){
+    body.innerHTML='<tr><td colspan="8"><div class="empty">❌ โหลดข้อมูลไม่ได้: '+e.message+'</div></td></tr>';
+    document.getElementById('ss-num-strip').innerHTML='';
+  }
+}
+
+function renderSalesStatsNumStrip(summary){
+  var el=document.getElementById('ss-num-strip');if(!el)return;
+  if(!summary.length){el.innerHTML='';return;}
+  var total=summary.reduce(function(a,s){return a+s.received;},0);
+  var html=summary.map(function(s){
+    return '<div class="ss-num-card"><div class="nm">'+s.name+'</div><div class="vl">'+s.received+'</div></div>';
+  }).join('');
+  html+='<div class="ss-num-card tot"><div class="nm">รวมทั้งหมด</div><div class="vl">'+total+'</div></div>';
+  el.innerHTML=html;
+}
+
+function renderSalesStatsChart(summary){
+  var wrap=document.getElementById('ss-chart');if(!wrap)return;
+  if(ssChart){ssChart.destroy();ssChart=null;}
+  var par=wrap.parentElement;var c=document.createElement('canvas');c.id='ss-chart';par.innerHTML='';par.appendChild(c);
+  var labels=summary.map(function(s){return s.name;});
+  ssChart=new Chart(c,{
+    type:'bar',
+    data:{labels:labels,datasets:[
+      {label:'จบ',data:summary.map(function(s){return s.closed;}),backgroundColor:'#1A6B4A',borderRadius:3},
+      {label:'ปล่อย',data:summary.map(function(s){return s.released;}),backgroundColor:'#D97706',borderRadius:3},
+      {label:'หลุด',data:summary.map(function(s){return s.lost;}),backgroundColor:'#DC2626',borderRadius:3},
+      {label:'รอผล',data:summary.map(function(s){return s.pending;}),backgroundColor:'#9CA3AF',borderRadius:3}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:false,
+      onClick:function(evt,elements){
+        if(!elements||!elements.length)return;
+        var el=elements[0];
+        var name=labels[el.index];
+        var status=ssChart.data.datasets[el.datasetIndex].label; // จบ|ปล่อย|หลุด|รอผล
+        showDealDetail(name,status);
+      },
+      onHover:function(evt,elements){evt.native.target.style.cursor=elements.length?'pointer':'default';},
+      plugins:{legend:{position:'bottom',labels:{font:{family:'IBM Plex Sans Thai',size:11},padding:8,boxWidth:10}}},
+      scales:{
+        y:{beginAtZero:true,ticks:{precision:0,font:{family:'IBM Plex Sans Thai',size:10}},grid:{color:'#EEECE8'}},
+        x:{ticks:{font:{family:'IBM Plex Sans Thai',size:10}},grid:{display:false}}
+      }
+    }
+  });
+}
+
+async function showDealDetail(name,status){
+  var monthStr=document.getElementById('ss-month').value||todayISO().substring(0,7);
+  document.getElementById('ddt-title').textContent=name+' — '+status+(status==='รอผล'?' (ปัจจุบัน)':' ('+thMonthLabel(monthStr)+')');
+  var el=document.getElementById('ddt-list');
+  el.innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  openMo('modal-deal-detail');
+  try{
+    var res=await apiGet('getDealsDetail',{name:name,month:monthStr,status:status});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'โหลดไม่สำเร็จ');
+    renderDealDetailList(res.cars||[]);
+  }catch(e){
+    el.innerHTML='<div class="empty">❌ '+e.message+'</div>';
+  }
+}
+
+function renderDealDetailList(cars){
+  var el=document.getElementById('ddt-list');
+  if(!cars.length){el.innerHTML='<div class="empty" style="padding:20px 0;">ไม่มีรถในรายการนี้</div>';return;}
+  var html='<div style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">รวม <strong>'+cars.length+' คัน</strong></div>';
+  cars.forEach(function(c){
+    html+='<div class="dd-result-item">'
+      +'<div class="dd-result-info"><span class="plate">'+(c.plate||'')+'</span> — '+(c.brand||'')+' '+(c.model||'')+'<div class="meta">'+(c.branch||'')+' • จบเมื่อ '+(c.date||'')+'</div></div>'
+      +'</div>';
+  });
+  el.innerHTML=html;
+}
+
+function renderSalesStatsTable(summary){
+  var body=document.getElementById('ss-summary-body');
+  if(!summary.length){body.innerHTML='<tr><td colspan="8"><div class="empty">ไม่มีข้อมูล</div></td></tr>';return;}
+  var html='';
+  var tot={received:0,closed:0,released:0,lost:0,pending:0};
+  summary.forEach(function(s){
+    tot.received+=s.received;tot.closed+=s.closed;tot.released+=s.released;tot.lost+=s.lost;tot.pending+=s.pending;
+    html+='<tr>'
+      +'<td class="ss-name-cell">'+s.name+'</td>'
+      +'<td class="mono"><strong>'+s.received+'</strong></td>'
+      +'<td class="mono">'+s.closed+'</td>'
+      +'<td class="mono">'+s.released+'</td>'
+      +'<td class="mono">'+s.lost+'</td>'
+      +'<td class="mono">'+s.pending+'</td>'
+      +'<td class="ss-pct'+(s.pctClosed>=5?' hi':'')+'">'+s.pctClosed+'</td>'
+      +'<td class="ss-pct">'+s.pctReleased+'</td>'
+      +'</tr>';
+  });
+  var totPctClosed=tot.received>0?Math.round((tot.closed/tot.received)*1000)/10:0;
+  var totPctReleased=tot.received>0?Math.round((tot.released/tot.received)*1000)/10:0;
+  html+='<tr class="ss-foot-row">'
+    +'<td>รวมทั้งหมด</td><td class="mono">'+tot.received+'</td><td class="mono">'+tot.closed+'</td>'
+    +'<td class="mono">'+tot.released+'</td><td class="mono">'+tot.lost+'</td><td class="mono">'+tot.pending+'</td>'
+    +'<td class="ss-pct">'+totPctClosed+'</td><td class="ss-pct">'+totPctReleased+'</td></tr>';
+  body.innerHTML=html;
+}
+
+// ===== SALES DEALS (บันทึก จบ/ปล่อย/หลุด เป็นรายคันรถ) =====
+var ddCurrentName='';
+var ddSearchTimer=null;
+var ddEditRowIndex=null; // null = กำลังสร้าง "จบ" ใหม่ | ไม่ null = กำลังเปลี่ยนรถของดีลที่รอผลอยู่ (rowIndex นั้น)
+
+function openDealSearchModal(name){
+  ddCurrentName=name;
+  ddEditRowIndex=null;
+  document.getElementById('dd-search-name').textContent=name;
+  document.getElementById('dd-search-q').value='';
+  document.getElementById('dd-search-results').innerHTML='<div class="empty" style="padding:20px 0;">พิมพ์เพื่อค้นหารถในสต๊อก</div>';
+  openMo('modal-deal-search');
+  setTimeout(function(){document.getElementById('dd-search-q').focus();},100);
+}
+
+function openChangeCarModal(rowIndex){
+  ddEditRowIndex=rowIndex;
+  document.getElementById('dd-search-name').textContent='เปลี่ยนรถ — '+ddCurrentName;
+  document.getElementById('dd-search-q').value='';
+  document.getElementById('dd-search-results').innerHTML='<div class="empty" style="padding:20px 0;">พิมพ์เพื่อค้นหารถคันใหม่ที่ลูกค้าจะเปลี่ยนไป</div>';
+  closeMo('modal-deal-resolve');
+  openMo('modal-deal-search');
+  setTimeout(function(){document.getElementById('dd-search-q').focus();},100);
+}
+
+function onDealSearchInput(){
+  clearTimeout(ddSearchTimer);
+  var q=document.getElementById('dd-search-q').value.trim();
+  var resultsEl=document.getElementById('dd-search-results');
+  if(!q){resultsEl.innerHTML='<div class="empty" style="padding:20px 0;">พิมพ์เพื่อค้นหารถในสต๊อก</div>';return;}
+  resultsEl.innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  ddSearchTimer=setTimeout(async function(){
+    try{
+      var res=await apiGet('searchCarsForDeal',{query:q});
+      if(!res||res.success===false)throw new Error((res&&res.error)||'ค้นหาไม่สำเร็จ');
+      renderDealSearchResults(res.cars||[]);
+    }catch(e){
+      resultsEl.innerHTML='<div class="empty">❌ '+e.message+'</div>';
+    }
+  },300);
+}
+
+function renderDealSearchResults(cars){
+  var el=document.getElementById('dd-search-results');
+  if(!cars.length){el.innerHTML='<div class="empty" style="padding:20px 0;">ไม่พบรถที่ตรงกับคำค้น</div>';return;}
+  var html='';
+  cars.forEach(function(c,i){
+    html+='<div class="dd-result-item">'
+      +'<div class="dd-result-info"><span class="plate">'+(c.plate||'')+'</span> — '+(c.brand||'')+' '+(c.model||'')+'<div class="meta">'+(c.branch||'')+(c.year?' • ปี '+c.year:'')+(c.color?' • '+c.color:'')+'</div></div>'
+      +'<button class="btn btn-act btn-xs" onclick="selectDealCar('+i+')">เลือก</button>'
+      +'</div>';
+  });
+  el.innerHTML=html;
+  el.setAttribute('data-cars',JSON.stringify(cars));
+}
+
+async function selectDealCar(idx){
+  var cars=JSON.parse(document.getElementById('dd-search-results').getAttribute('data-cars')||'[]');
+  var c=cars[idx];
+  if(!c)return;
+  var dateStr=document.getElementById('ss-date').value||todayISO();
+  try{
+    if(ddEditRowIndex){
+      // โหมดเปลี่ยนรถของดีลที่รอผลอยู่ — ไม่กระทบยอดจบ/ปล่อย/หลุด แค่อัปเดตรถในรายการเดิม
+      var res=await apiPost({action:'changeDealCar',rowIndex:ddEditRowIndex,branch:c.branch,brand:c.brand,model:c.model,plate:c.plate,date:dateStr});
+      if(!res||res.success===false)throw new Error((res&&res.error)||'เปลี่ยนรถไม่สำเร็จ');
+      showToast('✅ เปลี่ยนรถสำเร็จ: '+c.plate,'s');
+      ddEditRowIndex=null;
+      closeMo('modal-deal-search');
+      openMo('modal-deal-resolve');
+      loadPendingDealsList();
+    }else{
+      // โหมดสร้าง "จบ" ใหม่
+      var res=await apiPost({action:'saveDeal',name:ddCurrentName,branch:c.branch,brand:c.brand,model:c.model,plate:c.plate,date:dateStr});
+      if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
+      showToast('✅ บันทึก "จบ" สำเร็จ: '+c.plate,'s');
+      closeMo('modal-deal-search');
+    }
+    loadSalesStatsForm();
+    loadSalesStatsDashboard();
+  }catch(e){
+    showToast('⚠️ '+e.message,'e');
+  }
+}
+
+function openDealResolveModal(name){
+  ddCurrentName=name;
+  document.getElementById('dr-resolve-name').textContent=name;
+  openMo('modal-deal-resolve');
+  loadPendingDealsList();
+}
+
+async function loadPendingDealsList(){
+  var el=document.getElementById('dd-resolve-list');
+  el.innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  try{
+    var res=await apiGet('getPendingDeals',{name:ddCurrentName});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'โหลดไม่สำเร็จ');
+    renderPendingDealsList(res.deals||[]);
+  }catch(e){
+    el.innerHTML='<div class="empty">❌ '+e.message+'</div>';
+  }
+}
+
+function renderPendingDealsList(deals){
+  var el=document.getElementById('dd-resolve-list');
+  if(!deals.length){el.innerHTML='<div class="empty" style="padding:20px 0;">ไม่มีรถที่รอผลอยู่</div>';return;}
+  var html='';
+  deals.forEach(function(d){
+    html+='<div class="dd-result-item" style="flex-direction:column;align-items:stretch;gap:8px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;">'
+      +'<div class="dd-result-info"><span class="plate">'+(d.plate||'')+'</span> — '+(d.brand||'')+' '+(d.model||'')+'<div class="meta">'+(d.branch||'')+' • จบเมื่อ '+(d.date||'')+(d.changed?' • 🔄 เคยเปลี่ยนรถ':'')+'</div></div>'
+      +'<div class="dd-resolve-actions">'
+      +'<button class="btn btn-act btn-xs" onclick="resolveDealCar('+d.rowIndex+',\'ปล่อย\')">✅ ปล่อย</button>'
+      +'<button class="btn btn-out btn-xs" onclick="resolveDealCar('+d.rowIndex+',\'หลุด\')">❌ หลุด</button>'
+      +'</div></div>'
+      +'<button class="btn btn-out btn-xs" style="width:100%;" onclick="openChangeCarModal('+d.rowIndex+')">🔄 เปลี่ยนรถ (ลูกค้าเปลี่ยนรุ่นที่ซื้อ)</button>'
+      +'</div>';
+  });
+  el.innerHTML=html;
+}
+
+async function resolveDealCar(rowIndex,status){
+  try{
+    var res=await apiPost({action:'resolveDeal',rowIndex:rowIndex,status:status,date:document.getElementById('ss-date').value||todayISO()});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'อัปเดตไม่สำเร็จ');
+    showToast('✅ บันทึก "'+status+'" สำเร็จ','s');
+    loadPendingDealsList();
+    loadSalesStatsForm();
+    loadSalesStatsDashboard();
+  }catch(e){
+    showToast('⚠️ ไม่สำเร็จ: '+e.message,'e');
+    if(String(e.message).indexOf('409')!==-1||String(e.message).indexOf('อัปเดตไปแล้ว')!==-1)loadPendingDealsList();
   }
 }
 </script>
