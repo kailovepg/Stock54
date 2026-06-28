@@ -139,6 +139,32 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 .stat-val{font-size:24px;font-weight:700;font-family:var(--mono);line-height:1.1;margin-bottom:2px;}
 .stat-lbl{font-size:11px;color:var(--gray-500);}
 
+/* ALERTS */
+.alert-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:18px;}
+.alert-card{border-radius:var(--rl);padding:14px 16px;box-shadow:var(--sh);cursor:pointer;transition:transform .12s;display:flex;align-items:center;gap:12px;border:1.5px solid transparent;}
+.alert-card:hover{transform:translateY(-1px);}
+.alert-card.loading-alert{background:#fff;justify-content:center;cursor:default;grid-column:1/-1;}
+.alert-card.ok{background:var(--green-light);border-color:#BFE3D3;}
+.alert-card.warn-yellow{background:var(--amber-light);border-color:#FCE29B;}
+.alert-card.warn-red{background:var(--red-light);border-color:#F5C6C0;}
+.alert-icon{font-size:26px;flex-shrink:0;line-height:1;}
+.alert-body{flex:1;min-width:0;}
+.alert-num{font-size:22px;font-weight:700;font-family:var(--mono);line-height:1.1;}
+.alert-label{font-size:12px;font-weight:600;color:var(--gray-700);margin-top:1px;}
+.alert-sub{font-size:10px;color:var(--gray-500);margin-top:1px;}
+.alert-card.ok .alert-num{color:var(--green);}
+.alert-card.warn-yellow .alert-num{color:#92400e;}
+.alert-card.warn-red .alert-num{color:var(--red);}
+.alert-detail-item{padding:10px 12px;border:1px solid var(--gray-200);border-radius:var(--r);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.alert-detail-item.lvl-yellow{background:var(--amber-light);border-color:#FCE29B;}
+.alert-detail-item.lvl-red{background:var(--red-light);border-color:#F5C6C0;}
+.alert-detail-main{font-size:13px;}
+.alert-detail-main .plate{font-family:var(--mono);font-weight:700;}
+.alert-detail-main .meta{font-size:11px;color:var(--gray-500);margin-top:2px;}
+.alert-detail-days{font-family:var(--mono);font-weight:700;font-size:13px;white-space:nowrap;}
+.alert-detail-days.lvl-yellow{color:#92400e;}
+.alert-detail-days.lvl-red{color:var(--red);}
+
 /* CHARTS */
 .charts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:14px;margin-bottom:18px;}
 .chart-card{background:#fff;border-radius:var(--rl);padding:16px;box-shadow:var(--sh);height:260px;display:flex;flex-direction:column;}
@@ -220,6 +246,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 .dd-result-info .plate{font-family:var(--mono);font-weight:700;color:var(--black);}
 .dd-result-info .meta{font-size:11px;color:var(--gray-500);margin-top:2px;}
 .dd-resolve-actions{display:flex;gap:6px;}
+.dd-warn{background:var(--amber-light);color:#92400e;font-size:11px;padding:6px 9px;border-radius:6px;margin-top:8px;}
 .ss-foot-row td{font-weight:700;background:var(--gray-50)!important;border-top:2px solid var(--gray-200);}
 .ss-month-pick{display:flex;align-items:center;gap:8px;}
 .ss-month-pick input{width:auto;min-width:150px;}
@@ -263,10 +290,31 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 <body>
 <div id="app">
 
-	<!-- ADMIN ACCESS BUTTON -->
-	<button class="admin-access-btn" id="btn-admin-access" onclick="promptAdminLogin()" title="เข้าสู่โหมดแก้ไข (Admin)">
-	  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-	</button>
+<!-- LOGIN PAGE -->
+<div id="page-login" class="page">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="lmark"></div>
+      <h1>AutoStock Pro</h1>
+      <p>Stock54 — ระบบจัดการสต๊อกรถและยอดขาย</p>
+    </div>
+    <div class="err" id="login-err"></div>
+    <form id="login-form" onsubmit="event.preventDefault();doLogin();">
+      <div class="fg">
+        <label>รหัสผ่าน</label>
+        <input type="password" id="login-pwd" placeholder="กรอกรหัสผ่านของคุณ" autocomplete="current-password">
+      </div>
+      <div class="fg" style="display:flex;align-items:center;gap:8px;margin-bottom:18px;">
+        <label class="toggle" style="width:36px;height:20px;">
+          <input type="checkbox" id="login-remember">
+          <span class="tsl"></span>
+        </label>
+        <span style="font-size:12px;color:var(--gray-700);">จดจำการเข้าระบบ (30 วัน)</span>
+      </div>
+      <button type="submit" class="btn btn-blk" id="login-btn">เข้าสู่ระบบ</button>
+    </form>
+  </div>
+</div>
 
 <!-- SALES PAGE -->
 <div id="page-sales" class="page">
@@ -275,7 +323,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 	    <div class="nav-r">
 	      <div class="nav-user"><span id="sales-name"></span> <span class="rbadge sales">พนักงานขาย</span></div>
 	      <button class="btn-nav" onclick="loadSalesData()" title="โหลดข้อมูลใหม่">รีเฟรช</button>
-	      <button id="sales-logout-btn" class="btn-nav" onclick="logout()" style="display:none;">ออก</button>
+	      <button id="sales-logout-btn" class="btn-nav" onclick="logout()">ออก</button>
 	    </div>
   </nav>
   <div class="main">
@@ -476,6 +524,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
           <button class="btn btn-out btn-xs" onclick="resetDashFilter('a')">ล้าง</button>
         </div>
       </div>
+
+      <!-- ALERT CARDS: รถจองเกิน 7 วัน / เซลล์ต่ำกว่าเฉลี่ย / สต๊อกค้างเกิน 60 วัน -->
+      <div class="alert-grid" id="alert-cards">
+        <div class="alert-card loading-alert"><div class="loading"><div class="spinner"></div>กำลังตรวจสอบการแจ้งเตือน...</div></div>
+      </div>
+
       <div class="stats-grid" id="a-stats"><div class="loading"><div class="spinner"></div></div></div>
       <div class="charts-grid">
         <div class="chart-card"><div class="chart-title">สต๊อกแยกยี่ห้อ <span class="chart-hint">(คลิกดูรุ่นย่อย)</span></div><div class="chart-wrap"><canvas id="chart-brand"></canvas></div></div>
@@ -620,11 +674,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
     <!-- ADMIN SETTINGS -->
     <div id="atab-settings" style="display:none;">
       <div class="set-section">
-        <div class="set-title">🔐 รหัสผ่าน Admin</div>
-        <div class="fg" style="max-width:240px;"><label>รหัสผ่านใหม่</label><input type="text" id="set-pwd" placeholder="admin1234"></div>
-        <button class="btn btn-act btn-sm" onclick="saveAdminPwd()">บันทึก</button>
-      </div>
-      <div class="set-section">
         <div class="set-title">🏢 สาขา (branches)</div>
         <p style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">แก้ไขในไฟล์ _Settings ใน Google Sheets<br>รูปแบบ: <strong>ราชพฤกษ์:รถออกราชฯ,กัลปพฤกษ์:รถออกกัลฯ,บางใหญ่:รถออกบางใหญ่</strong></p>
         <div class="fg"><label>ค่าปัจจุบัน (branches)</label><input type="text" id="set-branches" placeholder="ราชพฤกษ์:รถออกราชฯ,กัลปพฤกษ์:รถออกกัลฯ"></div>
@@ -659,11 +708,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
     <!-- ADMIN USERS -->
     <div id="atab-users" style="display:none;">
       <div class="ph">
-        <div><div class="ph-title">จัดการพนักงาน</div></div>
-        <button class="btn btn-act btn-sm" onclick="openMo('modal-user')">+ เพิ่มพนักงาน</button>
+        <div><div class="ph-title">จัดการพนักงาน</div><div class="ph-sub">เพิ่ม แก้ไข ลบ และเปลี่ยนรหัสผ่านพนักงาน — เฉพาะ Admin เท่านั้น</div></div>
+        <button class="btn btn-act btn-sm" onclick="openAddUserModal()">+ เพิ่มพนักงาน</button>
       </div>
-      <div class="tip">💡 ข้อมูลเก็บใน Google Sheets แท็บ <strong>_Users</strong></div>
-      <div id="user-list"></div>
+      <div class="list-wrap">
+        <table class="list-table">
+          <thead><tr><th>ชื่อ</th><th>บทบาท</th><th>เข้าระบบได้</th><th style="text-align:right;">การจัดการ</th></tr></thead>
+          <tbody id="user-list-body"><tr><td colspan="4"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
@@ -685,19 +738,40 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
     <div class="mf"><button class="btn btn-out" onclick="closeMo('modal-drill')">ปิด</button></div>
   </div>
 </div>
-<!-- MODAL: เพิ่มพนักงาน -->
+<!-- MODAL: เพิ่ม/แก้ไขพนักงาน -->
 <div class="mo" id="modal-user">
-  <div class="modal" style="max-width:360px;">
-    <div class="mh"><h3>เพิ่มพนักงานขาย</h3><button class="mc" onclick="closeMo('modal-user')">✕</button></div>
+  <div class="modal" style="max-width:380px;">
+    <div class="mh"><h3 id="user-modal-title">เพิ่มพนักงาน</h3><button class="mc" onclick="closeMo('modal-user')">✕</button></div>
     <div class="mb">
       <div class="fg"><label>ชื่อ *</label><input type="text" id="u-name" placeholder="สมชาย ดีมาก"></div>
-      <div class="fg"><label>รหัสผ่าน (ไม่จำเป็น)</label><input type="text" id="u-pwd" placeholder="เว้นว่างได้ถ้าไม่ต้องการให้ login เข้าระบบ"></div>
-      <p style="font-size:12px;color:var(--gray-500);margin-top:-6px;">💡 ถ้าเว้นรหัสผ่านว่าง ชื่อนี้จะใช้สำหรับบันทึกยอดขายเท่านั้น จะ login เข้าเว็บแอปไม่ได้</p>
-      <pre id="u-debug" style="display:none;white-space:pre-wrap;background:#F8F7F4;border:1px solid var(--gray-200);border-radius:8px;padding:10px;font-size:11px;margin-top:10px;max-height:160px;overflow:auto;"></pre>
+      <div class="fg"><label>บทบาท</label>
+        <select id="u-role">
+          <option value="sales">พนักงานขาย (Sales)</option>
+          <option value="admin">Admin</option>
+          <option value="ceo">CEO</option>
+        </select>
+      </div>
+      <div class="fg" id="u-pwd-group"><label>รหัสผ่าน (ไม่จำเป็น)</label><input type="text" id="u-pwd" placeholder="เว้นว่างได้ถ้าไม่ต้องการให้ login เข้าระบบ"></div>
+      <p id="u-pwd-hint" style="font-size:12px;color:var(--gray-500);margin-top:-6px;">💡 ถ้าเว้นรหัสผ่านว่าง ชื่อนี้จะใช้สำหรับบันทึกยอดขายเท่านั้น จะ login เข้าเว็บแอปไม่ได้</p>
     </div>
     <div class="mf">
       <button class="btn btn-out" onclick="closeMo('modal-user')">ยกเลิก</button>
-      <button class="btn btn-act" onclick="addUser()">เพิ่ม</button>
+      <button class="btn btn-act" id="u-save-btn" onclick="saveUserModal()">เพิ่ม</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: เปลี่ยนรหัสผ่านพนักงาน -->
+<div class="mo" id="modal-user-password">
+  <div class="modal" style="max-width:360px;">
+    <div class="mh"><h3>เปลี่ยนรหัสผ่าน — <span id="up-name"></span></h3><button class="mc" onclick="closeMo('modal-user-password')">✕</button></div>
+    <div class="mb">
+      <div class="fg"><label>รหัสผ่านใหม่</label><input type="text" id="up-pwd" placeholder="เว้นว่าง = ปิดสิทธิ์เข้าระบบของคนนี้"></div>
+      <p style="font-size:12px;color:var(--gray-500);margin-top:-6px;">💡 เว้นว่างไว้ถ้าต้องการปิดสิทธิ์ login ของพนักงานคนนี้ (ยังบันทึกยอดขายได้ปกติ)</p>
+    </div>
+    <div class="mf">
+      <button class="btn btn-out" onclick="closeMo('modal-user-password')">ยกเลิก</button>
+      <button class="btn btn-act" onclick="saveUserPassword()">บันทึก</button>
     </div>
   </div>
 </div>
@@ -741,6 +815,20 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
     </div>
   </div>
 </div>
+
+<!-- MODAL: รายละเอียดการแจ้งเตือน (รถจองเกิน 7 วัน / สต๊อกค้างเกิน 60 วัน / เซลล์ต่ำกว่าเฉลี่ย) -->
+<div class="mo" id="modal-alert-detail">
+  <div class="modal" style="max-width:520px;">
+    <div class="mh"><h3 id="alert-detail-title">รายละเอียด</h3><button class="mc" onclick="closeMo('modal-alert-detail')">✕</button></div>
+    <div class="mb">
+      <div id="alert-detail-sub" style="font-size:12px;color:var(--gray-500);margin-bottom:12px;"></div>
+      <div id="alert-detail-body"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-out" onclick="closeMo('modal-alert-detail')">ปิด</button>
+    </div>
+  </div>
+</div>
 <div id="toast"></div>
 
 <script>
@@ -757,80 +845,120 @@ const BRANCH_COLORS={'ราชพฤกษ์':'#FDE8E8','กัลปพฤก
 const BRANCH_TEXT_COLORS={'ราชพฤกษ์':'#922B21','กัลปพฤกษ์':'#1E40AF','บางใหญ่':'#1A6B4A'};
 const BRANCH_CSS={'ราชพฤกษ์':'ratch','กัลปพฤกษ์':'kalpa','บางใหญ่':'bangyai'};
 
-var role='', userName='', branches=[];
-var allCars=[], soldCars=[], dashData={}, settings={hiddenCols:[]};
+var role='', userName='', authToken='';
+var allCars=[], soldCars=[], dashData={}, settings={hiddenCols:[]}, branches=[];
 var filteredCars=[], adminFiltered=[], filteredSold=[], filteredSoldSales=[];
 var sfBranch='', afBranch='', asdBranch='', ssfBranch='';
 var sfSort='', afSort='';
 var charts={};
 
-	// ===== INIT =====
+	// ===== INIT — บังคับ login ทุกครั้ง เว้นแต่มี token ที่ valid อยู่จริง (ตรวจกับ backend) =====
 	(function(){
-	  var s=sessionStorage.getItem('as_s');
-	  if(s){
+	  var saved=localStorage.getItem('as_session');
+	  if(saved){
 	    try{
-	      var d=JSON.parse(s);
-	      role=d.r;
-	      userName=d.n;
-	    }catch(e){
-	      role='sales';
-	      userName='Guest';
-	    }
-	  } else {
-	    role='sales';
-	    userName='Guest';
+	      var d=JSON.parse(saved);
+	      if(d.token){
+	        validateSavedSession(d.token);
+	        return;
+	      }
+	    }catch(e){}
 	  }
-	  route();
+	  showLoginPage();
 	})();
-	
-	// ===== AUTH =====
-	async function promptAdminLogin(){
-	  var pwd = prompt("กรุณาใส่รหัสผ่านเพื่อเข้าสู่โหมดแก้ไข:");
-	  if(pwd === null) return; // User cancelled
-	  if(!pwd.trim()){
-	    showToast('กรุณาใส่รหัสผ่าน','e');
-	    return;
-	  }
-	  
-	  showToast('กำลังตรวจสอบรหัสผ่าน...','');
+
+	async function validateSavedSession(token){
 	  try{
-	    var res=await fetch(API+'?action=login&password='+encodeURIComponent(pwd));
+	    var res=await fetch(API+'?action=validateSession&token='+encodeURIComponent(token));
 	    var d=await res.json();
 	    if(d.success){
+	      authToken=token;
 	      role=d.role;
 	      userName=d.name;
-	      sessionStorage.setItem('as_s',JSON.stringify({r:role,n:userName}));
-	      showToast('เข้าสู่ระบบสำเร็จ','s');
 	      route();
 	    } else {
-	      showToast(d.error||'รหัสผ่านไม่ถูกต้อง','e');
+	      localStorage.removeItem('as_session');
+	      showLoginPage();
 	    }
 	  }catch(e){
-	    showToast('เชื่อมต่อ API ไม่ได้: '+e.message,'e');
+	    // เชื่อมต่อไม่ได้ชั่วคราว -> ให้ลองเข้าหน้าเดิมไปก่อน (กันกรณีเน็ตกระตุก) แทนการบังคับ login ใหม่ทันที
+	    showLoginPage('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง: '+e.message);
 	  }
 	}
-	
-	function logout(){
-	  sessionStorage.removeItem('as_s');
-	  role='sales';
-	  userName='Guest';
-	  allCars=[];
-	  route();
-	  showToast('ออกจากระบบโหมดแก้ไขแล้ว','');
+
+	function showLoginPage(errMsg){
+	  showPage('login');
+	  var errEl=document.getElementById('login-err');
+	  if(errMsg){errEl.textContent=errMsg;errEl.style.display='block';}
+	  else {errEl.style.display='none';}
+	  setTimeout(function(){var p=document.getElementById('login-pwd');if(p)p.focus();},100);
 	}
+
+	// ===== AUTH =====
+	async function doLogin(){
+	  var pwd=document.getElementById('login-pwd').value;
+	  var remember=document.getElementById('login-remember').checked;
+	  var errEl=document.getElementById('login-err');
+	  var btn=document.getElementById('login-btn');
+	  if(!pwd){
+	    errEl.textContent='กรุณากรอกรหัสผ่าน';
+	    errEl.style.display='block';
+	    return;
+	  }
+	  errEl.style.display='none';
+	  btn.disabled=true;
+	  btn.textContent='กำลังเข้าสู่ระบบ...';
+	  try{
+	    var res=await fetch(API+'?action=login&password='+encodeURIComponent(pwd)+'&remember='+(remember?'1':'0'));
+	    var d=await res.json();
+	    if(d.success){
+	      authToken=d.token;
+	      role=d.role;
+	      userName=d.name;
+	      localStorage.setItem('as_session',JSON.stringify({token:d.token}));
+	      document.getElementById('login-pwd').value='';
+	      route();
+	    } else {
+	      errEl.textContent=d.error||'รหัสผ่านไม่ถูกต้อง';
+	      errEl.style.display='block';
+	    }
+	  }catch(e){
+	    errEl.textContent='เชื่อมต่อ API ไม่ได้: '+e.message;
+	    errEl.style.display='block';
+	  }finally{
+	    btn.disabled=false;
+	    btn.textContent='เข้าสู่ระบบ';
+	  }
+	}
+
+	async function logout(){
+	  try{ if(authToken) await fetch(API+'?action=logout&token='+encodeURIComponent(authToken)); }catch(e){}
+	  localStorage.removeItem('as_session');
+	  authToken='';
+	  role='';
+	  userName='';
+	  allCars=[];
+	  showLoginPage();
+	  showToast('ออกจากระบบแล้ว','');
+	}
+
+	/** เรียกตอน API คืน 401 (token หมดอายุ/ไม่ถูกต้อง) — เด้งกลับไปหน้า login ทันที */
+	function handleAuthExpired(){
+	  localStorage.removeItem('as_session');
+	  authToken='';
+	  role='';
+	  userName='';
+	  showLoginPage('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่');
+	}
+
 	async function route(){
 	  if(role==='admin'||role==='ceo'){
 	    showPage('admin');
 	    applyRolePermissions();
 	    loadAdminData();
-	    document.getElementById('btn-admin-access').style.display = 'none';
 	  } else {
 	    showPage('sales');
 	    document.getElementById('sales-name').textContent = userName;
-	    // แสดงปุ่มออกเฉพาะเมื่อไม่ได้เป็น Guest
-	    var logoutBtn = document.getElementById('sales-logout-btn');
-	    if(logoutBtn) logoutBtn.style.display = (userName === 'Guest') ? 'none' : 'block';
-	    document.getElementById('btn-admin-access').style.display = 'flex';
 	    loadSalesData();
 	  }
 	}
@@ -849,7 +977,7 @@ function applyRolePermissions(){
 
 // ===== API =====
 async function apiGet(action,params){
-  var url=API+'?action='+action;
+  var url=API+'?action='+action+'&token='+encodeURIComponent(authToken);
   if(params)Object.keys(params).forEach(function(k){url+='&'+k+'='+encodeURIComponent(params[k]);});
   var controller=new AbortController();
   var tid=setTimeout(function(){controller.abort();},30000);
@@ -857,8 +985,11 @@ async function apiGet(action,params){
     var res=await fetch(url,{signal:controller.signal});
     clearTimeout(tid);
     var text=await res.text();
-    try{return JSON.parse(text);}
+    var data;
+    try{data=JSON.parse(text);}
     catch(pe){console.error('JSON parse error for action='+action+':',text.substring(0,300));throw new Error('API ตอบกลับข้อมูลไม่ถูกต้อง ('+action+'): '+text.substring(0,80));}
+    if(res.status===401||data.code==='AUTH_REQUIRED'){handleAuthExpired();throw new Error('เซสชันหมดอายุ');}
+    return data;
   }catch(fe){
     clearTimeout(tid);
     if(fe.name==='AbortError')throw new Error('เชื่อมต่อหมดเวลา (timeout) กรุณาลองใหม่');
@@ -866,10 +997,14 @@ async function apiGet(action,params){
   }
 }
 async function apiPost(data){
+  data.token=authToken;
   var res=await fetch(API,{method:'POST',body:JSON.stringify(data),headers:{'Content-Type':'text/plain;charset=utf-8'}});
   var text=await res.text();
-  try{return JSON.parse(text);}
+  var parsed;
+  try{parsed=JSON.parse(text);}
   catch(e){console.error('POST parse error:',text.substring(0,200));return{success:false,error:'ตอบกลับไม่ถูกต้อง'};}
+  if(res.status===401||parsed.code==='AUTH_REQUIRED'){handleAuthExpired();return{success:false,error:'เซสชันหมดอายุ'};}
+  return parsed;
 }
 
 // ===== PRICE HELPERS =====
@@ -945,7 +1080,7 @@ function startAutoRefresh(){
   refreshTimer=setInterval(function(){
     var dashboardTab=document.getElementById('stab-dashboard')||document.getElementById('atab-dashboard');
     if(dashboardTab && dashboardTab.style.display !== 'none'){
-      if(userRole==='admin') loadAdminData(); else loadSalesData();
+      if(role==='admin'||role==='ceo') loadAdminData(); else loadSalesData();
     }
   },120000); // 2 นาที
 }
@@ -1022,13 +1157,129 @@ async function loadAdminData(){
     initSalesStatsDashboardDefaults();
     loadSalesStatsDashboard();
     if(settings.branches)document.getElementById('set-branches').value=settings.branches;
-    if(settings.adminPassword)document.getElementById('set-pwd').value=settings.adminPassword;
+    loadAlerts();
     startAutoRefresh();
   }catch(e){
     console.error('loadAdminData error:',e);
     showToast('⚠️ โหลดข้อมูลไม่ได้: '+e.message,'e');
     if(aStats)aStats.innerHTML='<div class="empty">❌ ไม่สามารถโหลดข้อมูล: '+e.message+'<br><button class="btn btn-act btn-sm" style="margin-top:10px" onclick="loadAdminData()">ลองใหม่</button></div>';
   }
+}
+
+// ===== ALERTS (รถจองเกิน 7 วัน / เซลล์ต่ำกว่าเฉลี่ย / สต๊อกค้างเกิน 60 วัน) =====
+var alertsData = null;
+
+async function loadAlerts(){
+  var box=document.getElementById('alert-cards');
+  if(!box)return;
+  try{
+    var res=await apiGet('getAlerts',{});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'โหลดไม่สำเร็จ');
+    alertsData=res;
+    renderAlertCards(res);
+  }catch(e){
+    console.error('loadAlerts error:',e);
+    box.innerHTML='<div class="alert-card loading-alert" style="cursor:pointer;" onclick="loadAlerts()">⚠️ โหลดการแจ้งเตือนไม่ได้: '+e.message+' (คลิกเพื่อลองใหม่)</div>';
+  }
+}
+
+function alertLevelClass(count,redCount){
+  if(!count)return 'ok';
+  if(redCount>0)return 'warn-red';
+  return 'warn-yellow';
+}
+
+function renderAlertCards(data){
+  var box=document.getElementById('alert-cards');
+  if(!box)return;
+
+  var pd=data.pendingDeals||{count:0,redCount:0,yellowCount:0};
+  var ba=data.belowAverage||{count:0};
+  var ag=data.agingStock||{count:0,redCount:0,yellowCount:0};
+
+  var pdClass=alertLevelClass(pd.count,pd.redCount);
+  var baClass=ba.count>0?'warn-yellow':'ok';
+  var agClass=alertLevelClass(ag.count,ag.redCount);
+
+  var html='';
+  html+='<div class="alert-card '+pdClass+'" onclick="openPendingDealsAlertModal()">'
+    +'<div class="alert-icon">⏰</div>'
+    +'<div class="alert-body"><div class="alert-num">'+pd.count+' คัน</div><div class="alert-label">รถจองเกิน 7 วัน</div>'
+    +(pd.count?'<div class="alert-sub">'+(pd.redCount?pd.redCount+' คันเกิน 14 วัน':'ยังอยู่ในช่วงเฝ้าระวัง')+'</div>':'<div class="alert-sub">ไม่มีรายการค้าง</div>')
+    +'</div></div>';
+
+  html+='<div class="alert-card '+baClass+'" onclick="openBelowAverageAlertModal()">'
+    +'<div class="alert-icon">📉</div>'
+    +'<div class="alert-body"><div class="alert-num">'+ba.count+' คน</div><div class="alert-label">เซลล์ %จบ ต่ำกว่าเฉลี่ย</div>'
+    +'<div class="alert-sub">'+(ba.eligibleCount?'เฉลี่ยกลุ่ม '+ba.avgPct+'% (เดือนนี้)':'ยังไม่มีคนเข้าเกณฑ์เทียบ')+'</div>'
+    +'</div></div>';
+
+  html+='<div class="alert-card '+agClass+'" onclick="openAgingStockAlertModal()">'
+    +'<div class="alert-icon">📦</div>'
+    +'<div class="alert-body"><div class="alert-num">'+ag.count+' คัน</div><div class="alert-label">สต๊อกค้างเกิน 60 วัน</div>'
+    +(ag.count?'<div class="alert-sub">'+(ag.redCount?ag.redCount+' คันเกิน 90 วัน':'ยังอยู่ในช่วงเฝ้าระวัง')+'</div>':'<div class="alert-sub">ไม่มีรถค้างนาน</div>')
+    +'</div></div>';
+
+  box.innerHTML=html;
+}
+
+function openPendingDealsAlertModal(){
+  if(!alertsData)return;
+  var pd=alertsData.pendingDeals;
+  document.getElementById('alert-detail-title').textContent='🚗 รถจองเกิน 7 วัน';
+  document.getElementById('alert-detail-sub').textContent='รวม '+pd.count+' คัน — เรียงจากค้างนานสุดไปน้อยสุด';
+  var body=document.getElementById('alert-detail-body');
+  if(!pd.items.length){body.innerHTML='<div class="empty" style="padding:20px 0;">ไม่มีรถติดจองเกิน 7 วันในขณะนี้ 🎉</div>';openMo('modal-alert-detail');return;}
+  var html='';
+  pd.items.forEach(function(it){
+    html+='<div class="alert-detail-item lvl-'+it.level+'">'
+      +'<div class="alert-detail-main"><span class="plate">'+(it.plate||'')+'</span> — '+(it.brand||'')+' '+(it.model||'')
+      +'<div class="meta">เซลล์: '+it.name+' • '+(it.branch||'')+' • จองเมื่อ '+it.closedDate+'</div></div>'
+      +'<div class="alert-detail-days lvl-'+it.level+'">'+it.days+' วัน</div>'
+      +'</div>';
+  });
+  body.innerHTML=html;
+  openMo('modal-alert-detail');
+}
+
+function openBelowAverageAlertModal(){
+  if(!alertsData)return;
+  var ba=alertsData.belowAverage;
+  document.getElementById('alert-detail-title').textContent='📉 เซลล์ %จบ ต่ำกว่าเฉลี่ย';
+  document.getElementById('alert-detail-sub').textContent='เดือน '+thMonthLabel(ba.month)+' — เฉลี่ยกลุ่ม '+ba.avgPct+'% (นับเฉพาะคนที่ได้รับเบอร์ตั้งแต่ '+ba.minReceivedThreshold+' เบอร์ขึ้นไป'
+    +(ba.excludedCount?', ไม่รวม '+ba.excludedCount+' คนที่ได้เบอร์น้อยกว่าเกณฑ์':'')+')';
+  var body=document.getElementById('alert-detail-body');
+  if(!ba.items.length){body.innerHTML='<div class="empty" style="padding:20px 0;">ไม่มีเซลล์ที่ต่ำกว่าค่าเฉลี่ยในขณะนี้ 🎉</div>';openMo('modal-alert-detail');return;}
+  var html='';
+  ba.items.forEach(function(it){
+    var diff=Math.round((ba.avgPct-it.pctClosed)*10)/10;
+    html+='<div class="alert-detail-item lvl-yellow">'
+      +'<div class="alert-detail-main"><strong>'+it.name+'</strong>'
+      +'<div class="meta">รับเบอร์ '+it.received+' • จบ '+it.closed+' คัน • %จบ '+it.pctClosed+'%</div></div>'
+      +'<div class="alert-detail-days lvl-yellow">ต่ำกว่าเฉลี่ย '+diff+' จุด</div>'
+      +'</div>';
+  });
+  body.innerHTML=html;
+  openMo('modal-alert-detail');
+}
+
+function openAgingStockAlertModal(){
+  if(!alertsData)return;
+  var ag=alertsData.agingStock;
+  document.getElementById('alert-detail-title').textContent='📦 สต๊อกค้างเกิน 60 วัน';
+  document.getElementById('alert-detail-sub').textContent='รวม '+ag.count+' คัน — เรียงจากค้างนานสุดไปน้อยสุด';
+  var body=document.getElementById('alert-detail-body');
+  if(!ag.items.length){body.innerHTML='<div class="empty" style="padding:20px 0;">ไม่มีรถสต๊อกค้างเกิน 60 วันในขณะนี้ 🎉</div>';openMo('modal-alert-detail');return;}
+  var html='';
+  ag.items.forEach(function(it){
+    html+='<div class="alert-detail-item lvl-'+it.level+'">'
+      +'<div class="alert-detail-main"><span class="plate">'+(it.plate||'')+'</span> — '+(it.brand||'')+' '+(it.model||'')
+      +'<div class="meta">'+(it.branch||'')+' • เข้าสต๊อกเมื่อ '+it.enterDate+'</div></div>'
+      +'<div class="alert-detail-days lvl-'+it.level+'">'+it.days+' วัน</div>'
+      +'</div>';
+  });
+  body.innerHTML=html;
+  openMo('modal-alert-detail');
 }
 
 // ===== BUILD BRANCH BUTTONS =====
@@ -1581,44 +1832,142 @@ async function saveColSettings(){
   var res=await apiPost({action:'saveSettings',data:{hiddenCols:hidden.join(',')}});
   showToast(res.success?'บันทึกแล้ว ✅':'ไม่สำเร็จ',res.success?'s':'e');
 }
-async function saveAdminPwd(){
-  var pwd=document.getElementById('set-pwd').value.trim();
-  if(!pwd){showToast('กรุณาใส่รหัสผ่าน','e');return;}
-  var res=await apiPost({action:'saveSettings',data:{adminPassword:pwd}});
-  showToast(res.success?'บันทึกแล้ว ✅':'ไม่สำเร็จ',res.success?'s':'e');
-}
 async function saveBranches(){
   var val=document.getElementById('set-branches').value.trim();
   if(!val){showToast('กรุณาใส่ข้อมูลสาขา','e');return;}
   var res=await apiPost({action:'saveSettings',data:{branches:val}});
   showToast(res.success?'บันทึกสาขาแล้ว ✅ โหลดหน้าใหม่เพื่อดูผล':'ไม่สำเร็จ',res.success?'s':'e');
 }
-async function addUser(){
-  var name=document.getElementById('u-name').value.trim();
-  var pwd=document.getElementById('u-pwd').value.trim();
-  var dbg=document.getElementById('u-debug');
-  if(!name){showToast('กรุณากรอกชื่อ','e');return;}
-  var payload={action:'addUser',data:{name:name,password:pwd}};
-  dbg.style.display='block';
-  dbg.textContent='⏳ กำลังส่ง...\nส่งไป: '+JSON.stringify(payload);
+// ===== USER MANAGEMENT (เพิ่ม/แก้ไข/ลบ/เปลี่ยนรหัสผ่าน) — Admin เท่านั้น =====
+var usersCache = [];
+var userModalMode = 'add'; // 'add' | 'edit'
+var userModalEditRow = null;
+
+async function loadUsersList(){
+  var body=document.getElementById('user-list-body');
+  body.innerHTML='<tr><td colspan="4"><div class="loading"><div class="spinner"></div></div></td></tr>';
   try{
-    var rawRes=await fetch(API,{method:'POST',body:JSON.stringify(payload),headers:{'Content-Type':'text/plain;charset=utf-8'}});
-    var rawText=await rawRes.text();
-    var res;
-    try{res=JSON.parse(rawText);}catch(pe){res=null;}
-    dbg.textContent='ส่งไป: '+JSON.stringify(payload)+'\n\nได้รับกลับ (raw): '+rawText.substring(0,500);
-    if(res&&res.success){
-      showToast('เพิ่มพนักงานแล้ว ✅ '+name,'s');
-      document.getElementById('u-name').value='';
-      document.getElementById('u-pwd').value='';
-      var atabSS=document.getElementById('atab-salesstats');
-      if(atabSS&&atabSS.style.display!=='none'){loadSalesStatsForm();loadSalesStatsDashboard();}
-    }else{
-      showToast('⚠️ ไม่สำเร็จ: '+((res&&res.error)||'ดูรายละเอียดในกล่องด้านล่าง'),'e');
-    }
+    var res=await apiGet('getUsers',{});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'โหลดไม่สำเร็จ');
+    usersCache=res.users||[];
+    renderUsersList(usersCache);
   }catch(e){
-    dbg.textContent='ส่งไป: '+JSON.stringify(payload)+'\n\n❌ เกิด error ตอนเชื่อมต่อ: '+e.message;
-    showToast('⚠️ เชื่อมต่อ API ไม่ได้: '+e.message,'e');
+    body.innerHTML='<tr><td colspan="4"><div class="empty">❌ โหลดข้อมูลไม่ได้: '+e.message+'</div></td></tr>';
+  }
+}
+
+function roleLabel(r){
+  if(r==='admin')return '<span class="rbadge admin">Admin</span>';
+  if(r==='ceo')return '<span class="rbadge ceo">CEO</span>';
+  return '<span class="rbadge sales">พนักงานขาย</span>';
+}
+
+function renderUsersList(users){
+  var body=document.getElementById('user-list-body');
+  if(!users.length){body.innerHTML='<tr><td colspan="4"><div class="empty">ยังไม่มีพนักงานในระบบ</div></td></tr>';return;}
+  var html='';
+  users.forEach(function(u){
+    html+='<tr>'
+      +'<td><strong>'+u.name+'</strong></td>'
+      +'<td>'+roleLabel(u.role)+'</td>'
+      +'<td>'+(u.hasPassword?'<span style="color:var(--green);font-weight:600;">✅ ได้</span>':'<span style="color:var(--gray-500);">— บันทึกยอดขายเท่านั้น</span>')+'</td>'
+      +'<td style="text-align:right;white-space:nowrap;">'
+      +'<button class="btn btn-out btn-xs" onclick="openEditUserModal('+u.rowIndex+')">แก้ไข</button> '
+      +'<button class="btn btn-out btn-xs" onclick="openChangePasswordModal('+u.rowIndex+')">เปลี่ยนรหัส</button> '
+      +'<button class="btn btn-out btn-xs" style="color:var(--red);" onclick="deleteUserConfirm('+u.rowIndex+')">ลบ</button>'
+      +'</td></tr>';
+  });
+  body.innerHTML=html;
+}
+
+function openAddUserModal(){
+  userModalMode='add';
+  userModalEditRow=null;
+  document.getElementById('user-modal-title').textContent='เพิ่มพนักงาน';
+  document.getElementById('u-name').value='';
+  document.getElementById('u-role').value='sales';
+  document.getElementById('u-pwd').value='';
+  document.getElementById('u-pwd-group').style.display='';
+  document.getElementById('u-pwd-hint').style.display='';
+  document.getElementById('u-save-btn').textContent='เพิ่ม';
+  openMo('modal-user');
+}
+
+function openEditUserModal(rowIndex){
+  var u=usersCache.find(function(x){return x.rowIndex===rowIndex;});
+  if(!u)return;
+  userModalMode='edit';
+  userModalEditRow=rowIndex;
+  document.getElementById('user-modal-title').textContent='แก้ไขพนักงาน — '+u.name;
+  document.getElementById('u-name').value=u.name;
+  document.getElementById('u-role').value=u.role;
+  // แก้ไขชื่อ/บทบาทเท่านั้น — เปลี่ยนรหัสผ่านแยกไปอีก modal เพื่อความชัดเจน
+  document.getElementById('u-pwd-group').style.display='none';
+  document.getElementById('u-pwd-hint').style.display='none';
+  document.getElementById('u-save-btn').textContent='บันทึกการแก้ไข';
+  openMo('modal-user');
+}
+
+async function saveUserModal(){
+  var name=document.getElementById('u-name').value.trim();
+  var role=document.getElementById('u-role').value;
+  if(!name){showToast('กรุณากรอกชื่อ','e');return;}
+
+  try{
+    var res;
+    if(userModalMode==='add'){
+      var pwd=document.getElementById('u-pwd').value;
+      res=await apiPost({action:'addUser',data:{name:name,password:pwd,role:role}});
+    } else {
+      res=await apiPost({action:'updateUser',rowIndex:userModalEditRow,name:name,role:role});
+    }
+    if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
+    showToast('✅ '+(res.message||'บันทึกสำเร็จ'),'s');
+    closeMo('modal-user');
+    loadUsersList();
+  }catch(e){
+    showToast('⚠️ '+e.message,'e');
+  }
+}
+
+function deleteUserConfirm(rowIndex){
+  var u=usersCache.find(function(x){return x.rowIndex===rowIndex;});
+  if(!u)return;
+  if(!confirm('ยืนยันลบพนักงาน "'+u.name+'" ใช่ไหม?\n\nการลบนี้ไม่สามารถย้อนกลับได้ (ข้อมูลยอดขายในอดีตของคนนี้จะยังอยู่ครบ แค่ลบสิทธิ์เข้าระบบ)'))return;
+  deleteUserNow(rowIndex);
+}
+
+async function deleteUserNow(rowIndex){
+  try{
+    var res=await apiPost({action:'deleteUser',rowIndex:rowIndex});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'ลบไม่สำเร็จ');
+    showToast('✅ ลบพนักงานสำเร็จ','s');
+    loadUsersList();
+  }catch(e){
+    showToast('⚠️ '+e.message,'e');
+  }
+}
+
+var pwdModalRow=null;
+function openChangePasswordModal(rowIndex){
+  var u=usersCache.find(function(x){return x.rowIndex===rowIndex;});
+  if(!u)return;
+  pwdModalRow=rowIndex;
+  document.getElementById('up-name').textContent=u.name;
+  document.getElementById('up-pwd').value='';
+  openMo('modal-user-password');
+}
+
+async function saveUserPassword(){
+  var pwd=document.getElementById('up-pwd').value;
+  try{
+    var res=await apiPost({action:'changeUserPassword',rowIndex:pwdModalRow,password:pwd});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
+    showToast('✅ '+(res.message||'บันทึกสำเร็จ'),'s');
+    closeMo('modal-user-password');
+    loadUsersList();
+  }catch(e){
+    showToast('⚠️ '+e.message,'e');
   }
 }
 
@@ -1725,6 +2074,7 @@ function switchTab(tab){
   if(tab==='stock')filterAdmin();
   if(tab==='sold')filterSold();
   if(tab==='salesstats')initSalesStatsTab();
+  if(tab==='users')loadUsersList();
 }
 
 // ===== UTILS =====
@@ -1735,26 +2085,6 @@ document.querySelectorAll('.mo').forEach(function(o){o.addEventListener('click',
 var toastT;
 function showToast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='show '+(type||'');clearTimeout(toastT);var dur=(type==='e')?6500:3500;toastT=setTimeout(function(){t.className='';},dur);}
 
-// ===== API TEST (DEBUG) =====
-async function testAPI(){
-  var errEl=document.getElementById('login-err');
-  errEl.style.display='block';
-  errEl.style.background='#EFF6FF';
-  errEl.style.color='#1D4ED8';
-  errEl.textContent='กำลังทดสอบ...';
-  try{
-    var res=await fetch(API+'?action=getDashboard');
-    var text=await res.text();
-    var data=JSON.parse(text);
-    errEl.style.background='#E6F4EE';
-    errEl.style.color='#1A6B4A';
-    errEl.innerHTML='✅ เชื่อมต่อสำเร็จ! branches: ['+(data.branches||[]).join(', ')+'] | สต๊อก: '+(data.totalActive||0)+' | รถออก: '+(data.soldTotal||0);
-  }catch(e){
-    errEl.style.background='#FDECEA';
-    errEl.style.color='#C0392B';
-    errEl.innerHTML='❌ ไม่สามารถเชื่อมต่อ API: '+e.message+'<br>ตรวจสอบ URL: '+API;
-  }
-}
 // ===== SALES STATS (บันทึกยอดขายรายวัน + Dashboard เซลล์) =====
 var ssCurrentEntries = [];
 var ssChart = null;
@@ -1993,9 +2323,17 @@ function renderDealSearchResults(cars){
   if(!cars.length){el.innerHTML='<div class="empty" style="padding:20px 0;">ไม่พบรถที่ตรงกับคำค้น</div>';return;}
   var html='';
   cars.forEach(function(c,i){
-    html+='<div class="dd-result-item">'
+    var warn='';
+    if(c.reservedBy&&c.reservedBy.length){
+      var names=c.reservedBy.map(function(r){return r.name+(r.date?' ('+r.date+')':'');}).join(', ');
+      warn='<div class="dd-warn">⚠️ มีคนจองไว้แล้ว: '+names+' — เลือกซ้ำได้ ถ้าจะกันคันไว้เป็นตัวเลือกสำรอง</div>';
+    }
+    html+='<div class="dd-result-item" style="flex-direction:column;align-items:stretch;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;">'
       +'<div class="dd-result-info"><span class="plate">'+(c.plate||'')+'</span> — '+(c.brand||'')+' '+(c.model||'')+'<div class="meta">'+(c.branch||'')+(c.year?' • ปี '+c.year:'')+(c.color?' • '+c.color:'')+'</div></div>'
       +'<button class="btn btn-act btn-xs" onclick="selectDealCar('+i+')">เลือก</button>'
+      +'</div>'
+      +warn
       +'</div>';
   });
   el.innerHTML=html;
@@ -2006,6 +2344,10 @@ async function selectDealCar(idx){
   var cars=JSON.parse(document.getElementById('dd-search-results').getAttribute('data-cars')||'[]');
   var c=cars[idx];
   if(!c)return;
+  if(c.reservedBy&&c.reservedBy.length){
+    var names=c.reservedBy.map(function(r){return r.name+(r.date?' ('+r.date+')':'');}).join(', ');
+    if(!confirm('รถคันนี้ ('+(c.plate||'')+') มีคนจองไว้แล้ว: '+names+'\n\nยืนยันจะบันทึกซ้ำคันนี้ใช่ไหม? (เผื่อกันไว้เป็นตัวเลือกสำรอง)'))return;
+  }
   var dateStr=document.getElementById('ss-date').value||todayISO();
   try{
     if(ddEditRowIndex){
