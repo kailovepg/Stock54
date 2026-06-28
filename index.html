@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>AutoStock Pro</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -357,13 +358,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
         </div>
       </div>
       <div class="ph" style="margin-top:10px;justify-content:space-between;align-items:center;">
-        <div><div style="font-size:15px;font-weight:700;">รถออกแยกสาขา</div><div style="font-size:11px;color:var(--gray-500);">ค่าเริ่มต้น: เดือนล่าสุดที่มีข้อมูล (ปรับช่วงวันที่เองได้)</div></div>
-        <div class="dash-filter">
-          <input type="date" id="sds-df" onchange="renderSoldChartsSection()" title="จากวันที่">
-          <span>-</span>
-          <input type="date" id="sds-dt" onchange="renderSoldChartsSection()" title="ถึงวันที่">
-          <button class="btn btn-out btn-xs" onclick="resetSoldSectionFilter()">ล้าง</button>
-        </div>
+        <div><div style="font-size:15px;font-weight:700;">รถออกแยกสาขา</div><div style="font-size:11px;color:var(--gray-500);" id="sold-section-month-label">เดือนปัจจุบัน</div></div>
       </div>
       <div class="charts-grid" id="s-sold-charts"></div>
     </div>
@@ -544,9 +539,19 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       </div>
       <div class="ph" style="margin-top:26px;">
         <div><div class="ph-title">ผลงานเซลล์</div><div class="ph-sub" id="ss-dash-sub">สรุปผลงานรายเดือน</div></div>
-        <div class="ss-month-pick"><input type="month" id="ss-month" onchange="loadSalesStatsDashboard()"></div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <div class="ss-month-pick"><input type="month" id="ss-month" onchange="loadSalesStatsDashboard()"></div>
+          <div style="position:relative;">
+            <button class="btn btn-out btn-sm" onclick="toggleExportMenu()">⬇️ ส่งออก</button>
+            <div id="export-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--gray-200);border-radius:var(--r);box-shadow:var(--shl);z-index:50;min-width:140px;overflow:hidden;">
+              <button class="btn" style="width:100%;justify-content:flex-start;border-radius:0;background:none;" onclick="exportSalesStatsReport('pdf')">📄 PDF</button>
+              <button class="btn" style="width:100%;justify-content:flex-start;border-radius:0;background:none;" onclick="exportSalesStatsReport('jpg')">🖼️ JPG</button>
+            </div>
+          </div>
+        </div>
       </div>
 
+      <div id="ss-report-capture">
       <div class="ss-num-strip-label">เบอร์ที่ได้รับ (ต่อคน)</div>
       <div class="ss-num-strip" id="ss-num-strip"></div>
 
@@ -559,6 +564,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
           <thead><tr><th>พนักงาน</th><th>รวมเบอร์</th><th>จบ</th><th>ปล่อย</th><th>หลุด</th><th>รอผล</th><th>%จบ</th><th>%ปล่อย</th></tr></thead>
           <tbody id="ss-summary-body"><tr><td colspan="8"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
         </table>
+      </div>
       </div>
     </div>
 
@@ -678,6 +684,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
         <p style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">แก้ไขในไฟล์ _Settings ใน Google Sheets<br>รูปแบบ: <strong>ราชพฤกษ์:รถออกราชฯ,กัลปพฤกษ์:รถออกกัลฯ,บางใหญ่:รถออกบางใหญ่</strong></p>
         <div class="fg"><label>ค่าปัจจุบัน (branches)</label><input type="text" id="set-branches" placeholder="ราชพฤกษ์:รถออกราชฯ,กัลปพฤกษ์:รถออกกัลฯ"></div>
         <button class="btn btn-act btn-sm" onclick="saveBranches()">บันทึกสาขา</button>
+      </div>
+      <div class="set-section">
+        <div class="set-title">📊 เกณฑ์ขั้นต่ำจำนวนเบอร์ (สำหรับเทียบ %จบ ค่าเฉลี่ย)</div>
+        <p style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">ใช้ในการ์ดแจ้งเตือน "เซลล์ %จบ ต่ำกว่าเฉลี่ย" — เซลล์ที่ได้รับเบอร์น้อยกว่าค่านี้จะไม่ถูกเอามาคำนวณค่าเฉลี่ย เพื่อกัน % เพี้ยนจากฐานเบอร์น้อยเกินไป</p>
+        <div class="fg" style="max-width:160px;"><label>จำนวนเบอร์ขั้นต่ำ</label><input type="number" min="0" id="set-min-received" placeholder="5"></div>
+        <button class="btn btn-act btn-sm" onclick="saveMinReceivedThreshold()">บันทึกเกณฑ์</button>
       </div>
       <div class="set-section">
         <div class="set-title">👁️ คอลัมน์ที่ซ่อนจากพนักงานขาย</div>
@@ -847,6 +859,7 @@ const BRANCH_CSS={'ราชพฤกษ์':'ratch','กัลปพฤกษ�
 
 var role='', userName='', authToken='';
 var allCars=[], soldCars=[], dashData={}, settings={hiddenCols:[]}, branches=[];
+var adminDashFilteredCars=[], adminDashFilteredSold=[];
 var filteredCars=[], adminFiltered=[], filteredSold=[], filteredSoldSales=[];
 var sfBranch='', afBranch='', asdBranch='', ssfBranch='';
 var sfSort='', afSort='';
@@ -1050,30 +1063,20 @@ function branchBadge(name){
   return '<span class="bb '+cssClass+'">'+String(name||'—')+'</span>';
 }
 
-/**
- * ตั้งค่า default ช่องกรองวันที่ "รถออกแยกสาขา" (หน้า Sales) ให้เป็นเดือนล่าสุด
- * ที่มีข้อมูลรถออกจริง (ไม่ใช่เดือนปัจจุบันตามปฏิทิน เผื่อเดือนนี้ยังไม่มีรถออกเลย)
- * ตั้งแค่ครั้งแรกเท่านั้น — ถ้าผู้ใช้กรอกช่องกรองเองแล้วจะไม่ไปแก้ทับ
- */
-function setDefaultSoldMonthFilter(){
-  var dfEl=document.getElementById('sds-df'), dtEl=document.getElementById('sds-dt');
+// ===== AUTO REFRESH =====
+/** ตั้งค่า default ของช่องกรองวันที่ (จาก-ถึง) ให้เป็นช่วงเดือนปัจจุบัน — ตั้งแค่ครั้งแรกเท่านั้น ถ้ามีค่าอยู่แล้วจะไม่ไปแก้ทับ */
+function setDefaultCurrentMonthFilter(dfId,dtId){
+  var dfEl=document.getElementById(dfId), dtEl=document.getElementById(dtId);
   if(!dfEl||!dtEl) return;
-  if(dfEl.value||dtEl.value) return; // ผู้ใช้ตั้งค่าเองแล้ว ไม่ไปแก้ทับ
-  if(!soldCars.length) return;
-  var latest=null;
-  soldCars.forEach(function(c){
-    var d=toDate(c[COL.soldDate]||c[COL.date]);
-    if(d&&(!latest||d>latest))latest=d;
-  });
-  if(!latest)return;
-  var y=latest.getFullYear(), m=latest.getMonth();
-  var first=new Date(y,m,1), last=new Date(y,m+1,0);
+  if(dfEl.value||dtEl.value) return; // มีค่าอยู่แล้ว (ผู้ใช้ปรับเอง หรือเคยตั้งไปแล้ว) ไม่ไปแก้ทับ
+  var now=new Date();
+  var first=new Date(now.getFullYear(),now.getMonth(),1);
+  var last=new Date(now.getFullYear(),now.getMonth()+1,0);
   function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
   dfEl.value=iso(first);
   dtEl.value=iso(last);
 }
 
-// ===== AUTO REFRESH =====
 var refreshTimer=null;
 function startAutoRefresh(){
   if(refreshTimer)clearInterval(refreshTimer);
@@ -1112,9 +1115,9 @@ async function loadSalesData(){
     if(!soldCars.length) console.warn('⚠️ getSoldCars คืนค่าว่าง ตรวจสอบชื่อ Sheet รถออกใน _Settings', sd);
     buildBranchBtns();
     buildFilters(allCars);
+    setDefaultCurrentMonthFilter('sd-df','sd-dt');
     filterSales();
     filterSoldSales();
-    setDefaultSoldMonthFilter();
     renderSalesDash(dashData);
     startAutoRefresh();
   }catch(e){
@@ -1150,6 +1153,7 @@ async function loadAdminData(){
     if(!soldCars.length) console.warn('⚠️ getSoldCars คืนค่าว่าง', sd);
     buildBranchBtns();
     buildAdminFilters(allCars,soldCars);
+    setDefaultCurrentMonthFilter('ad-df','ad-dt');
     filterAdmin();
     filterSold();
     renderAdminDash(dashData);
@@ -1157,6 +1161,7 @@ async function loadAdminData(){
     initSalesStatsDashboardDefaults();
     loadSalesStatsDashboard();
     if(settings.branches)document.getElementById('set-branches').value=settings.branches;
+    document.getElementById('set-min-received').value=(settings.minReceivedThreshold!==undefined&&settings.minReceivedThreshold!==null)?settings.minReceivedThreshold:5;
     loadAlerts();
     startAutoRefresh();
   }catch(e){
@@ -1647,19 +1652,18 @@ function renderSalesDash(d){
   },80);
 }
 
-/** เรนเดอร์เฉพาะส่วน "รถออกแยกสาขา" — ใช้ตัวกรองวันที่ของตัวเอง (sds-df/sds-dt) แยกจากการ์ดสต๊อกด้านบน */
+/** เรนเดอร์เฉพาะส่วน "รถออกแยกสาขา" — แสดงเฉพาะเดือนปัจจุบันเสมอ (ไม่มีตัวกรองของตัวเอง ใช้ฟิลเตอร์หลักด้านบนถ้าต้องการช่วงอื่น) */
 function renderSoldChartsSection(){
-  var dfEl=document.getElementById('sds-df'), dtEl=document.getElementById('sds-dt');
-  var df=dfEl?dfEl.value:'', dt=dtEl?dtEl.value:'';
-  var fSold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;return true;});
+  var now=new Date();
+  var y=now.getFullYear(), m=now.getMonth();
+  var first=new Date(y,m,1), last=new Date(y,m+1,0,23,59,59);
+  var fSold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);return d&&d>=first&&d<=last;});
+  var labelEl=document.getElementById('sold-section-month-label');
+  if(labelEl){
+    var mthNames=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+    labelEl.textContent='เดือน '+mthNames[m]+' '+(y+543)+' (เดือนปัจจุบัน — ดูช่วงอื่นใช้ฟิลเตอร์ด้านบน)';
+  }
   renderSoldCharts(dashData,'s-sold-charts',fSold);
-}
-
-function resetSoldSectionFilter(){
-  var dfEl=document.getElementById('sds-df'), dtEl=document.getElementById('sds-dt');
-  if(dfEl)dfEl.value='';
-  if(dtEl)dtEl.value='';
-  renderSoldChartsSection();
 }
 
 function renderSoldCharts(d,containerId,customCars){
@@ -1691,20 +1695,20 @@ function renderSoldCharts(d,containerId,customCars){
 function renderAdminDash(d){
   if(!d)return;
   var df=document.getElementById('ad-df').value, dt=document.getElementById('ad-dt').value;
-  var fAll=allCars.filter(function(c){var d=toDate(c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;return true;});
-  var fSold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;return true;});
-  
+  // เก็บไว้ใน global เพราะ onclick ของการ์ด (ที่ทำงานทีหลัง ตอนผู้ใช้คลิก) ต้องอ้างถึงชุดข้อมูลที่กรองแล้วนี้ได้
+  adminDashFilteredCars=allCars.filter(function(c){var d=toDate(c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;return true;});
+  adminDashFilteredSold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;return true;});
+  var fAll=adminDashFilteredCars, fSold=adminDashFilteredSold;
+
   var el=document.getElementById('a-stats');if(!el)return;
-  var now=new Date(), curM=now.getMonth(), curY=now.getFullYear();
-  var curMSold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);return d&&d.getMonth()===curM&&d.getFullYear()===curY;}).length;
-  var curMSoldCars=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);return d&&d.getMonth()===curM&&d.getFullYear()===curY;});
-  var html='<div class="stat-card g clickable" onclick="showDrillDown(\'รถเข้าสต๊อกใหม่\',allCars,true)"><div class="stat-val">'+fAll.length+'</div><div class="stat-lbl">รถเข้าสต๊อกใหม่</div></div>'
-    +'<div class="stat-card r clickable" onclick="showDrillDown(\'รถออกรวม (เดือนนี้)\',curMSoldCars,false)"><div class="stat-val">'+curMSoldCars.length+'</div><div class="stat-lbl">รถออกรวม</div></div>';
+  // "รถออกรวม" ผูกกับฟิลเตอร์เดียวกับการ์ดอื่นทั้งหมด (เดิมเคยล็อกไว้ที่เดือนปัจจุบันแยกจากฟิลเตอร์ ทำให้ตัวเลขไม่ตรงกับการ์ด "ออก" แต่ละสาขา — แก้ให้สอดคล้องกันแล้ว)
+  var html='<div class="stat-card g clickable" onclick="showDrillDown(\'รถเข้าสต๊อกใหม่\',adminDashFilteredCars,true)"><div class="stat-val">'+fAll.length+'</div><div class="stat-lbl">รถเข้าสต๊อกใหม่</div></div>'
+    +'<div class="stat-card r clickable" onclick="showDrillDown(\'รถออกรวม\',adminDashFilteredSold,false)"><div class="stat-val">'+fSold.length+'</div><div class="stat-lbl">รถออกรวม</div></div>';
   var bc={};fAll.forEach(function(c){var b=c['_sheet']||'';if(b)bc[b]=(bc[b]||0)+1;});
   var sc={};fSold.forEach(function(c){var b=c['_branch']||c['_sheet']||'';if(b)sc[b]=(sc[b]||0)+1;});
   branches.forEach(function(b){
-    html+='<div class="stat-card a clickable" onclick="showDrillDown(\'รถเข้าสต๊อก — '+b+'\',allCars.filter(function(c){return c[\'_sheet\']===\''+b+'\'}),true)"><div class="stat-val">'+(bc[b]||0)+'</div><div class="stat-lbl">เข้า'+b+'</div></div>';
-    html+='<div class="stat-card r clickable" onclick="showDrillDown(\'รถออก — '+b+'\',soldCars.filter(function(c){return (c[\'_branch\']||c[\'_sheet\'])===\''+b+'\'}),false)"><div class="stat-val">'+(sc[b]||0)+'</div><div class="stat-lbl">ออก'+b+'</div></div>';
+    html+='<div class="stat-card a clickable" onclick="showDrillDown(\'รถเข้าสต๊อก — '+b+'\',adminDashFilteredCars.filter(function(c){return c[\'_sheet\']===\''+b+'\'}),true)"><div class="stat-val">'+(bc[b]||0)+'</div><div class="stat-lbl">เข้า'+b+'</div></div>';
+    html+='<div class="stat-card r clickable" onclick="showDrillDown(\'รถออก — '+b+'\',adminDashFilteredSold.filter(function(c){return (c[\'_branch\']||c[\'_sheet\'])===\''+b+'\'}),false)"><div class="stat-val">'+(sc[b]||0)+'</div><div class="stat-lbl">ออก'+b+'</div></div>';
   });
   el.innerHTML=html;
 
@@ -1837,6 +1841,18 @@ async function saveBranches(){
   if(!val){showToast('กรุณาใส่ข้อมูลสาขา','e');return;}
   var res=await apiPost({action:'saveSettings',data:{branches:val}});
   showToast(res.success?'บันทึกสาขาแล้ว ✅ โหลดหน้าใหม่เพื่อดูผล':'ไม่สำเร็จ',res.success?'s':'e');
+}
+async function saveMinReceivedThreshold(){
+  var val=document.getElementById('set-min-received').value;
+  var n=parseInt(val);
+  if(isNaN(n)||n<0){showToast('กรุณากรอกจำนวนเบอร์ขั้นต่ำเป็นเลขจำนวนเต็มไม่ติดลบ','e');return;}
+  var res=await apiPost({action:'saveSettings',data:{minReceivedThreshold:n}});
+  if(res.success){
+    showToast('บันทึกเกณฑ์แล้ว ✅ ('+n+' เบอร์ขึ้นไป)','s');
+    loadAlerts(); // รีเฟรชการ์ดแจ้งเตือนให้ใช้เกณฑ์ใหม่ทันที
+  }else{
+    showToast(res.error||'ไม่สำเร็จ','e');
+  }
 }
 // ===== USER MANAGEMENT (เพิ่ม/แก้ไข/ลบ/เปลี่ยนรหัสผ่าน) — Admin เท่านั้น =====
 var usersCache = [];
@@ -2159,6 +2175,57 @@ async function saveSalesStatsForm(){
   }catch(e){
     showToast('⚠️ บันทึกไม่สำเร็จ: '+e.message,'e');
     msg.textContent='';
+  }
+}
+
+// ===== EXPORT ผลงานเซลล์ (PDF / JPG) =====
+function toggleExportMenu(){
+  var menu=document.getElementById('export-menu');
+  if(!menu)return;
+  menu.style.display=(menu.style.display==='none'||!menu.style.display)?'block':'none';
+}
+document.addEventListener('click',function(e){
+  var menu=document.getElementById('export-menu');
+  if(!menu||menu.style.display==='none')return;
+  if(!menu.contains(e.target)&&e.target.getAttribute('onclick')!=='toggleExportMenu()'){
+    menu.style.display='none';
+  }
+});
+
+async function exportSalesStatsReport(format){
+  var menu=document.getElementById('export-menu');
+  if(menu)menu.style.display='none';
+  var target=document.getElementById('ss-report-capture');
+  if(!target){showToast('ไม่พบส่วนรายงานที่จะส่งออก','e');return;}
+  if(typeof html2canvas==='undefined'){showToast('โหลดไลบรารีสำหรับส่งออกไม่สำเร็จ ลองรีเฟรชหน้าเว็บ','e');return;}
+
+  showToast('กำลังเตรียมไฟล์...','');
+  try{
+    var canvas=await html2canvas(target,{backgroundColor:'#ffffff',scale:2,useCORS:true});
+    var monthStr=document.getElementById('ss-month').value||todayISO().substring(0,7);
+    var fileBase='ผลงานเซลล์_'+monthStr;
+
+    if(format==='jpg'){
+      var dataUrl=canvas.toDataURL('image/jpeg',0.95);
+      var a=document.createElement('a');
+      a.href=dataUrl;
+      a.download=fileBase+'.jpg';
+      a.click();
+      showToast('ส่งออก JPG แล้ว ✅','s');
+    }else{
+      // PDF: เปิดหน้าต่างใหม่ใส่รูปที่ capture มา แล้วเรียก print -> เลือก "Save as PDF" (เหมือนกับ exportPDF ของรายการรถ)
+      var imgData=canvas.toDataURL('image/jpeg',0.95);
+      var win=window.open('','_blank');
+      win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+fileBase+'</title>'
+        +'<style>*{margin:0;padding:0;}body{padding:16px;}img{width:100%;max-width:100%;}@media print{@page{margin:10mm;}}</style>'
+        +'</head><body><img src="'+imgData+'">'
+        +'<script>window.onload=function(){setTimeout(function(){window.print();},400);}<\/script></body></html>');
+      win.document.close();
+      showToast('เปิดหน้าต่างพิมพ์แล้ว — เลือก "Save as PDF" ที่ปลายทางพิมพ์ได้เลย ✅','s');
+    }
+  }catch(e){
+    console.error('export error:',e);
+    showToast('⚠️ ส่งออกไม่สำเร็จ: '+e.message,'e');
   }
 }
 
