@@ -864,7 +864,7 @@ const COL = {
   gear:'เกียร์', fuel:'เชื้อเพลิง', plate:'ทะเบียน', price:'Price',
   bookService:'Book Sevice', manual:'คู่มือ', spareKey:'กุญแจสำรอง',
   mileFirst:'ไมล์แรกเข้า', mileCenter:'ไมล์ศูนย์', mileLast:'เลขไมล์xxx', remark:'หมายเหตุ',
-  one2car:'one2car', siteUrl:'54niwat', soldDate:'วันที่ออก',
+  one2car:'one2car', siteUrl:'54niwat', soldDate:'วันที่ออก', carStatus:'สถานะรถ',
 };
 const COLORS=['#C0392B','#1D4ED8','#1A6B4A','#D97706','#6D28D9','#0891B2','#BE185D','#059669','#7C3AED','#0369A1'];
 const BRANCH_COLORS={'ราชพฤกษ์':'#FDE8E8','กัลปพฤกษ์':'#DBEAFE','บางใหญ่':'#E6F4EE'};
@@ -1308,7 +1308,10 @@ function openAgingStockAlertModal(){
 }
 
 /** กดปุ่ม "วิเคราะห์ด้วย AI" ในการ์ดสต๊อกค้าง — ส่งรายการรถค้างไปให้ Gemini วิเคราะห์ pattern แล้วแสดงผลในกล่องด้านล่างปุ่ม */
+var agingStockAIRunning=false;
 async function runAgingStockAIAnalysis(){
+  if(agingStockAIRunning)return; // กันกดซ้ำตอนยังรอผลจากครั้งก่อนอยู่ (ป้องกันยิง request ซ้อนกันหลายตัว)
+  agingStockAIRunning=true;
   var btn=document.getElementById('alert-ai-btn');
   var resultEl=document.getElementById('alert-ai-result');
   btn.disabled=true;
@@ -1325,6 +1328,7 @@ async function runAgingStockAIAnalysis(){
   }finally{
     btn.disabled=false;
     btn.textContent='✨ วิเคราะห์ด้วย AI';
+    agingStockAIRunning=false;
   }
 }
 
@@ -1639,6 +1643,14 @@ function showDetail(idx){
   html+=drow('ทะเบียน',car[COL.plate]||'—')+mileInfo;
   html+=drow('วันที่เข้า',fmtDate(car[COL.date]))+drow('สาขา',car['_sheet']||'—');
   html+='</div>';
+  if(role==='admin'||role==='ceo'){
+    var curStatus=String(car[COL.carStatus]||'ขาย').trim()||'ขาย';
+    html+='<div class="fg" style="margin-bottom:14px;"><label>สถานะรถ</label>'
+      +'<select id="detail-car-status" onchange="updateCarStatusFromDetail('+idx+')">'
+      +'<option value="ขาย"'+(curStatus==='ขาย'?' selected':'')+'>ขาย (นับเป็นสต๊อกค้างตามปกติ)</option>'
+      +'<option value="ใช้งาน"'+(curStatus==='ใช้งาน'?' selected':'')+'>ใช้งาน (รถทุนของสาขา/รถใช้งาน — ไม่นับสต๊อกค้าง)</option>'
+      +'</select></div>';
+  }
   html+='<div class="price-box">';
   if(latest){
     html+='<div class="price-main">฿'+fmtM(latest)+'</div>';
@@ -1655,6 +1667,26 @@ function showDetail(idx){
   html+='</div>';
   document.getElementById('detail-body').innerHTML=html;
   openMo('modal-detail');
+}
+
+/** เปลี่ยนสถานะรถ (ขาย/ใช้งาน) จาก dropdown ในหน้ารายละเอียดรถ — บันทึกเข้าชีตทันที ไม่ต้องเปิด Google Sheets */
+async function updateCarStatusFromDetail(idx){
+  var car=allCars[idx];if(!car)return;
+  var sel=document.getElementById('detail-car-status');
+  var newStatus=sel.value;
+  sel.disabled=true;
+  try{
+    var res=await apiPost({action:'updateCarStatus',sheet:car['_sheet'],row:car['_row'],status:newStatus});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
+    car[COL.carStatus]=newStatus; // อัปเดตค่าใน cache ทันที ไม่ต้องรอโหลดข้อมูลใหม่ทั้งหมด
+    showToast('✅ '+(res.message||'บันทึกสำเร็จ'),'s');
+    loadAlerts(); // รีเฟรชการ์ดแจ้งเตือนสต๊อกค้าง เผื่อคันนี้เคยอยู่ในรายการนั้น
+  }catch(e){
+    showToast('⚠️ '+e.message,'e');
+    sel.value=String(car[COL.carStatus]||'ขาย').trim()||'ขาย'; // คืนค่าเดิมถ้าบันทึกไม่สำเร็จ
+  }finally{
+    sel.disabled=false;
+  }
 }
 function drow(l,v){return'<div class="drow"><div class="drow-lbl">'+l+'</div><div class="drow-val">'+(v||'—')+'</div></div>';}
 function equipBox(l,v){var has=v&&String(v).trim()&&String(v).trim()!=='-'&&String(v).toUpperCase()!=='FALSE'&&String(v).toUpperCase()!=='ไม่มี';return'<div class="equip-box '+(has?'has':'no')+'"><div>'+(has?'✅':'❌')+'</div><div class="equip-lbl">'+l+'</div></div>';}
