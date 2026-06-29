@@ -700,6 +700,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
         <div id="gemini-key-status" style="font-size:12px;margin-bottom:8px;"></div>
         <div class="fg" style="max-width:380px;"><label>Gemini API Key</label><input type="password" id="set-gemini-key" placeholder="วาง API key ที่นี่ (AIzaSy...)"></div>
         <button class="btn btn-act btn-sm" onclick="saveGeminiKey()">บันทึก Key</button>
+        <button class="btn btn-out btn-sm" onclick="testGeminiConnection()" style="margin-left:6px;">🔬 ทดสอบการเชื่อมต่อ (ดีบัก)</button>
+        <div id="gemini-test-result" style="margin-top:10px;"></div>
       </div>
       <div class="set-section">
         <div class="set-title">👁️ คอลัมน์ที่ซ่อนจากพนักงานขาย</div>
@@ -1945,6 +1947,21 @@ function updateGeminiKeyStatus(isSet){
   el.innerHTML=isSet
     ?'<span style="color:var(--green);font-weight:600;">✅ ตั้งค่า key ไว้แล้ว</span> (วาง key ใหม่ในช่องด้านล่างแล้วกดบันทึกเพื่อเปลี่ยน)'
     :'<span style="color:var(--gray-500);">⚠️ ยังไม่ได้ตั้งค่า — ปุ่ม "วิเคราะห์ด้วย AI" จะใช้งานไม่ได้จนกว่าจะกรอก key</span>';
+}
+/** ปุ่มดีบัก — ทดสอบเรียก Gemini แบบขั้นต่ำสุด ไม่เกี่ยวกับข้อมูลรถค้างเลย ใช้แยกว่าปัญหาอยู่ตรงไหน */
+async function testGeminiConnection(){
+  var resultEl=document.getElementById('gemini-test-result');
+  var startTime=Date.now();
+  resultEl.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังทดสอบ (เริ่มเวลา '+new Date().toLocaleTimeString('th-TH')+')...</div>';
+  try{
+    var res=await apiGet('testGemini',{});
+    var elapsed=((Date.now()-startTime)/1000).toFixed(1);
+    if(!res||res.success===false)throw new Error((res&&res.error)||'ทดสอบไม่สำเร็จ');
+    resultEl.innerHTML='<div class="ai-result-box">✅ เชื่อมต่อสำเร็จ! (ใช้เวลา '+elapsed+' วินาที)<br>Gemini ตอบว่า: "'+res.analysis+'"</div>';
+  }catch(e){
+    var elapsed=((Date.now()-startTime)/1000).toFixed(1);
+    resultEl.innerHTML='<div class="ai-result-box err">❌ ทดสอบไม่สำเร็จหลังรอ '+elapsed+' วินาที: '+e.message+'</div>';
+  }
 }
 // ===== USER MANAGEMENT (เพิ่ม/แก้ไข/ลบ/เปลี่ยนรหัสผ่าน) — Admin เท่านั้น =====
 var usersCache = [];
