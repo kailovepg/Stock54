@@ -520,7 +520,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
         </div>
       </div>
 
-      <!-- ALERT CARDS: รถจองเกิน 7 วัน / เซลล์ต่ำกว่าเฉลี่ย / สต๊อกค้างเกิน 60 วัน -->
+      <!-- ALERT CARDS: รถจองเกิน 7 วัน / เซลล์ต่ำกว่าเฉลี่ย / สต๊อกค้างเกิน 90 วัน -->
       <div class="alert-grid" id="alert-cards">
         <div class="alert-card loading-alert"><div class="loading"><div class="spinner"></div>กำลังตรวจสอบการแจ้งเตือน...</div></div>
       </div>
@@ -828,7 +828,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
   </div>
 </div>
 
-<!-- MODAL: รายละเอียดการแจ้งเตือน (รถจองเกิน 7 วัน / สต๊อกค้างเกิน 60 วัน / เซลล์ต่ำกว่าเฉลี่ย) -->
+<!-- MODAL: รายละเอียดการแจ้งเตือน (รถจองเกิน 7 วัน / สต๊อกค้างเกิน 90 วัน / เซลล์ต่ำกว่าเฉลี่ย) -->
 <div class="mo" id="modal-alert-detail">
   <div class="modal" style="max-width:520px;">
     <div class="mh"><h3 id="alert-detail-title">รายละเอียด</h3><button class="mc" onclick="closeMo('modal-alert-detail')">✕</button></div>
@@ -1171,7 +1171,7 @@ async function loadAdminData(){
   }
 }
 
-// ===== ALERTS (รถจองเกิน 7 วัน / เซลล์ต่ำกว่าเฉลี่ย / สต๊อกค้างเกิน 60 วัน) =====
+// ===== ALERTS (รถจองเกิน 7 วัน / เซลล์ต่ำกว่าเฉลี่ย / สต๊อกค้างเกิน 90 วัน) =====
 var alertsData = null;
 
 async function loadAlerts(){
@@ -1221,7 +1221,7 @@ function renderAlertCards(data){
 
   html+='<div class="alert-card '+agClass+'" onclick="openAgingStockAlertModal()">'
     +'<div class="alert-icon">📦</div>'
-    +'<div class="alert-body"><div class="alert-num">'+ag.count+' คัน</div><div class="alert-label">สต๊อกค้างเกิน 60 วัน</div>'
+    +'<div class="alert-body"><div class="alert-num">'+ag.count+' คัน</div><div class="alert-label">สต๊อกค้างเกิน 90 วัน</div>'
     +(ag.count?'<div class="alert-sub">'+(ag.redCount?ag.redCount+' คันเกิน 90 วัน':'ยังอยู่ในช่วงเฝ้าระวัง')+'</div>':'<div class="alert-sub">ไม่มีรถค้างนาน</div>')
     +'</div></div>';
 
@@ -1271,10 +1271,10 @@ function openBelowAverageAlertModal(){
 function openAgingStockAlertModal(){
   if(!alertsData)return;
   var ag=alertsData.agingStock;
-  document.getElementById('alert-detail-title').textContent='📦 สต๊อกค้างเกิน 60 วัน';
+  document.getElementById('alert-detail-title').textContent='📦 สต๊อกค้างเกิน 90 วัน';
   document.getElementById('alert-detail-sub').textContent='รวม '+ag.count+' คัน — เรียงจากค้างนานสุดไปน้อยสุด';
   var body=document.getElementById('alert-detail-body');
-  if(!ag.items.length){body.innerHTML='<div class="empty" style="padding:20px 0;">ไม่มีรถสต๊อกค้างเกิน 60 วันในขณะนี้ 🎉</div>';openMo('modal-alert-detail');return;}
+  if(!ag.items.length){body.innerHTML='<div class="empty" style="padding:20px 0;">ไม่มีรถสต๊อกค้างเกิน 90 วันในขณะนี้ 🎉</div>';openMo('modal-alert-detail');return;}
   var html='';
   ag.items.forEach(function(it){
     html+='<div class="alert-detail-item lvl-'+it.level+'">'
