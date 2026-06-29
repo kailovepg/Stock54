@@ -165,6 +165,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 .alert-detail-days{font-family:var(--mono);font-weight:700;font-size:13px;white-space:nowrap;}
 .alert-detail-days.lvl-yellow{color:#92400e;}
 .alert-detail-days.lvl-red{color:var(--red);}
+.ai-result-box{background:var(--blue-light);border:1px solid #BFDBFE;border-radius:var(--r);padding:12px 14px;font-size:13px;line-height:1.7;white-space:pre-wrap;}
+.ai-result-box.err{background:var(--red-light);border-color:#F5C6C0;color:var(--red);}
+.ai-loading-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray-500);}
 
 /* CHARTS */
 .charts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:14px;margin-bottom:18px;}
@@ -692,6 +695,13 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
         <button class="btn btn-act btn-sm" onclick="saveMinReceivedThreshold()">บันทึกเกณฑ์</button>
       </div>
       <div class="set-section">
+        <div class="set-title">✨ Gemini API Key (สำหรับวิเคราะห์รถสต๊อกค้างด้วย AI)</div>
+        <p style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">ใช้กับปุ่ม "วิเคราะห์ด้วย AI" ในการ์ดแจ้งเตือนสต๊อกค้าง — ขอ key ฟรีได้ที่ <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--blue);">aistudio.google.com/app/apikey</a> (ไม่ต้องผูกบัตรเครดิต)</p>
+        <div id="gemini-key-status" style="font-size:12px;margin-bottom:8px;"></div>
+        <div class="fg" style="max-width:380px;"><label>Gemini API Key</label><input type="password" id="set-gemini-key" placeholder="วาง API key ที่นี่ (AIzaSy...)"></div>
+        <button class="btn btn-act btn-sm" onclick="saveGeminiKey()">บันทึก Key</button>
+      </div>
+      <div class="set-section">
         <div class="set-title">👁️ คอลัมน์ที่ซ่อนจากพนักงานขาย</div>
         <p style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">ปิด toggle = ซ่อนจาก Sales</p>
         <div id="col-toggles"><div class="loading"><div class="spinner"></div></div></div>
@@ -834,6 +844,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
     <div class="mh"><h3 id="alert-detail-title">รายละเอียด</h3><button class="mc" onclick="closeMo('modal-alert-detail')">✕</button></div>
     <div class="mb">
       <div id="alert-detail-sub" style="font-size:12px;color:var(--gray-500);margin-bottom:12px;"></div>
+      <div id="alert-ai-section" style="display:none;margin-bottom:14px;">
+        <button class="btn btn-out btn-sm" id="alert-ai-btn" onclick="runAgingStockAIAnalysis()">✨ วิเคราะห์ด้วย AI</button>
+        <div id="alert-ai-result" style="margin-top:10px;"></div>
+      </div>
       <div id="alert-detail-body"><div class="loading"><div class="spinner"></div></div></div>
     </div>
     <div class="mf">
@@ -1162,6 +1176,7 @@ async function loadAdminData(){
     loadSalesStatsDashboard();
     if(settings.branches)document.getElementById('set-branches').value=settings.branches;
     document.getElementById('set-min-received').value=(settings.minReceivedThreshold!==undefined&&settings.minReceivedThreshold!==null)?settings.minReceivedThreshold:5;
+    updateGeminiKeyStatus(!!settings.geminiApiKeySet);
     loadAlerts();
     startAutoRefresh();
   }catch(e){
@@ -1233,6 +1248,7 @@ function openPendingDealsAlertModal(){
   var pd=alertsData.pendingDeals;
   document.getElementById('alert-detail-title').textContent='🚗 รถจองเกิน 7 วัน';
   document.getElementById('alert-detail-sub').textContent='รวม '+pd.count+' คัน — เรียงจากค้างนานสุดไปน้อยสุด';
+  document.getElementById('alert-ai-section').style.display='none';
   var body=document.getElementById('alert-detail-body');
   if(!pd.items.length){body.innerHTML='<div class="empty" style="padding:20px 0;">ไม่มีรถติดจองเกิน 7 วันในขณะนี้ 🎉</div>';openMo('modal-alert-detail');return;}
   var html='';
@@ -1253,6 +1269,7 @@ function openBelowAverageAlertModal(){
   document.getElementById('alert-detail-title').textContent='📉 เซลล์ %จบ ต่ำกว่าเฉลี่ย';
   document.getElementById('alert-detail-sub').textContent='เดือน '+thMonthLabel(ba.month)+' — เฉลี่ยกลุ่ม '+ba.avgPct+'% (นับเฉพาะคนที่ได้รับเบอร์ตั้งแต่ '+ba.minReceivedThreshold+' เบอร์ขึ้นไป'
     +(ba.excludedCount?', ไม่รวม '+ba.excludedCount+' คนที่ได้เบอร์น้อยกว่าเกณฑ์':'')+')';
+  document.getElementById('alert-ai-section').style.display='none';
   var body=document.getElementById('alert-detail-body');
   if(!ba.items.length){body.innerHTML='<div class="empty" style="padding:20px 0;">ไม่มีเซลล์ที่ต่ำกว่าค่าเฉลี่ยในขณะนี้ 🎉</div>';openMo('modal-alert-detail');return;}
   var html='';
@@ -1273,6 +1290,9 @@ function openAgingStockAlertModal(){
   var ag=alertsData.agingStock;
   document.getElementById('alert-detail-title').textContent='📦 สต๊อกค้างเกิน 90 วัน';
   document.getElementById('alert-detail-sub').textContent='รวม '+ag.count+' คัน — เรียงจากค้างนานสุดไปน้อยสุด';
+  var aiSection=document.getElementById('alert-ai-section');
+  document.getElementById('alert-ai-result').innerHTML=''; // เคลียร์ผลวิเคราะห์ครั้งก่อน (ถ้ามี)
+  aiSection.style.display=ag.items.length?'':'none';
   var body=document.getElementById('alert-detail-body');
   if(!ag.items.length){body.innerHTML='<div class="empty" style="padding:20px 0;">ไม่มีรถสต๊อกค้างเกิน 90 วันในขณะนี้ 🎉</div>';openMo('modal-alert-detail');return;}
   var html='';
@@ -1285,6 +1305,27 @@ function openAgingStockAlertModal(){
   });
   body.innerHTML=html;
   openMo('modal-alert-detail');
+}
+
+/** กดปุ่ม "วิเคราะห์ด้วย AI" ในการ์ดสต๊อกค้าง — ส่งรายการรถค้างไปให้ Gemini วิเคราะห์ pattern แล้วแสดงผลในกล่องด้านล่างปุ่ม */
+async function runAgingStockAIAnalysis(){
+  var btn=document.getElementById('alert-ai-btn');
+  var resultEl=document.getElementById('alert-ai-result');
+  btn.disabled=true;
+  btn.textContent='⏳ กำลังวิเคราะห์...';
+  resultEl.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังส่งข้อมูลให้ AI วิเคราะห์ (อาจใช้เวลา 5-15 วินาที)...</div>';
+  try{
+    var res=await apiGet('analyzeAgingStock',{});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'วิเคราะห์ไม่สำเร็จ');
+    // แปลง markdown ตัวหนา **text** แบบง่ายๆ เป็น <strong> เพื่อให้อ่านง่ายขึ้น (Gemini มักตอบมาเป็น markdown)
+    var formatted=String(res.analysis||'').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+    resultEl.innerHTML='<div class="ai-result-box">✨ '+formatted+'</div>';
+  }catch(e){
+    resultEl.innerHTML='<div class="ai-result-box err">⚠️ วิเคราะห์ไม่สำเร็จ: '+e.message+'</div>';
+  }finally{
+    btn.disabled=false;
+    btn.textContent='✨ วิเคราะห์ด้วย AI';
+  }
 }
 
 // ===== BUILD BRANCH BUTTONS =====
@@ -1853,6 +1894,25 @@ async function saveMinReceivedThreshold(){
   }else{
     showToast(res.error||'ไม่สำเร็จ','e');
   }
+}
+async function saveGeminiKey(){
+  var val=document.getElementById('set-gemini-key').value.trim();
+  if(!val){showToast('กรุณาวาง API key ก่อนบันทึก','e');return;}
+  var res=await apiPost({action:'saveSettings',data:{geminiApiKey:val}});
+  if(res.success){
+    showToast('บันทึก Gemini API key แล้ว ✅','s');
+    document.getElementById('set-gemini-key').value='';
+    updateGeminiKeyStatus(true);
+  }else{
+    showToast(res.error||'ไม่สำเร็จ','e');
+  }
+}
+function updateGeminiKeyStatus(isSet){
+  var el=document.getElementById('gemini-key-status');
+  if(!el)return;
+  el.innerHTML=isSet
+    ?'<span style="color:var(--green);font-weight:600;">✅ ตั้งค่า key ไว้แล้ว</span> (วาง key ใหม่ในช่องด้านล่างแล้วกดบันทึกเพื่อเปลี่ยน)'
+    :'<span style="color:var(--gray-500);">⚠️ ยังไม่ได้ตั้งค่า — ปุ่ม "วิเคราะห์ด้วย AI" จะใช้งานไม่ได้จนกว่าจะกรอก key</span>';
 }
 // ===== USER MANAGEMENT (เพิ่ม/แก้ไข/ลบ/เปลี่ยนรหัสผ่าน) — Admin เท่านั้น =====
 var usersCache = [];
