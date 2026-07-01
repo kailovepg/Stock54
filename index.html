@@ -576,6 +576,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       <div class="ph">
         <div><div class="ph-title">สต๊อกรถ</div><div class="ph-sub" id="admin-count"></div></div>
         <div class="ph-acts">
+          <button class="btn btn-act btn-sm" onclick="openAddCarModal()">➕ เพิ่มรถใหม่</button>
           <button class="btn btn-out btn-sm" onclick="exportPDF(adminFiltered,'สต๊อกรถ (Admin)')">📄 PDF</button>
           <button class="btn btn-out btn-sm" onclick="exportCSV(adminFiltered,'stock_admin')">📤 CSV</button>
         </div>
@@ -625,9 +626,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
           <thead><tr>
             <th>วันที่เข้า</th><th>ยี่ห้อ</th><th>รุ่น</th><th>ปี</th>
             <th>สี</th><th>เกียร์</th><th>ทะเบียน</th><th>เลขไมล์ล่าสุด</th>
-            <th>สาขา</th><th>ราคา</th><th>ลิงก์</th>
+            <th>สาขา</th><th>ราคา</th><th>ลิงก์</th><th>จัดการ</th>
           </tr></thead>
-          <tbody id="admin-tbody"><tr><td colspan="11"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+          <tbody id="admin-tbody"><tr><td colspan="12"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
         </table>
       </div>
     </div>
@@ -909,6 +910,64 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
     </div>
   </div>
 </div>
+<!-- MODAL: เพิ่มรถใหม่ -->
+<div class="mo" id="modal-add-car">
+  <div class="modal" style="max-width:560px;">
+    <div class="mh"><h3>➕ เพิ่มรถใหม่</h3><button class="mc" onclick="closeMo('modal-add-car')">✕</button></div>
+    <div class="mb">
+      <div class="form-2col">
+        <div class="fg"><label>สาขา *</label><select id="ac-branch"></select></div>
+        <div class="fg"><label>วันที่เข้า</label><input type="date" id="ac-date"></div>
+        <div class="fg"><label>ยี่ห้อ *</label><input type="text" id="ac-brand" placeholder="Honda"></div>
+        <div class="fg"><label>รุ่น *</label><input type="text" id="ac-model" placeholder="Civic"></div>
+        <div class="fg"><label>ปี</label><input type="text" id="ac-year" placeholder="2565"></div>
+        <div class="fg"><label>สี</label><input type="text" id="ac-color" placeholder="ขาว"></div>
+        <div class="fg"><label>เกียร์</label><input type="text" id="ac-gear" placeholder="ออโต้"></div>
+        <div class="fg"><label>เชื้อเพลิง</label><input type="text" id="ac-fuel" placeholder="เบนซิน"></div>
+        <div class="fg"><label>ทะเบียน *</label><input type="text" id="ac-plate" placeholder="กก 1234"></div>
+        <div class="fg"><label>ราคา (บาท)</label><input type="text" id="ac-price" placeholder="450000"></div>
+        <div class="fg"><label>ไมล์แรกเข้า</label><input type="text" id="ac-mile-first"></div>
+        <div class="fg"><label>ไมล์ศูนย์</label><input type="text" id="ac-mile-center"></div>
+      </div>
+      <div class="fg"><label>เลขไมล์ล่าสุด</label><input type="text" id="ac-mile-last"></div>
+      <div class="fg" style="margin-bottom:14px;">
+        <label>อุปกรณ์ประกอบ</label>
+        <div style="display:flex;gap:16px;margin-top:6px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:400;text-transform:none;letter-spacing:0;"><input type="checkbox" id="ac-book" style="width:auto;"> Book Service</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:400;text-transform:none;letter-spacing:0;"><input type="checkbox" id="ac-manual" style="width:auto;"> คู่มือ</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:400;text-transform:none;letter-spacing:0;"><input type="checkbox" id="ac-key" style="width:auto;"> กุญแจสำรอง</label>
+        </div>
+      </div>
+      <div class="fg"><label>หมายเหตุ</label><textarea id="ac-remark" rows="2"></textarea></div>
+      <div class="form-2col">
+        <div class="fg"><label>ลิงก์ one2car</label><input type="text" id="ac-one2car" placeholder="https://..."></div>
+        <div class="fg"><label>ลิงก์ 54niwat</label><input type="text" id="ac-niwat" placeholder="https://..."></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-out" onclick="closeMo('modal-add-car')">ยกเลิก</button>
+      <button class="btn btn-act" id="ac-save-btn" onclick="saveAddCarModal()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ยืนยันรถขายแล้ว (ย้ายไปชีตรถออก) -->
+<div class="mo" id="modal-mark-sold">
+  <div class="modal" style="max-width:400px;">
+    <div class="mh"><h3>✅ บันทึกรถขายแล้ว</h3><button class="mc" onclick="closeMo('modal-mark-sold')">✕</button></div>
+    <div class="mb">
+      <div id="ms-car-info" style="font-size:13px;margin-bottom:14px;background:var(--gray-50);padding:10px 12px;border-radius:var(--r);"></div>
+      <div class="fg"><label>วันที่ออก</label><input type="date" id="ms-date"></div>
+      <div class="fg"><label>ราคาขายจริง (ไม่บังคับ)</label><input type="text" id="ms-price" placeholder="เว้นว่าง = ใช้ราคาล่าสุดเดิม"></div>
+      <p class="tip" style="margin-bottom:0;">⚠️ รถจะถูกย้ายออกจากสต๊อกไปที่ "รถออก" ของสาขานี้ทันที และลบออกจากสต๊อกถาวร ไม่สามารถกดย้อนกลับผ่านหน้าเว็บได้ (ต้องแก้ที่ Google Sheets เอง)</p>
+    </div>
+    <div class="mf">
+      <button class="btn btn-out" onclick="closeMo('modal-mark-sold')">ยกเลิก</button>
+      <button class="btn btn-act" id="ms-save-btn" onclick="saveMarkSoldModal()">✅ ยืนยันขายแล้ว</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -1629,7 +1688,7 @@ function renderSalesList(cars){
 // ===== RENDER ADMIN LIST =====
 function renderAdminList(cars){
   var tbody=document.getElementById('admin-tbody');
-  if(!cars.length){tbody.innerHTML='<tr><td colspan="11"><div class="empty">ไม่มีข้อมูล</div></td></tr>';return;}
+  if(!cars.length){tbody.innerHTML='<tr><td colspan="12"><div class="empty">ไม่มีข้อมูล</div></td></tr>';return;}
   var html='';
   cars.forEach(function(c){
     var idx=allCars.indexOf(c);
@@ -1649,7 +1708,9 @@ function renderAdminList(cars){
       +'<td onclick="event.stopPropagation()" style="display:flex;gap:4px;padding:6px 8px;flex-wrap:wrap;">'
       +(o2c&&o2c.indexOf('http')===0?'<a href="'+o2c+'" target="_blank" class="btn btn-out btn-xs">🔗 one2car</a>':'')
       +(niwat&&niwat.indexOf('http')===0?'<a href="'+niwat+'" target="_blank" class="btn btn-act btn-xs">🔗 54niwat</a>':'')
-      +'</td></tr>';
+      +'</td>'
+      +'<td onclick="event.stopPropagation()"><button class="btn btn-act btn-xs" onclick="openMarkSoldModal('+idx+')">✅ ขายแล้ว</button></td>'
+      +'</tr>';
   });
   tbody.innerHTML=html;
 }
@@ -1795,6 +1856,91 @@ async function updateCarStatusFromDetail(idx){
     sel.disabled=false;
   }
 }
+// ===== เพิ่มรถใหม่ =====
+function openAddCarModal(){
+  var branchSel=document.getElementById('ac-branch');
+  branchSel.innerHTML=branches.map(function(b){return'<option value="'+b+'">'+b+'</option>';}).join('');
+  document.getElementById('ac-date').value=todayISO();
+  ['ac-brand','ac-model','ac-year','ac-color','ac-gear','ac-fuel','ac-plate','ac-price','ac-mile-first','ac-mile-center','ac-mile-last','ac-remark','ac-one2car','ac-niwat'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  ['ac-book','ac-manual','ac-key'].forEach(function(id){var el=document.getElementById(id);if(el)el.checked=false;});
+  openMo('modal-add-car');
+  setTimeout(function(){var el=document.getElementById('ac-brand');if(el)el.focus();},100);
+}
+
+async function saveAddCarModal(){
+  var branch=document.getElementById('ac-branch').value;
+  var brand=document.getElementById('ac-brand').value.trim();
+  var model=document.getElementById('ac-model').value.trim();
+  var plate=document.getElementById('ac-plate').value.trim();
+  if(!branch||!brand||!model||!plate){showToast('กรุณากรอก สาขา / ยี่ห้อ / รุ่น / ทะเบียน ให้ครบ','e');return;}
+  var btn=document.getElementById('ac-save-btn');
+  btn.disabled=true;btn.textContent='กำลังบันทึก...';
+  var data={
+    branch:branch,
+    date:document.getElementById('ac-date').value||todayISO(),
+    brand:brand, model:model,
+    year:document.getElementById('ac-year').value.trim(),
+    color:document.getElementById('ac-color').value.trim(),
+    gear:document.getElementById('ac-gear').value.trim(),
+    fuel:document.getElementById('ac-fuel').value.trim(),
+    plate:plate,
+    price:document.getElementById('ac-price').value.trim(),
+    mileFirst:document.getElementById('ac-mile-first').value.trim(),
+    mileCenter:document.getElementById('ac-mile-center').value.trim(),
+    mileLast:document.getElementById('ac-mile-last').value.trim(),
+    bookService:document.getElementById('ac-book').checked?'มี':'ไม่มี',
+    manual:document.getElementById('ac-manual').checked?'มี':'ไม่มี',
+    spareKey:document.getElementById('ac-key').checked?'มี':'ไม่มี',
+    remark:document.getElementById('ac-remark').value.trim(),
+    one2car:document.getElementById('ac-one2car').value.trim(),
+    siteUrl:document.getElementById('ac-niwat').value.trim()
+  };
+  try{
+    var res=await apiPost({action:'addCar',data:data});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
+    showToast('✅ เพิ่มรถใหม่สำเร็จ','s');
+    closeMo('modal-add-car');
+    loadAdminData();
+  }catch(e){
+    showToast('⚠️ '+e.message,'e');
+  }finally{
+    btn.disabled=false;btn.textContent='บันทึก';
+  }
+}
+
+// ===== บันทึกรถขายแล้ว (ย้ายไปชีตรถออก) =====
+var msCarIdx=null;
+function openMarkSoldModal(idx){
+  var car=allCars[idx];if(!car)return;
+  msCarIdx=idx;
+  document.getElementById('ms-car-info').innerHTML='<strong>'+(car[COL.brand]||'')+' '+(car[COL.model]||'')+'</strong> — ทะเบียน '+(car[COL.plate]||'—')+' • '+(car['_sheet']||'');
+  document.getElementById('ms-date').value=todayISO();
+  document.getElementById('ms-price').value='';
+  openMo('modal-mark-sold');
+}
+
+async function saveMarkSoldModal(){
+  var car=allCars[msCarIdx];if(!car)return;
+  var btn=document.getElementById('ms-save-btn');
+  btn.disabled=true;btn.textContent='กำลังบันทึก...';
+  try{
+    var res=await apiPost({
+      action:'markCarSold',
+      sheet:car['_sheet'], row:car['_row'], plate:car[COL.plate]||'',
+      soldDate:document.getElementById('ms-date').value||todayISO(),
+      finalPrice:document.getElementById('ms-price').value.trim()
+    });
+    if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
+    showToast('✅ '+(res.message||'บันทึกรถขายแล้ว'),'s');
+    closeMo('modal-mark-sold');
+    loadAdminData();
+  }catch(e){
+    showToast('⚠️ '+e.message,'e');
+  }finally{
+    btn.disabled=false;btn.textContent='✅ ยืนยันขายแล้ว';
+  }
+}
+
 function drow(l,v){return'<div class="drow"><div class="drow-lbl">'+l+'</div><div class="drow-val">'+(v||'—')+'</div></div>';}
 function equipBox(l,v){var has=v&&String(v).trim()&&String(v).trim()!=='-'&&String(v).toUpperCase()!=='FALSE'&&String(v).toUpperCase()!=='ไม่มี';return'<div class="equip-box '+(has?'has':'no')+'"><div>'+(has?'✅':'❌')+'</div><div class="equip-lbl">'+l+'</div></div>';}
 
