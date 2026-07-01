@@ -695,13 +695,48 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
         <button class="btn btn-act btn-sm" onclick="saveMinReceivedThreshold()">บันทึกเกณฑ์</button>
       </div>
       <div class="set-section">
-        <div class="set-title">✨ Gemini API Key (สำหรับวิเคราะห์รถสต๊อกค้างด้วย AI)</div>
-        <p style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">ใช้กับปุ่ม "วิเคราะห์ด้วย AI" ในการ์ดแจ้งเตือนสต๊อกค้าง — ขอ key ฟรีได้ที่ <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--blue);">aistudio.google.com/app/apikey</a> (ไม่ต้องผูกบัตรเครดิต)</p>
-        <div id="gemini-key-status" style="font-size:12px;margin-bottom:8px;"></div>
-        <div class="fg" style="max-width:380px;"><label>Gemini API Key</label><input type="password" id="set-gemini-key" placeholder="วาง API key ที่นี่ (AIzaSy...)"></div>
-        <button class="btn btn-act btn-sm" onclick="saveGeminiKey()">บันทึก Key</button>
-        <button class="btn btn-out btn-sm" onclick="testGeminiConnection()" style="margin-left:6px;">🔬 ทดสอบการเชื่อมต่อ (ดีบัก)</button>
-        <div id="gemini-test-result" style="margin-top:10px;"></div>
+        <div class="set-title">🤖 ตั้งค่าการวิเคราะห์ด้วย AI</div>
+        
+        <div class="fg" style="max-width:380px;margin-bottom:20px;">
+          <label>ผู้ให้บริการ AI ที่ใช้งานปัจจุบัน</label>
+          <select id="set-ai-provider" onchange="saveAiProvider()" style="width:100%;padding:10px;border-radius:var(--r);border:2px solid var(--gray-200);font-weight:600;">
+            <option value="gemini">Google Gemini (ฟรี/แนะนำ)</option>
+            <option value="deepseek">DeepSeek (ฉลาด/เครดิตฟรีเยอะ)</option>
+          </select>
+          <p style="font-size:11px;color:var(--gray-500);margin-top:4px;">* ระบบจะใช้ AI ตัวที่เลือกนี้เมื่อคุณกดปุ่ม "วิเคราะห์ด้วย AI"</p>
+        </div>
+
+        <div style="background:var(--gray-50);padding:15px;border-radius:var(--r);margin-bottom:15px;border:1px solid var(--gray-200);">
+          <div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            <span style="color:#1A73E8;">✨ Google Gemini</span>
+          </div>
+          <div id="gemini-key-status" style="font-size:11px;margin-bottom:8px;"></div>
+          <div class="fg" style="max-width:100%;margin-bottom:10px;">
+            <label>Gemini API Key</label>
+            <input type="password" id="set-gemini-key" placeholder="วาง Gemini API key (AIzaSy...)">
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-act btn-sm" onclick="saveGeminiKey()">บันทึก Gemini Key</button>
+            <button class="btn btn-out btn-sm" onclick="testGeminiConnection()">🔬 ทดสอบ</button>
+          </div>
+          <div id="gemini-test-result" style="margin-top:8px;font-size:12px;"></div>
+        </div>
+
+        <div style="background:var(--gray-50);padding:15px;border-radius:var(--r);border:1px solid var(--gray-200);">
+          <div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            <span style="color:#6B46C1;">🟣 DeepSeek</span>
+          </div>
+          <div id="deepseek-key-status" style="font-size:11px;margin-bottom:8px;"></div>
+          <div class="fg" style="max-width:100%;margin-bottom:10px;">
+            <label>DeepSeek API Key</label>
+            <input type="password" id="set-deepseek-key" placeholder="วาง DeepSeek API key (sk-...)">
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-act btn-sm" onclick="saveDeepSeekKey()">บันทึก DeepSeek Key</button>
+            <button class="btn btn-out btn-sm" onclick="testDeepSeekConnection()">🔬 ทดสอบ</button>
+          </div>
+          <div id="deepseek-test-result" style="margin-top:8px;font-size:12px;"></div>
+        </div>
       </div>
       <div class="set-section">
         <div class="set-title">👁️ คอลัมน์ที่ซ่อนจากพนักงานขาย</div>
@@ -1667,8 +1702,55 @@ function showDetail(idx){
   if(photo&&photo.indexOf('http')===0)html+='<a href="'+photo+'" target="_blank" class="link-btn lk1">🔗 one2car</a>';
   if(niwat&&niwat.indexOf('http')===0)html+='<a href="'+niwat+'" target="_blank" class="link-btn lk2">🔗 54niwat.com</a>';
   html+='</div>';
+  
+  // เพิ่มปุ่มสร้างคอนเทนต์ AI
+  html+='<div style="margin-top:15px;padding-top:15px;border-top:1px dashed var(--gray-200);">'
+    +'<button class="btn btn-act" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;" onclick="generateCarContentAI('+idx+')">'
+    +'<span>🪄 สร้างคอนเทนต์ AI (Facebook/TikTok)</span>'
+    +'</button>'
+    +'<div id="ai-content-result" style="margin-top:12px;display:none;"></div>'
+    +'</div>';
+
   document.getElementById('detail-body').innerHTML=html;
   openMo('modal-detail');
+}
+
+/** ฟังก์ชันเรียก AI สร้างคอนเทนต์รายคัน */
+async function generateCarContentAI(idx){
+  var car=allCars[idx];if(!car)return;
+  var resDiv=document.getElementById('ai-content-result');
+  resDiv.style.display='block';
+  resDiv.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังให้ AI ช่วยคิดคอนเทนต์...</div>';
+  
+  try{
+    // ส่งข้อมูลรถเฉพาะคันที่เลือกไปให้ AI
+    var res=await apiPost({action:'generateCarContent',carData:car});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'AI ทำงานไม่สำเร็จ');
+    
+    // แสดงผลลัพธ์
+    var content = res.analysis.replace(/\n/g, '<br>');
+    resDiv.innerHTML='<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:var(--r);padding:15px;font-size:13px;line-height:1.6;color:#1e293b;max-height:400px;overflow-y:auto;">'
+      +'<div style="font-weight:700;color:var(--green);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">'
+      +'<span>✨ คอนเทนต์จาก AI</span>'
+      +'<button class="btn btn-out btn-xs" onclick="copyAiContent()">คัดลอก</button>'
+      +'</div>'
+      +'<div id="ai-text-body">'+content+'</div>'
+      +'</div>';
+  }catch(e){
+    resDiv.innerHTML='<div class="ai-result-box err">❌ ไม่สำเร็จ: '+e.message+'</div>';
+    showToast('⚠️ '+e.message,'e');
+  }
+}
+
+function copyAiContent(){
+  var text = document.getElementById('ai-text-body').innerText;
+  var el = document.createElement('textarea');
+  el.value = text;
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el);
+  showToast('คัดลอกคอนเทนต์แล้ว ✅','s');
 }
 
 /** เปลี่ยนสถานะรถ (ขาย/ใช้งาน) จาก dropdown ในหน้ารายละเอียดรถ — บันทึกเข้าชีตทันที ไม่ต้องเปิด Google Sheets */
@@ -1945,23 +2027,69 @@ function updateGeminiKeyStatus(isSet){
   var el=document.getElementById('gemini-key-status');
   if(!el)return;
   el.innerHTML=isSet
-    ?'<span style="color:var(--green);font-weight:600;">✅ ตั้งค่า key ไว้แล้ว</span> (วาง key ใหม่ในช่องด้านล่างแล้วกดบันทึกเพื่อเปลี่ยน)'
-    :'<span style="color:var(--gray-500);">⚠️ ยังไม่ได้ตั้งค่า — ปุ่ม "วิเคราะห์ด้วย AI" จะใช้งานไม่ได้จนกว่าจะกรอก key</span>';
+    ?'<span style="color:var(--green);font-weight:600;">✅ ตั้งค่า Gemini Key แล้ว</span>'
+    :'<span style="color:var(--gray-500);">⚠️ ยังไม่ได้ตั้งค่า Gemini Key</span>';
+}
+
+async function saveDeepSeekKey(){
+  var val=document.getElementById('set-deepseek-key').value.trim();
+  if(!val){showToast('กรุณาวาง API key ก่อนบันทึก','e');return;}
+  var res=await apiPost({action:'saveSettings',data:{deepseekApiKey:val}});
+  if(res.success){
+    showToast('บันทึก DeepSeek API key แล้ว ✅','s');
+    document.getElementById('set-deepseek-key').value='';
+    updateDeepSeekKeyStatus(true);
+  }else{
+    showToast(res.error||'ไม่สำเร็จ','e');
+  }
+}
+function updateDeepSeekKeyStatus(isSet){
+  var el=document.getElementById('deepseek-key-status');
+  if(!el)return;
+  el.innerHTML=isSet
+    ?'<span style="color:var(--green);font-weight:600;">✅ ตั้งค่า DeepSeek Key แล้ว</span>'
+    :'<span style="color:var(--gray-500);">⚠️ ยังไม่ได้ตั้งค่า DeepSeek Key</span>';
+}
+
+async function saveAiProvider(){
+  var val=document.getElementById('set-ai-provider').value;
+  var res=await apiPost({action:'saveSettings',data:{aiProvider:val}});
+  if(res.success){
+    showToast('เปลี่ยนผู้ให้บริการ AI เป็น '+(val==='gemini'?'Gemini':'DeepSeek')+' แล้ว ✅','s');
+  }else{
+    showToast(res.error||'ไม่สำเร็จ','e');
+  }
 }
 /** ปุ่มดีบัก — ทดสอบเรียก Gemini แบบขั้นต่ำสุด ไม่เกี่ยวกับข้อมูลรถค้างเลย ใช้แยกว่าปัญหาอยู่ตรงไหน */
 async function testGeminiConnection(){
   var resultEl=document.getElementById('gemini-test-result');
   var startTime=Date.now();
-  resultEl.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังทดสอบ (เริ่มเวลา '+new Date().toLocaleTimeString('th-TH')+')...</div>';
+  resultEl.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังทดสอบ...</div>';
   try{
     var res=await apiGet('testGemini',{});
     var elapsed=((Date.now()-startTime)/1000).toFixed(1);
     if(!res||res.success===false)throw new Error((res&&res.error)||'ทดสอบไม่สำเร็จ');
-    resultEl.innerHTML='<div class="ai-result-box">✅ เชื่อมต่อสำเร็จ! (ใช้เวลา '+elapsed+' วินาที)<br>Gemini ตอบว่า: "'+res.analysis+'"</div>';
+    resultEl.innerHTML='<div class="ai-result-box">✅ สำเร็จ! ('+elapsed+' วินาที)<br>Gemini: "'+res.analysis+'"</div>';
+    showToast('เชื่อมต่อ Gemini สำเร็จ ✅','s');
   }catch(e){
+    resultEl.innerHTML='<div class="ai-result-box err">❌ ไม่สำเร็จ: '+e.message+'</div>';
+    showToast('⚠️ '+e.message,'e');
+  }
+}
+
+async function testDeepSeekConnection(){
+  var resultEl=document.getElementById('deepseek-test-result');
+  var startTime=Date.now();
+  resultEl.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังทดสอบ...</div>';
+  try{
+    var res=await apiGet('testDeepSeek',{});
     var elapsed=((Date.now()-startTime)/1000).toFixed(1);
-    resultEl.innerHTML='<div class="ai-result-box err">❌ ทดสอบไม่สำเร็จหลังรอ '+elapsed+' วินาที: '+e.message+'</div>';
-	  showToast('❌ Gemini: ' + e.message, 'e');
+    if(!res||res.success===false)throw new Error((res&&res.error)||'ทดสอบไม่สำเร็จ');
+    resultEl.innerHTML='<div class="ai-result-box">✅ สำเร็จ! ('+elapsed+' วินาที)<br>DeepSeek: "'+res.analysis+'"</div>';
+    showToast('เชื่อมต่อ DeepSeek สำเร็จ ✅','s');
+  }catch(e){
+    resultEl.innerHTML='<div class="ai-result-box err">❌ ไม่สำเร็จ: '+e.message+'</div>';
+    showToast('⚠️ '+e.message,'e');
   }
 }
 // ===== USER MANAGEMENT (เพิ่ม/แก้ไข/ลบ/เปลี่ยนรหัสผ่าน) — Admin เท่านั้น =====
