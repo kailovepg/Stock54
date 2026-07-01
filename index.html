@@ -1148,12 +1148,16 @@ function setDefaultCurrentMonthFilter(dfId,dtId){
 var refreshTimer=null;
 function startAutoRefresh(){
   if(refreshTimer)clearInterval(refreshTimer);
+  // ปรับเป็น 10 นาที (600,000 ms) เพื่อลดการรบกวน และรีเฟรชเฉพาะเมื่อหน้าจอไม่ได้เปิด Modal ใดๆ ค้างไว้
   refreshTimer=setInterval(function(){
+    var anyModalOpen = document.querySelector('.mo.open');
+    if(anyModalOpen) return; // ถ้าเปิดหน้าต่างอะไรค้างไว้ ไม่ต้องรีเฟรช
+
     var dashboardTab=document.getElementById('stab-dashboard')||document.getElementById('atab-dashboard');
     if(dashboardTab && dashboardTab.style.display !== 'none'){
       if(role==='admin'||role==='ceo') loadAdminData(); else loadSalesData();
     }
-  },120000); // 2 นาที
+  },600000); 
 }
 
 // ===== LOAD DATA =====
@@ -1720,13 +1724,15 @@ function showDetail(idx){
   if(niwat&&niwat.indexOf('http')===0)html+='<a href="'+niwat+'" target="_blank" class="link-btn lk2">🔗 54niwat.com</a>';
   html+='</div>';
   
-  // เพิ่มปุ่มสร้างคอนเทนต์ AI
-  html+='<div style="margin-top:15px;padding-top:15px;border-top:1px dashed var(--gray-200);">'
-    +'<button class="btn btn-act" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;" onclick="generateCarContentAI('+idx+')">'
-    +'<span>🪄 สร้างคอนเทนต์ AI (Facebook/TikTok)</span>'
-    +'</button>'
-    +'<div id="ai-content-result" style="margin-top:12px;display:none;"></div>'
-    +'</div>';
+  // เพิ่มปุ่มสร้างคอนเทนต์ AI (เฉพาะ Admin/CEO)
+  if(role==='admin'||role==='ceo'){
+    html+='<div style="margin-top:15px;padding-top:15px;border-top:1px dashed var(--gray-200);">'
+      +'<button class="btn btn-act" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;" onclick="generateCarContentAI('+idx+')">'
+      +'<span>🪄 สร้างคอนเทนต์ AI (Facebook/TikTok)</span>'
+      +'</button>'
+      +'<div id="ai-content-result" style="margin-top:12px;display:none;"></div>'
+      +'</div>';
+  }
 
   document.getElementById('detail-body').innerHTML=html;
   openMo('modal-detail');
