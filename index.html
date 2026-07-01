@@ -702,6 +702,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
           <select id="set-ai-provider" onchange="saveAiProvider()" style="width:100%;padding:10px;border-radius:var(--r);border:2px solid var(--gray-200);font-weight:600;">
             <option value="gemini">Google Gemini (ฟรี/แนะนำ)</option>
             <option value="deepseek">DeepSeek (ฉลาด/เครดิตฟรีเยอะ)</option>
+            <option value="openai">OpenAI (GPT-4o-mini เสถียรที่สุด)</option>
           </select>
           <p style="font-size:11px;color:var(--gray-500);margin-top:4px;">* ระบบจะใช้ AI ตัวที่เลือกนี้เมื่อคุณกดปุ่ม "วิเคราะห์ด้วย AI"</p>
         </div>
@@ -722,7 +723,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
           <div id="gemini-test-result" style="margin-top:8px;font-size:12px;"></div>
         </div>
 
-        <div style="background:var(--gray-50);padding:15px;border-radius:var(--r);border:1px solid var(--gray-200);">
+        <div style="background:var(--gray-50);padding:15px;border-radius:var(--r);margin-bottom:15px;border:1px solid var(--gray-200);">
           <div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
             <span style="color:#6B46C1;">🟣 DeepSeek</span>
           </div>
@@ -736,6 +737,22 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
             <button class="btn btn-out btn-sm" onclick="testDeepSeekConnection()">🔬 ทดสอบ</button>
           </div>
           <div id="deepseek-test-result" style="margin-top:8px;font-size:12px;"></div>
+        </div>
+
+        <div style="background:var(--gray-50);padding:15px;border-radius:var(--r);border:1px solid var(--gray-200);">
+          <div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            <span style="color:#10a37f;">🟢 OpenAI</span>
+          </div>
+          <div id="openai-key-status" style="font-size:11px;margin-bottom:8px;"></div>
+          <div class="fg" style="max-width:100%;margin-bottom:10px;">
+            <label>OpenAI API Key</label>
+            <input type="password" id="set-openai-key" placeholder="วาง OpenAI API key (sk-...)">
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-act btn-sm" onclick="saveOpenAIKey()">บันทึก OpenAI Key</button>
+            <button class="btn btn-out btn-sm" onclick="testOpenAIConnection()">🔬 ทดสอบ</button>
+          </div>
+          <div id="openai-test-result" style="margin-top:8px;font-size:12px;"></div>
         </div>
       </div>
       <div class="set-section">
@@ -2051,11 +2068,32 @@ function updateDeepSeekKeyStatus(isSet){
     :'<span style="color:var(--gray-500);">⚠️ ยังไม่ได้ตั้งค่า DeepSeek Key</span>';
 }
 
+async function saveOpenAIKey(){
+  var val=document.getElementById('set-openai-key').value.trim();
+  if(!val){showToast('กรุณาวาง API key ก่อนบันทึก','e');return;}
+  var res=await apiPost({action:'saveSettings',data:{openaiApiKey:val}});
+  if(res.success){
+    showToast('บันทึก OpenAI API key แล้ว ✅','s');
+    document.getElementById('set-openai-key').value='';
+    updateOpenAIKeyStatus(true);
+  }else{
+    showToast(res.error||'ไม่สำเร็จ','e');
+  }
+}
+function updateOpenAIKeyStatus(isSet){
+  var el=document.getElementById('openai-key-status');
+  if(!el)return;
+  el.innerHTML=isSet
+    ?'<span style="color:var(--green);font-weight:600;">✅ ตั้งค่า OpenAI Key แล้ว</span>'
+    :'<span style="color:var(--gray-500);">⚠️ ยังไม่ได้ตั้งค่า OpenAI Key</span>';
+}
+
 async function saveAiProvider(){
   var val=document.getElementById('set-ai-provider').value;
   var res=await apiPost({action:'saveSettings',data:{aiProvider:val}});
   if(res.success){
-    showToast('เปลี่ยนผู้ให้บริการ AI เป็น '+(val==='gemini'?'Gemini':'DeepSeek')+' แล้ว ✅','s');
+    var providerName = val==='gemini'?'Gemini':(val==='deepseek'?'DeepSeek':'OpenAI');
+    showToast('เปลี่ยนผู้ให้บริการ AI เป็น '+providerName+' แล้ว ✅','s');
   }else{
     showToast(res.error||'ไม่สำเร็จ','e');
   }
@@ -2087,6 +2125,22 @@ async function testDeepSeekConnection(){
     if(!res||res.success===false)throw new Error((res&&res.error)||'ทดสอบไม่สำเร็จ');
     resultEl.innerHTML='<div class="ai-result-box">✅ สำเร็จ! ('+elapsed+' วินาที)<br>DeepSeek: "'+res.analysis+'"</div>';
     showToast('เชื่อมต่อ DeepSeek สำเร็จ ✅','s');
+  }catch(e){
+    resultEl.innerHTML='<div class="ai-result-box err">❌ ไม่สำเร็จ: '+e.message+'</div>';
+    showToast('⚠️ '+e.message,'e');
+  }
+}
+
+async function testOpenAIConnection(){
+  var resultEl=document.getElementById('openai-test-result');
+  var startTime=Date.now();
+  resultEl.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังทดสอบ...</div>';
+  try{
+    var res=await apiGet('testOpenAI',{});
+    var elapsed=((Date.now()-startTime)/1000).toFixed(1);
+    if(!res||res.success===false)throw new Error((res&&res.error)||'ทดสอบไม่สำเร็จ');
+    resultEl.innerHTML='<div class="ai-result-box">✅ สำเร็จ! ('+elapsed+' วินาที)<br>OpenAI: "'+res.analysis+'"</div>';
+    showToast('เชื่อมต่อ OpenAI สำเร็จ ✅','s');
   }catch(e){
     resultEl.innerHTML='<div class="ai-result-box err">❌ ไม่สำเร็จ: '+e.message+'</div>';
     showToast('⚠️ '+e.message,'e');
