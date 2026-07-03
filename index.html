@@ -580,6 +580,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
         <div><div class="ph-title">สต๊อกรถ</div><div class="ph-sub" id="admin-count"></div></div>
         <div class="ph-acts">
           <button class="btn btn-act btn-sm" onclick="openAddCarModal()">➕ เพิ่มรถใหม่</button>
+          <button class="btn btn-out btn-sm" onclick="openCarGroupAIModal()">✨ วิเคราะห์กลุ่มรถ</button>
           <button class="btn btn-out btn-sm" onclick="exportPDF(adminFiltered,'สต๊อกรถ (Admin)')">📄 PDF</button>
           <button class="btn btn-out btn-sm" onclick="exportCSV(adminFiltered,'stock_admin')">📤 CSV</button>
         </div>
@@ -968,6 +969,19 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       <button class="btn btn-out" onclick="closeMo('modal-mark-sold')">ยกเลิก</button>
       <button class="btn btn-act" id="ms-save-btn" onclick="saveMarkSoldModal()">✅ ยืนยันขายแล้ว</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL: วิเคราะห์กลุ่มรถด้วย AI (จากรถที่กรองอยู่ในตารางสต๊อก) -->
+<div class="mo" id="modal-car-group-ai">
+  <div class="modal" style="max-width:580px;">
+    <div class="mh"><h3>✨ วิเคราะห์กลุ่มรถด้วย AI</h3><button class="mc" onclick="closeMo('modal-car-group-ai')">✕</button></div>
+    <div class="mb">
+      <div id="cga-sub" style="font-size:12px;color:var(--gray-500);margin-bottom:12px;"></div>
+      <button class="btn btn-out btn-sm" id="cga-btn" onclick="runCarGroupAIAnalysis()">✨ วิเคราะห์ด้วย AI</button>
+      <div id="cga-result" style="margin-top:12px;"></div>
+    </div>
+    <div class="mf"><button class="btn btn-out" onclick="closeMo('modal-car-group-ai')">ปิด</button></div>
   </div>
 </div>
 
@@ -1453,6 +1467,50 @@ async function runAgingStockAIAnalysis(){
   }
 }
 
+// ===== วิเคราะห์กลุ่มรถที่กรองอยู่ในหน้าสต๊อกด้วย AI (ราคาตลาด/ไมล์/ควรปรับตรงไหน) =====
+function openCarGroupAIModal(){
+  if(!adminFiltered.length){showToast('ไม่มีรถในรายการที่กรองอยู่ตอนนี้ ลองปรับตัวกรองก่อน','e');return;}
+  var cap=40;
+  document.getElementById('cga-sub').textContent='รถที่ตรงกับตัวกรองปัจจุบัน: '+adminFiltered.length+' คัน'
+    +(adminFiltered.length>cap?' (จะวิเคราะห์ '+cap+' คันแรกตามลำดับที่แสดงในตาราง เพื่อความเร็ว — กรองให้แคบลงถ้าต้องการเจาะจงกว่านี้)':'');
+  document.getElementById('cga-result').innerHTML='';
+  var btn=document.getElementById('cga-btn');
+  btn.disabled=false;btn.textContent='✨ วิเคราะห์ด้วย AI';
+  openMo('modal-car-group-ai');
+}
+
+var carGroupAIRunning=false;
+async function runCarGroupAIAnalysis(){
+  if(carGroupAIRunning)return;
+  carGroupAIRunning=true;
+  var btn=document.getElementById('cga-btn');
+  var resultEl=document.getElementById('cga-result');
+  btn.disabled=true;btn.textContent='⏳ กำลังวิเคราะห์...';
+  resultEl.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังส่งข้อมูลให้ AI วิเคราะห์ (อาจใช้เวลา 5-15 วินาที)...</div>';
+  var payload=adminFiltered.slice(0,40).map(function(c){
+    var pnums=parsePNums(c[COL.price]);
+    return {
+      brand:c[COL.brand]||'', model:c[COL.model]||'', year:c[COL.year]||'', color:c[COL.color]||'',
+      gear:c[COL.gear]||'', plate:c[COL.plate]||'', branch:c['_sheet']||'',
+      priceLatest:pnums.length?pnums[pnums.length-1]:null,
+      pricePrev:pnums.length>=2?pnums[pnums.length-2]:null,
+      mileage:getDisplayMile(c),
+      enterDate:fmtDate(c[COL.date])
+    };
+  });
+  try{
+    var res=await apiPost({action:'analyzeCarGroup',cars:payload});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'วิเคราะห์ไม่สำเร็จ');
+    var formatted=String(res.analysis||'').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+    resultEl.innerHTML='<div class="ai-result-box">✨ '+formatted+'</div>';
+  }catch(e){
+    resultEl.innerHTML='<div class="ai-result-box err">⚠️ วิเคราะห์ไม่สำเร็จ: '+e.message+'</div>';
+  }finally{
+    btn.disabled=false;btn.textContent='✨ วิเคราะห์ด้วย AI';
+    carGroupAIRunning=false;
+  }
+}
+
 // ===== BUILD BRANCH BUTTONS =====
 function buildBranchBtns(){
   var sets=[
@@ -1551,9 +1609,19 @@ function applySort(cars,sort){
   return c;
 }
 
+// ===== FUZZY SEARCH HELPERS — แยกคำค้นเป็นชิ้นๆ (ตัวอักษร/ตัวเลข) ไม่ต้องพิมพ์ให้ตรงลำดับหรือติดกัน =====
+function toQueryChunks(q){
+  return String(q||'').toLowerCase().match(/[a-zก-๙]+|[0-9]+/g) || [];
+}
+function matchesQuery(text,chunks){
+  if(!chunks.length)return true;
+  var combined=String(text||'').toLowerCase().replace(/\s+/g,'');
+  return chunks.every(function(c){return combined.indexOf(c)!==-1;});
+}
+
 // ===== FILTER SALES =====
 function filterSales(){
-  var q=document.getElementById('sf-q').value.toLowerCase();
+  var qChunks=toQueryChunks(document.getElementById('sf-q').value);
   var brand=document.getElementById('sf-brand').value;
   var model=document.getElementById('sf-model').value;
   var year=document.getElementById('sf-year').value;
@@ -1561,7 +1629,7 @@ function filterSales(){
   var gear=document.getElementById('sf-gear').value;
   var res=allCars.filter(function(c){
     if(sfBranch&&c['_sheet']!==sfBranch)return false;
-    if(q){var s=((c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'')+' '+(c[COL.mileFirst]||'')).toLowerCase();if(s.indexOf(q)===-1)return false;}
+    if(qChunks.length){var s=(c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'')+' '+(c[COL.mileFirst]||'');if(!matchesQuery(s,qChunks))return false;}
     if(brand&&c[COL.brand]!==brand)return false;
     if(model&&c[COL.model]!==model)return false;
     if(year&&String(c[COL.year])!==year)return false;
@@ -1585,13 +1653,13 @@ function resetSF(){
 
 // ===== FILTER ADMIN =====
 function filterAdmin(){
-  var q=document.getElementById('af-q').value.toLowerCase();
+  var qChunks=toQueryChunks(document.getElementById('af-q').value);
   var brand=document.getElementById('af-brand').value;
   var model=document.getElementById('af-model').value;
   var year=document.getElementById('af-year').value;
   var res=allCars.filter(function(c){
     if(afBranch&&c['_sheet']!==afBranch)return false;
-    if(q){var s=((c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'')).toLowerCase();if(s.indexOf(q)===-1)return false;}
+    if(qChunks.length){var s=(c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'');if(!matchesQuery(s,qChunks))return false;}
     if(brand&&c[COL.brand]!==brand)return false;
     if(model&&c[COL.model]!==model)return false;
     if(year&&String(c[COL.year])!==year)return false;
@@ -1613,7 +1681,7 @@ function resetAF(){
 
 // ===== FILTER SOLD =====
 function filterSold(){
-  var q=document.getElementById('asd-q').value.toLowerCase();
+  var qChunks=toQueryChunks(document.getElementById('asd-q').value);
   var brand=document.getElementById('asd-brand').value;
   var model=document.getElementById('asd-model').value;
   var df=document.getElementById('asd-df').value;
@@ -1621,7 +1689,7 @@ function filterSold(){
   filteredSold=soldCars.filter(function(c){
     var cb=c['_branch']||c['_sheet']||'';
     if(asdBranch&&cb!==asdBranch)return false;
-    if(q){var s=((c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'')).toLowerCase();if(s.indexOf(q)===-1)return false;}
+    if(qChunks.length){var s=(c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'');if(!matchesQuery(s,qChunks))return false;}
     if(brand&&c[COL.brand]!==brand)return false;
     if(model&&c[COL.model]!==model)return false;
     if(df||dt){var d=toDate(c[COL.soldDate]||c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;}
@@ -1638,7 +1706,7 @@ function resetASD(){
 }
 
 function filterSoldSales(){
-  var q=document.getElementById('ssf-q').value.toLowerCase();
+  var qChunks=toQueryChunks(document.getElementById('ssf-q').value);
   var brand=document.getElementById('ssf-brand').value;
   var model=document.getElementById('ssf-model').value;
   var df=document.getElementById('ssf-df').value;
@@ -1646,7 +1714,7 @@ function filterSoldSales(){
   filteredSoldSales=soldCars.filter(function(c){
     var cb=c['_branch']||c['_sheet']||'';
     if(ssfBranch&&cb!==ssfBranch)return false;
-    if(q){var s=((c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'')).toLowerCase();if(s.indexOf(q)===-1)return false;}
+    if(qChunks.length){var s=(c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'');if(!matchesQuery(s,qChunks))return false;}
     if(brand&&c[COL.brand]!==brand)return false;
     if(model&&c[COL.model]!==model)return false;
     if(df||dt){var d=toDate(c[COL.soldDate]||c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;}
