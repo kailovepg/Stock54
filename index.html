@@ -1611,7 +1611,7 @@ function applySort(cars,sort){
 
 // ===== FUZZY SEARCH HELPERS — แยกคำค้นเป็นชิ้นๆ (ตัวอักษร/ตัวเลข) ไม่ต้องพิมพ์ให้ตรงลำดับหรือติดกัน =====
 function toQueryChunks(q){
-  return String(q||'').toLowerCase().match(/[a-zก-๙]+|[0-9]+/g) || [];
+  return String(q||'').toLowerCase().match(/[a-zก-๙]+|[0-9]+\.[0-9]+|[0-9]+/g) || [];
 }
 function matchesQuery(text,chunks){
   if(!chunks.length)return true;
