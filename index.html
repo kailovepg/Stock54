@@ -233,6 +233,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 #toast.show{transform:translateY(0);opacity:1;}
 #toast.e{background:var(--red);}
 #toast.s{background:var(--green);}
+#undo-bar{position:fixed;bottom:70px;right:18px;background:var(--black);color:#fff;padding:10px 14px;border-radius:var(--r);font-size:12px;z-index:999;display:none;align-items:center;gap:12px;box-shadow:var(--shl);max-width:320px;}
+#undo-bar.show{display:flex;}
+#undo-bar button{background:#fff;color:var(--black);border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;}
 .tip{background:var(--amber-light);border-radius:var(--r);padding:10px 13px;font-size:12px;color:#92400e;margin-bottom:12px;}
 .ss-input{width:64px;padding:6px 8px;text-align:center;font-family:var(--mono);font-size:13px;}
 .ss-table-wrap{overflow-x:auto;}
@@ -913,7 +916,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 <!-- MODAL: เพิ่มรถใหม่ -->
 <div class="mo" id="modal-add-car">
   <div class="modal" style="max-width:560px;">
-    <div class="mh"><h3>➕ เพิ่มรถใหม่</h3><button class="mc" onclick="closeMo('modal-add-car')">✕</button></div>
+    <div class="mh"><h3 id="ac-modal-title">➕ เพิ่มรถใหม่</h3><button class="mc" onclick="closeMo('modal-add-car')">✕</button></div>
     <div class="mb">
       <div class="form-2col">
         <div class="fg"><label>สาขา *</label><select id="ac-branch"></select></div>
@@ -969,6 +972,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 </div>
 
 <div id="toast"></div>
+<div id="undo-bar"><span id="undo-bar-text"></span><button onclick="performUndoMarkSold()">↩️ เลิกทำ</button></div>
 
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbz1UAd4ZinBWHddeL1QGA9XYY4KmuBg9stsgMC0tAsDjfSG3pxT8PZL1Six7y55_uAvYQ/exec';
@@ -1705,11 +1709,11 @@ function renderAdminList(cars){
       +'<td class="mono">'+String(c[COL.mileFirst]||'—')+'</td>'
       +'<td>'+branchBadge(c['_sheet'])+'</td>'
       +'<td>'+priceDisplay(c[COL.price])+'</td>'
-      +'<td onclick="event.stopPropagation()" style="display:flex;gap:4px;padding:6px 8px;flex-wrap:wrap;">'
+      +'<td onclick="event.stopPropagation()"><div style="display:flex;gap:4px;flex-wrap:wrap;">'
       +(o2c&&o2c.indexOf('http')===0?'<a href="'+o2c+'" target="_blank" class="btn btn-out btn-xs">🔗 one2car</a>':'')
       +(niwat&&niwat.indexOf('http')===0?'<a href="'+niwat+'" target="_blank" class="btn btn-act btn-xs">🔗 54niwat</a>':'')
-      +'</td>'
-      +'<td onclick="event.stopPropagation()"><button class="btn btn-act btn-xs" onclick="openMarkSoldModal('+idx+')">✅ ขายแล้ว</button></td>'
+      +'</div></td>'
+      +'<td onclick="event.stopPropagation()"><div style="display:flex;gap:4px;flex-wrap:wrap;"><button class="btn btn-out btn-xs" onclick="openEditCarModal('+idx+')">✏️ แก้ไข</button><button class="btn btn-act btn-xs" onclick="openMarkSoldModal('+idx+')">✅ ขายแล้ว</button></div></td>'
       +'</tr>';
   });
   tbody.innerHTML=html;
@@ -1856,15 +1860,64 @@ async function updateCarStatusFromDetail(idx){
     sel.disabled=false;
   }
 }
-// ===== เพิ่มรถใหม่ =====
+// ===== เพิ่ม / แก้ไขรถ (ใช้ modal เดียวกัน) =====
+var carFormMode='add'; // 'add' | 'edit'
+var carFormEditRef=null; // {sheet,row,plate} ตอนแก้ไข
+
+function isEquipHas(v){
+  if(!v)return false;
+  var s=String(v).trim().toUpperCase();
+  return s!==''&&s!=='-'&&s!=='FALSE'&&s!=='ไม่มี';
+}
+function toISOInput(v){
+  var d=toDate(v);
+  if(!d)return'';
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
 function openAddCarModal(){
+  carFormMode='add';carFormEditRef=null;
+  document.getElementById('ac-modal-title').textContent='➕ เพิ่มรถใหม่';
+  document.getElementById('ac-save-btn').textContent='บันทึก';
   var branchSel=document.getElementById('ac-branch');
+  branchSel.disabled=false;
   branchSel.innerHTML=branches.map(function(b){return'<option value="'+b+'">'+b+'</option>';}).join('');
   document.getElementById('ac-date').value=todayISO();
   ['ac-brand','ac-model','ac-year','ac-color','ac-gear','ac-fuel','ac-plate','ac-price','ac-mile-first','ac-mile-center','ac-mile-last','ac-remark','ac-one2car','ac-niwat'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   ['ac-book','ac-manual','ac-key'].forEach(function(id){var el=document.getElementById(id);if(el)el.checked=false;});
   openMo('modal-add-car');
   setTimeout(function(){var el=document.getElementById('ac-brand');if(el)el.focus();},100);
+}
+
+function openEditCarModal(idx){
+  var car=allCars[idx];if(!car)return;
+  carFormMode='edit';
+  carFormEditRef={sheet:car['_sheet'],row:car['_row'],plate:car[COL.plate]||''};
+  document.getElementById('ac-modal-title').textContent='✏️ แก้ไขข้อมูลรถ';
+  document.getElementById('ac-save-btn').textContent='บันทึกการแก้ไข';
+  var branchSel=document.getElementById('ac-branch');
+  branchSel.innerHTML='<option value="'+(car['_sheet']||'')+'">'+(car['_sheet']||'')+'</option>';
+  branchSel.value=car['_sheet']||'';
+  branchSel.disabled=true; // ไม่ให้ย้ายสาขาผ่านฟอร์มแก้ไข (ป้องกันความซับซ้อนเรื่องย้ายชีต)
+  document.getElementById('ac-date').value=toISOInput(car[COL.date]);
+  document.getElementById('ac-brand').value=car[COL.brand]||'';
+  document.getElementById('ac-model').value=car[COL.model]||'';
+  document.getElementById('ac-year').value=car[COL.year]||'';
+  document.getElementById('ac-color').value=car[COL.color]||'';
+  document.getElementById('ac-gear').value=car[COL.gear]||'';
+  document.getElementById('ac-fuel').value=car[COL.fuel]||'';
+  document.getElementById('ac-plate').value=car[COL.plate]||'';
+  document.getElementById('ac-price').value=latestP(car[COL.price])||'';
+  document.getElementById('ac-mile-first').value=car[COL.mileFirst]||'';
+  document.getElementById('ac-mile-center').value=car[COL.mileCenter]||'';
+  document.getElementById('ac-mile-last').value=car[COL.mileLast]||'';
+  document.getElementById('ac-book').checked=isEquipHas(car[COL.bookService]);
+  document.getElementById('ac-manual').checked=isEquipHas(car[COL.manual]);
+  document.getElementById('ac-key').checked=isEquipHas(car[COL.spareKey]);
+  document.getElementById('ac-remark').value=(car[COL.remark]&&String(car[COL.remark]).trim()!=='-')?car[COL.remark]:'';
+  document.getElementById('ac-one2car').value=car[COL.one2car]||'';
+  document.getElementById('ac-niwat').value=car[COL.siteUrl]||'';
+  openMo('modal-add-car');
 }
 
 async function saveAddCarModal(){
@@ -1896,20 +1949,28 @@ async function saveAddCarModal(){
     siteUrl:document.getElementById('ac-niwat').value.trim()
   };
   try{
-    var res=await apiPost({action:'addCar',data:data});
+    var res;
+    if(carFormMode==='edit'&&carFormEditRef){
+      res=await apiPost({action:'updateCar',sheet:carFormEditRef.sheet,row:carFormEditRef.row,originalPlate:carFormEditRef.plate,data:data});
+    }else{
+      res=await apiPost({action:'addCar',data:data});
+    }
     if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
-    showToast('✅ เพิ่มรถใหม่สำเร็จ','s');
+    showToast('✅ '+(res.message||'บันทึกสำเร็จ'),'s');
     closeMo('modal-add-car');
     loadAdminData();
   }catch(e){
     showToast('⚠️ '+e.message,'e');
   }finally{
-    btn.disabled=false;btn.textContent='บันทึก';
+    btn.disabled=false;btn.textContent=carFormMode==='edit'?'บันทึกการแก้ไข':'บันทึก';
   }
 }
 
-// ===== บันทึกรถขายแล้ว (ย้ายไปชีตรถออก) =====
+// ===== บันทึกรถขายแล้ว (ย้ายไปชีตรถออก) + เลิกทำ =====
 var msCarIdx=null;
+var lastSoldUndo=null;
+var undoBarTimer=null;
+
 function openMarkSoldModal(idx){
   var car=allCars[idx];if(!car)return;
   msCarIdx=idx;
@@ -1933,11 +1994,48 @@ async function saveMarkSoldModal(){
     if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
     showToast('✅ '+(res.message||'บันทึกรถขายแล้ว'),'s');
     closeMo('modal-mark-sold');
+    if(res.soldSheet&&res.originalData){
+      lastSoldUndo={
+        sourceSheet:car['_sheet'],
+        soldSheet:res.soldSheet,
+        plate:car[COL.plate]||'',
+        soldDate:res.soldDate,
+        originalData:res.originalData
+      };
+      showUndoBar('ย้าย "'+(car[COL.plate]||'')+'" ไปรถออกแล้ว');
+    }
     loadAdminData();
   }catch(e){
     showToast('⚠️ '+e.message,'e');
   }finally{
     btn.disabled=false;btn.textContent='✅ ยืนยันขายแล้ว';
+  }
+}
+
+function showUndoBar(text){
+  var bar=document.getElementById('undo-bar');
+  document.getElementById('undo-bar-text').textContent=text;
+  bar.classList.add('show');
+  clearTimeout(undoBarTimer);
+  undoBarTimer=setTimeout(hideUndoBar,20000);
+}
+function hideUndoBar(){
+  var bar=document.getElementById('undo-bar');
+  if(bar)bar.classList.remove('show');
+  clearTimeout(undoBarTimer);
+  lastSoldUndo=null;
+}
+async function performUndoMarkSold(){
+  if(!lastSoldUndo){hideUndoBar();return;}
+  var payload=lastSoldUndo;
+  hideUndoBar();
+  try{
+    var res=await apiPost({action:'undoMarkCarSold',sourceSheet:payload.sourceSheet,soldSheet:payload.soldSheet,plate:payload.plate,soldDate:payload.soldDate,originalData:payload.originalData});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'เลิกทำไม่สำเร็จ');
+    showToast('✅ '+(res.message||'เลิกทำสำเร็จ — นำรถกลับเข้าสต๊อกแล้ว'),'s');
+    loadAdminData();
+  }catch(e){
+    showToast('⚠️ '+e.message,'e');
   }
 }
 
