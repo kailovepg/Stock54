@@ -794,8 +794,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       </div>
       <div class="list-wrap">
         <table class="list-table">
-          <thead><tr><th>ชื่อ</th><th>บทบาท</th><th>เข้าระบบได้</th><th style="text-align:right;">การจัดการ</th></tr></thead>
-          <tbody id="user-list-body"><tr><td colspan="4"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+          <thead><tr><th>ชื่อ</th><th>บทบาท</th><th>สถานะ</th><th>เข้าระบบได้</th><th style="text-align:right;">การจัดการ</th></tr></thead>
+          <tbody id="user-list-body"><tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
         </table>
       </div>
     </div>
@@ -2471,14 +2471,14 @@ var userModalEditRow = null;
 
 async function loadUsersList(){
   var body=document.getElementById('user-list-body');
-  body.innerHTML='<tr><td colspan="4"><div class="loading"><div class="spinner"></div></div></td></tr>';
+  body.innerHTML='<tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr>';
   try{
     var res=await apiGet('getUsers',{});
     if(!res||res.success===false)throw new Error((res&&res.error)||'โหลดไม่สำเร็จ');
     usersCache=res.users||[];
     renderUsersList(usersCache);
   }catch(e){
-    body.innerHTML='<tr><td colspan="4"><div class="empty">❌ โหลดข้อมูลไม่ได้: '+e.message+'</div></td></tr>';
+    body.innerHTML='<tr><td colspan="5"><div class="empty">❌ โหลดข้อมูลไม่ได้: '+e.message+'</div></td></tr>';
   }
 }
 
@@ -2488,19 +2488,29 @@ function roleLabel(r){
   return '<span class="rbadge sales">พนักงานขาย</span>';
 }
 
+function statusLabel(active){
+  return active
+    ? '<span style="color:var(--green);font-weight:600;font-size:12px;">🟢 ใช้งานอยู่</span>'
+    : '<span style="color:var(--gray-500);font-weight:600;font-size:12px;">⚪ ปิดใช้งาน</span>';
+}
+
 function renderUsersList(users){
   var body=document.getElementById('user-list-body');
-  if(!users.length){body.innerHTML='<tr><td colspan="4"><div class="empty">ยังไม่มีพนักงานในระบบ</div></td></tr>';return;}
+  if(!users.length){body.innerHTML='<tr><td colspan="5"><div class="empty">ยังไม่มีพนักงานในระบบ</div></td></tr>';return;}
   var html='';
   users.forEach(function(u){
-    html+='<tr>'
+    html+='<tr'+(u.active?'':' style="opacity:.6;"')+'>'
       +'<td><strong>'+u.name+'</strong></td>'
       +'<td>'+roleLabel(u.role)+'</td>'
+      +'<td>'+statusLabel(u.active)+'</td>'
       +'<td>'+(u.hasPassword?'<span style="color:var(--green);font-weight:600;">✅ ได้</span>':'<span style="color:var(--gray-500);">— บันทึกยอดขายเท่านั้น</span>')+'</td>'
       +'<td style="text-align:right;white-space:nowrap;">'
       +'<button class="btn btn-out btn-xs" onclick="openEditUserModal('+u.rowIndex+')">แก้ไข</button> '
       +'<button class="btn btn-out btn-xs" onclick="openChangePasswordModal('+u.rowIndex+')">เปลี่ยนรหัส</button> '
-      +'<button class="btn btn-out btn-xs" style="color:var(--red);" onclick="deleteUserConfirm('+u.rowIndex+')">ลบ</button>'
+      +(u.active
+        ?'<button class="btn btn-out btn-xs" onclick="toggleUserActiveConfirm('+u.rowIndex+',false)">ปิดใช้งาน</button> '
+        :'<button class="btn btn-out btn-xs" style="color:var(--green);" onclick="toggleUserActiveConfirm('+u.rowIndex+',true)">เปิดใช้งาน</button> ')
+      +'<button class="btn btn-out btn-xs" style="color:var(--red);" onclick="deleteUserConfirm('+u.rowIndex+')">ลบถาวร</button>'
       +'</td></tr>';
   });
   body.innerHTML=html;
@@ -2556,10 +2566,31 @@ async function saveUserModal(){
   }
 }
 
+function toggleUserActiveConfirm(rowIndex,active){
+  var u=usersCache.find(function(x){return x.rowIndex===rowIndex;});
+  if(!u)return;
+  var msg=active
+    ?'เปิดใช้งานพนักงาน "'+u.name+'" อีกครั้งใช่ไหม? (จะกลับมาล็อกอินได้และขึ้นในฟอร์มกรอกยอดขายเหมือนเดิม)'
+    :'ปิดใช้งานพนักงาน "'+u.name+'" ใช่ไหม?\n\nคนนี้จะล็อกอินเข้าเว็บไม่ได้อีก และไม่ขึ้นในฟอร์มกรอกยอดขายวันใหม่ แต่สถิติย้อนหลังของเดือนก่อนๆ ยังดูได้ปกติทุกเดือน (ไม่เหมือนปุ่ม "ลบถาวร")';
+  if(!confirm(msg))return;
+  toggleUserActiveNow(rowIndex,active);
+}
+
+async function toggleUserActiveNow(rowIndex,active){
+  try{
+    var res=await apiPost({action:'setUserActive',rowIndex:rowIndex,active:active});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
+    showToast('✅ '+(res.message||'บันทึกสำเร็จ'),'s');
+    loadUsersList();
+  }catch(e){
+    showToast('⚠️ '+e.message,'e');
+  }
+}
+
 function deleteUserConfirm(rowIndex){
   var u=usersCache.find(function(x){return x.rowIndex===rowIndex;});
   if(!u)return;
-  if(!confirm('ยืนยันลบพนักงาน "'+u.name+'" ใช่ไหม?\n\nการลบนี้ไม่สามารถย้อนกลับได้ (ข้อมูลยอดขายในอดีตของคนนี้จะยังอยู่ครบ แค่ลบสิทธิ์เข้าระบบ)'))return;
+  if(!confirm('⚠️ ลบพนักงาน "'+u.name+'" ถาวรใช่ไหม?\n\nการลบถาวรจะทำให้ชื่อนี้หายไปจากหน้าสรุปผลงาน/กราฟย้อนหลังทุกเดือนด้วย (แม้ตัวเลขดิบจะยังอยู่ใน Google Sheets ก็ตาม)\n\nถ้าแค่ต้องการปิดสิทธิ์ใช้งานแต่ยังอยากดูสถิติย้อนหลังได้ ให้ใช้ปุ่ม "ปิดใช้งาน" แทน — การลบถาวรนี้กดแล้วกู้คืนเองไม่ได้'))return;
   deleteUserNow(rowIndex);
 }
 
