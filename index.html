@@ -1010,6 +1010,58 @@ var sfBranch='', afBranch='', asdBranch='', ssfBranch='';
 var sfSort='', afSort='';
 var charts={};
 
+/**
+ * บาง webview ในตัว (เช่น เบราว์เซอร์ในแอป LINE / Facebook / Messenger ที่พนักงานมักใช้เปิดหน้านี้บนมือถือ)
+ * ไม่รองรับ <input type="date"> แบบเนทีฟ ทำให้ผู้ใช้พิมพ์วันที่เป็นรูปแบบอื่นที่ไม่ใช่ "YYYY-MM-DD"
+ * พอส่งไป backend แล้วแปลงเป็น Date ไม่ได้ (Invalid Date) จะถูกเขียนลง Google Sheets เป็น "ช่องว่าง" แบบเงียบๆ
+ * ไม่มี error ให้เห็น ทำให้ดูเหมือนวันที่ "หายไป" ทั้งที่ข้อมูลอื่นบันทึกปกติ
+ * ฟังก์ชันนี้ตรวจสอบว่าเบราว์เซอร์รองรับ date picker แบบเนทีฟจริงไหม ถ้าไม่รองรับ จะเปลี่ยนช่องนั้นเป็น
+ * text input ที่พิมพ์แล้วใส่ขีด "-" ให้อัตโนมัติ (เช่น พิมพ์ 04072026 -> กลายเป็น 2026-07-04) กันปัญหานี้ตั้งแต่ต้นทาง
+ */
+function polyfillDateInputs(){
+  var test=document.createElement('input');
+  test.setAttribute('type','date');
+  test.value='ก'; // ค่าที่ไม่ใช่วันที่ — ถ้าเบราว์เซอร์รองรับ date จริง ค่านี้จะถูกปฏิเสธ (value กลับเป็น '')
+  var supportsDate = (test.type==='date') && (test.value==='');
+  if(supportsDate) return; // รองรับปกติ ไม่ต้องทำอะไรเพิ่ม
+
+  document.querySelectorAll('input[type="date"]').forEach(function(el){
+    var existingVal=el.value; // เผื่อมีการตั้งค่าเริ่มต้นไว้ก่อนหน้านี้แล้ว (เช่น todayISO())
+    el.type='text';
+    el.placeholder='YYYY-MM-DD';
+    el.setAttribute('inputmode','numeric');
+    el.setAttribute('maxlength','10');
+    if(existingVal)el.value=existingVal;
+    el.addEventListener('input',function(){
+      var digits=el.value.replace(/[^\d]/g,'').slice(0,8);
+      var out=digits;
+      if(digits.length>4)out=digits.slice(0,4)+'-'+digits.slice(4);
+      if(digits.length>6)out=digits.slice(0,4)+'-'+digits.slice(4,6)+'-'+digits.slice(6);
+      el.value=out;
+    });
+  });
+}
+
+/** ตรวจว่าเป็นวันที่รูปแบบ "YYYY-MM-DD" ที่ถูกต้องจริงหรือไม่ (ไม่ใช่แค่รูปแบบตัวอักษรตรง แต่ต้องเป็นวันที่มีอยู่จริงด้วย) */
+function isValidISODate(str){
+  if(!str||!/^\d{4}-\d{2}-\d{2}$/.test(str))return false;
+  var d=new Date(str+'T00:00:00');
+  return !isNaN(d.getTime()) && dateToISOLocal(d)===str;
+}
+function dateToISOLocal(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+/** คืนค่าวันที่ที่ถูกต้องจาก id ของ input ถ้าพิมพ์มาไม่ถูกรูปแบบ (เช่น webview ไม่รองรับ date picker) จะ fallback เป็นวันนี้แทนการปล่อยให้ backend ได้ค่าว่าง/ผิดรูปแบบ */
+function safeDateFromInput(id){
+  var el=document.getElementById(id);
+  var v=el?el.value.trim():'';
+  if(isValidISODate(v))return v;
+  if(v)showToast('รูปแบบวันที่ในช่อง "'+(el&&el.previousElementSibling?el.previousElementSibling.textContent:id)+'" ไม่ถูกต้อง ใช้วันนี้แทนชั่วคราว กรุณาตรวจสอบอีกครั้ง','e');
+  return todayISO();
+}
+
+polyfillDateInputs();
+
 	// ===== INIT — บังคับ login ทุกครั้ง เว้นแต่มี token ที่ valid อยู่จริง (ตรวจกับ backend) =====
 	(function(){
 	  var saved=localStorage.getItem('as_session');
@@ -2028,7 +2080,7 @@ async function saveAddCarModal(){
   btn.disabled=true;btn.textContent='กำลังบันทึก...';
   var data={
     branch:branch,
-    date:document.getElementById('ac-date').value||todayISO(),
+    date:safeDateFromInput('ac-date'),
     brand:brand, model:model,
     year:document.getElementById('ac-year').value.trim(),
     color:document.getElementById('ac-color').value.trim(),
@@ -2086,7 +2138,7 @@ async function saveMarkSoldModal(){
     var res=await apiPost({
       action:'markCarSold',
       sheet:car['_sheet'], row:car['_row'], plate:car[COL.plate]||'',
-      soldDate:document.getElementById('ms-date').value||todayISO(),
+      soldDate:safeDateFromInput('ms-date'),
       finalPrice:document.getElementById('ms-price').value.trim()
     });
     if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
@@ -2798,7 +2850,7 @@ function initSalesStatsDashboardDefaults(){
 }
 
 async function loadSalesStatsForm(){
-  var dateStr=document.getElementById('ss-date').value||todayISO();
+  var dateStr=safeDateFromInput('ss-date');
   var body=document.getElementById('ss-form-body');
   body.innerHTML='<tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr>';
   document.getElementById('ss-save-msg').textContent='';
@@ -2829,7 +2881,7 @@ function renderSalesStatsFormTable(entries){
 }
 
 async function saveSalesStatsForm(){
-  var dateStr=document.getElementById('ss-date').value||todayISO();
+  var dateStr=safeDateFromInput('ss-date');
   document.querySelectorAll('#ss-form-body input').forEach(function(inp){
     var i=parseInt(inp.getAttribute('data-i'));var f=inp.getAttribute('data-f');
     if(ssCurrentEntries[i])ssCurrentEntries[i][f]=parseInt(inp.value)||0;
@@ -3086,7 +3138,7 @@ async function selectDealCar(idx){
     var names=c.reservedBy.map(function(r){return r.name+(r.date?' ('+r.date+')':'');}).join(', ');
     if(!confirm('รถคันนี้ ('+(c.plate||'')+') มีคนจองไว้แล้ว: '+names+'\n\nยืนยันจะบันทึกซ้ำคันนี้ใช่ไหม? (เผื่อกันไว้เป็นตัวเลือกสำรอง)'))return;
   }
-  var dateStr=document.getElementById('ss-date').value||todayISO();
+  var dateStr=safeDateFromInput('ss-date');
   try{
     if(ddEditRowIndex){
       // โหมดเปลี่ยนรถของดีลที่รอผลอยู่ — ไม่กระทบยอดจบ/ปล่อย/หลุด แค่อัปเดตรถในรายการเดิม
@@ -3150,7 +3202,7 @@ function renderPendingDealsList(deals){
 
 async function resolveDealCar(rowIndex,status){
   try{
-    var res=await apiPost({action:'resolveDeal',rowIndex:rowIndex,status:status,date:document.getElementById('ss-date').value||todayISO()});
+    var res=await apiPost({action:'resolveDeal',rowIndex:rowIndex,status:status,date:safeDateFromInput('ss-date')});
     if(!res||res.success===false)throw new Error((res&&res.error)||'อัปเดตไม่สำเร็จ');
     showToast('✅ บันทึก "'+status+'" สำเร็จ','s');
     loadPendingDealsList();
