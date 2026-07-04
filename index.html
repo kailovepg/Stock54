@@ -583,6 +583,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
         <div class="ph-acts">
           <button class="btn btn-act btn-sm js-car-manage-btn" onclick="openAddCarModal()">➕ เพิ่มรถใหม่</button>
           <button class="btn btn-out btn-sm js-car-manage-btn" onclick="openCarGroupAIModal()">✨ วิเคราะห์กลุ่มรถ</button>
+          <button class="btn btn-out btn-sm" id="btn-cost-preentry" style="display:none;" onclick="openCarCostModalPreEntry()">💰 บันทึกต้นทุนล่วงหน้า</button>
           <button class="btn btn-out btn-sm" onclick="exportPDF(adminFiltered,'สต๊อกรถ (Admin)')">📄 PDF</button>
           <button class="btn btn-out btn-sm" onclick="exportCSV(adminFiltered,'stock_admin')">📤 CSV</button>
         </div>
@@ -1242,6 +1243,9 @@ function applyRolePermissions(){
   document.querySelectorAll('.js-car-manage-btn').forEach(function(el){
     el.style.display = (role==='accounting') ? 'none' : '';
   });
+  // ปุ่มบันทึกต้นทุนล่วงหน้า (รถยังไม่เข้าสต๊อก) — โชว์เฉพาะคนที่มีสิทธิ์เขียนต้นทุนอย่างน้อย 1 ใน 2 โดเมน
+  var preEntryBtn=document.getElementById('btn-cost-preentry');
+  if(preEntryBtn) preEntryBtn.style.display = (costPermAtLeast('purchaseCost','write')||costPermAtLeast('expenseCost','write')) ? '' : 'none';
 }
 
 // ===== API =====
@@ -2094,6 +2098,35 @@ function openCarCostModal(idx){
   document.getElementById('cc-title').textContent='💰 ต้นทุน/ค่าใช้จ่าย — '+(car[COL.brand]||'')+' '+(car[COL.model]||'')+' ('+ccCurrentPlate+')';
   document.getElementById('cc-body').innerHTML='<div class="loading"><div class="spinner"></div></div>';
   openMo('modal-car-cost');
+  loadCarCostModal();
+}
+
+/**
+ * บันทึกต้นทุนล่วงหน้าก่อนรถจะมาถึง/เข้าสต๊อกจริง (เช่น บัญชีจ่ายเงินซื้อไปแล้วแต่รถยังไม่ถึงโชว์รูม)
+ * ผู้ใช้พิมพ์ทะเบียน+เลือกสาขาเอง แทนที่จะเลือกจากแถวในตารางสต๊อก — ข้อมูลจะถูกจับคู่อัตโนมัติกับรถจริง
+ * ในภายหลังตราบใดที่ Admin พิมพ์ทะเบียนตรงกัน (ระบบเทียบแบบตัดช่องว่าง/ตัวพิมพ์ใหญ่-เล็กให้อัตโนมัติ ไม่ต้องเป๊ะ 100%)
+ */
+function openCarCostModalPreEntry(){
+  document.getElementById('cc-title').textContent='💰 บันทึกต้นทุนล่วงหน้า (รถยังไม่เข้าสต๊อก)';
+  var branchOptions=branches.map(function(b){return '<option value="'+b+'">'+b+'</option>';}).join('');
+  document.getElementById('cc-body').innerHTML=
+    '<p style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">ใช้สำหรับกรณีจ่ายเงิน/มีค่าใช้จ่ายเกิดขึ้นก่อนที่รถจะถูกเพิ่มเข้าสต๊อกจริง — พิมพ์ทะเบียนให้ตรงกับที่จะใช้ตอนเพิ่มรถเข้าสต๊อกภายหลัง (เว้นวรรค/ตัวพิมพ์เล็กใหญ่ไม่เป็นไร ระบบจะจับคู่ให้เอง)</p>'
+    +'<div class="form-2col">'
+    +'<div class="fg"><label>ทะเบียน *</label><input type="text" id="cc-pre-plate" placeholder="กก 1234"></div>'
+    +'<div class="fg"><label>สาขา *</label><select id="cc-pre-branch"><option value="">เลือกสาขา</option>'+branchOptions+'</select></div>'
+    +'</div>'
+    +'<button class="btn btn-act btn-sm" onclick="confirmCarCostPreEntry()">เริ่มกรอกต้นทุน →</button>';
+  openMo('modal-car-cost');
+}
+
+function confirmCarCostPreEntry(){
+  var plate=document.getElementById('cc-pre-plate').value.trim();
+  var branch=document.getElementById('cc-pre-branch').value;
+  if(!plate||!branch){showToast('กรุณากรอกทะเบียนและเลือกสาขาให้ครบ','e');return;}
+  ccCurrentPlate=plate;
+  ccCurrentBranch=branch;
+  document.getElementById('cc-title').textContent='💰 ต้นทุน/ค่าใช้จ่าย — ทะเบียน '+plate+' ('+branch+', ยังไม่เข้าสต๊อก)';
+  document.getElementById('cc-body').innerHTML='<div class="loading"><div class="spinner"></div></div>';
   loadCarCostModal();
 }
 
