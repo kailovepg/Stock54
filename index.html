@@ -2885,9 +2885,13 @@ function renderUsersList(users){
 function restrictRoleOptions(){
   var sel=document.getElementById('u-role');
   var superOpt=sel.querySelector('option[value="superadmin"]');
-  if(superOpt) superOpt.style.display = (role==='superadmin') ? '' : 'none';
+  // bootstrap: ถ้าในระบบยังไม่มีใครเป็น superadmin เลยสักคน เปิดให้เลือกได้ชั่วคราว (ไม่งั้นจะไม่มีใครตั้งคนแรกได้เลย)
+  // พอมี superadmin คนแรกเกิดขึ้นแล้ว จะล็อกกลับมาเป็น "เฉพาะ superadmin เท่านั้นที่ตั้งคนต่อไปได้" ทันที
+  var noSuperAdminYet = !usersCache.some(function(u){return u.role==='superadmin';});
+  var canPick = (role==='superadmin') || noSuperAdminYet;
+  if(superOpt) superOpt.style.display = canPick ? '' : 'none';
   var hint=document.getElementById('u-role-hint');
-  if(hint) hint.textContent = (role==='superadmin') ? '' : 'เฉพาะ Super Admin เท่านั้นที่ตั้งพนักงานคนอื่นเป็น Super Admin ได้';
+  if(hint) hint.textContent = canPick ? (noSuperAdminYet&&role!=='superadmin'?'⚠️ ยังไม่มี Super Admin ในระบบ ตั้งคนแรกได้เลย':'') : 'เฉพาะ Super Admin เท่านั้นที่ตั้งพนักงานคนอื่นเป็น Super Admin ได้';
 }
 
 function openAddUserModal(){
