@@ -38,6 +38,8 @@ nav{background:var(--black);color:#fff;padding:0 22px;height:54px;display:flex;a
 .rbadge.admin{background:var(--red);color:#fff;}
 .rbadge.sales{background:var(--blue);color:#fff;}
 .rbadge.ceo{background:var(--black);color:#fff;}
+.rbadge.superadmin{background:#6D28D9;color:#fff;}
+.rbadge.accounting{background:var(--green);color:#fff;}
 .btn-nav{background:none;border:1px solid var(--gray-700);color:var(--gray-300);padding:4px 12px;border-radius:var(--r);cursor:pointer;font-size:12px;font-family:var(--font);transition:all .15s;}
 .btn-nav:hover{border-color:#fff;color:#fff;}
 
@@ -579,8 +581,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       <div class="ph">
         <div><div class="ph-title">สต๊อกรถ</div><div class="ph-sub" id="admin-count"></div></div>
         <div class="ph-acts">
-          <button class="btn btn-act btn-sm" onclick="openAddCarModal()">➕ เพิ่มรถใหม่</button>
-          <button class="btn btn-out btn-sm" onclick="openCarGroupAIModal()">✨ วิเคราะห์กลุ่มรถ</button>
+          <button class="btn btn-act btn-sm js-car-manage-btn" onclick="openAddCarModal()">➕ เพิ่มรถใหม่</button>
+          <button class="btn btn-out btn-sm js-car-manage-btn" onclick="openCarGroupAIModal()">✨ วิเคราะห์กลุ่มรถ</button>
           <button class="btn btn-out btn-sm" onclick="exportPDF(adminFiltered,'สต๊อกรถ (Admin)')">📄 PDF</button>
           <button class="btn btn-out btn-sm" onclick="exportCSV(adminFiltered,'stock_admin')">📤 CSV</button>
         </div>
@@ -766,6 +768,23 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
         <div id="col-toggles"><div class="loading"><div class="spinner"></div></div></div>
         <div style="margin-top:12px;"><button class="btn btn-act btn-sm" onclick="saveColSettings()">💾 บันทึก</button></div>
       </div>
+      <div class="set-section js-superadmin-only" style="display:none;">
+        <div class="set-title">🔐 จัดการสิทธิ์การเข้าถึง (เฉพาะ Super Admin)</div>
+        <p style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">กำหนดระดับสิทธิ์ของแต่ละบทบาทต่อโดเมนข้อมูล — none = ไม่เห็นเลย, read = ดูได้อย่างเดียว, write = แก้ไขได้, manage = จัดการเต็มรูปแบบ<br>Super Admin มีสิทธิ์เต็มทุกโดเมนเสมอโดยอัตโนมัติ ไม่ต้องตั้งค่าที่นี่</p>
+        <div id="perm-matrix-body"><div class="loading"><div class="spinner"></div></div></div>
+        <div style="margin-top:12px;"><button class="btn btn-act btn-sm" onclick="savePermissionsMatrix()">💾 บันทึกสิทธิ์</button></div>
+      </div>
+      <div class="set-section js-superadmin-only" style="display:none;">
+        <div class="set-title">📜 ประวัติการแก้ไขข้อมูล (Audit Log) — เฉพาะ Super Admin</div>
+        <p style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">บันทึกอัตโนมัติทุกครั้งที่มีการแก้ไขต้นทุน/ค่าใช้จ่าย/สิทธิ์ — แก้ไข/ลบผ่านหน้าเว็บไม่ได้ (ดูได้อย่างเดียว) แสดง 300 รายการล่าสุด</p>
+        <button class="btn btn-out btn-sm" onclick="loadAuditLog()" style="margin-bottom:10px;">🔄 โหลดประวัติ</button>
+        <div class="ss-table-wrap">
+          <table class="list-table" style="font-size:11px;">
+            <thead><tr><th>วันเวลา</th><th>ผู้ทำรายการ</th><th>บทบาท</th><th>สาขา</th><th>ทะเบียน</th><th>ฟิลด์ที่แก้</th><th>ค่าเดิม</th><th>ค่าใหม่</th></tr></thead>
+            <tbody id="audit-log-body"><tr><td colspan="8"><div class="empty" style="padding:16px 0;">กดปุ่ม "โหลดประวัติ" ด้านบน</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- ADMIN SALES STATS -->
@@ -830,7 +849,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
           <option value="sales">พนักงานขาย (Sales)</option>
           <option value="admin">Admin</option>
           <option value="ceo">CEO</option>
+          <option value="accounting">บัญชี (Accounting)</option>
+          <option value="superadmin">Super Admin</option>
         </select>
+        <p style="font-size:11px;color:var(--gray-500);margin-top:4px;" id="u-role-hint"></p>
       </div>
       <div class="fg" id="u-pwd-group"><label>รหัสผ่าน (ไม่จำเป็น)</label><input type="text" id="u-pwd" placeholder="เว้นว่างได้ถ้าไม่ต้องการให้ login เข้าระบบ"></div>
       <p id="u-pwd-hint" style="font-size:12px;color:var(--gray-500);margin-top:-6px;">💡 ถ้าเว้นรหัสผ่านว่าง ชื่อนี้จะใช้สำหรับบันทึกยอดขายเท่านั้น จะ login เข้าเว็บแอปไม่ได้</p>
@@ -985,6 +1007,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
   </div>
 </div>
 
+<!-- MODAL: ต้นทุน/ค่าใช้จ่ายรถรายคัน (สิทธิ์ตามบทบาท: ต้นทุนซื้อเข้า กับ ค่าใช้จ่าย/ค่าซ่อม แยกกัน) -->
+<div class="mo" id="modal-car-cost">
+  <div class="modal" style="max-width:640px;">
+    <div class="mh"><h3 id="cc-title">💰 ต้นทุน / ค่าใช้จ่าย</h3><button class="mc" onclick="closeMo('modal-car-cost')">✕</button></div>
+    <div class="mb" id="cc-body"><div class="loading"><div class="spinner"></div></div></div>
+    <div class="mf"><button class="btn btn-out" onclick="closeMo('modal-car-cost')">ปิด</button></div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <div id="undo-bar"><span id="undo-bar-text"></span><button onclick="performUndoMarkSold()">↩️ เลิกทำ</button></div>
 
@@ -1009,6 +1040,18 @@ var filteredCars=[], adminFiltered=[], filteredSold=[], filteredSoldSales=[];
 var sfBranch='', afBranch='', asdBranch='', ssfBranch='';
 var sfSort='', afSort='';
 var charts={};
+// สิทธิ์การเข้าถึงข้อมูลต้นทุน/ค่าใช้จ่ายของผู้ใช้ปัจจุบัน — โหลดครั้งเดียวตอน login แล้ว
+// ใช้ตัดสินใจว่าจะโชว์/ซ่อนปุ่ม "ต้นทุน" และปุ่มวิเคราะห์ AI ให้ role นี้ไหม (ค่าเริ่มต้น = ไม่มีสิทธิ์เลย ปลอดภัยไว้ก่อน)
+var myPermissions={purchaseCost:'none',expenseCost:'none'};
+const COST_DOMAIN_LABELS_TH={purchaseCost:'ต้นทุนซื้อเข้า',expenseCost:'ค่าใช้จ่าย/ค่าซ่อม'};
+const COST_PERM_RANK={manage:3,write:2,read:1,none:0};
+function costPermAtLeast(domain,minLevel){return (COST_PERM_RANK[myPermissions[domain]]||0) >= (COST_PERM_RANK[minLevel]||0);}
+async function loadMyPermissions(){
+  try{
+    var res=await apiGet('getMyPermissions',{});
+    if(res&&res.success)myPermissions=res.permissions||myPermissions;
+  }catch(e){ /* เงียบไว้ — ถ้าโหลดไม่สำเร็จ ค่าเริ่มต้น "none" ทั้งคู่ก็ยังปลอดภัย แค่ซ่อนปุ่มต้นทุนไปเฉยๆ */ }
+}
 
 /**
  * บาง webview ในตัว (เช่น เบราว์เซอร์ในแอป LINE / Facebook / Messenger ที่พนักงานมักใช้เปิดหน้านี้บนมือถือ)
@@ -1162,7 +1205,8 @@ polyfillDateInputs();
 	}
 
 	async function route(){
-	  if(role==='admin'||role==='ceo'){
+	  await loadMyPermissions();
+	  if(role==='admin'||role==='ceo'||role==='superadmin'||role==='accounting'){
 	    showPage('admin');
 	    applyRolePermissions();
 	    loadAdminData();
@@ -1174,14 +1218,29 @@ polyfillDateInputs();
 	}
 
 function applyRolePermissions(){
-  var isCeo = (role==='ceo');
   var badge = document.getElementById('nav-role-badge');
   var pill = document.getElementById('nav-role-pill');
-  if(badge) badge.textContent = isCeo ? 'CEO' : 'ADMIN';
-  if(pill){ pill.textContent = isCeo ? 'CEO' : 'Admin'; pill.classList.toggle('ceo', isCeo); pill.classList.toggle('admin', !isCeo); }
+  var roleLabelMap={admin:'ADMIN',ceo:'CEO',superadmin:'SUPER ADMIN',accounting:'บัญชี'};
+  var roleClassMap={admin:'admin',ceo:'ceo',superadmin:'superadmin',accounting:'accounting'};
+  var label = roleLabelMap[role] || role.toUpperCase();
+  if(badge) badge.textContent = label;
+  if(pill){
+    pill.textContent = label;
+    pill.className = 'rbadge '+(roleClassMap[role]||'admin');
+  }
+  // แท็บจัดการภายใน (บันทึกยอดขาย/ตั้งค่า/พนักงาน) เฉพาะ Admin กับ Super Admin เท่านั้น — CEO และบัญชีดูได้แค่ dashboard/สต๊อก/รถออก
+  var fullAccessTabs = (role==='admin'||role==='superadmin');
   ['salesstats','settings','users'].forEach(function(t){
     var btn = document.getElementById('tab-btn-'+t);
-    if(btn) btn.style.display = isCeo ? 'none' : '';
+    if(btn) btn.style.display = fullAccessTabs ? '' : 'none';
+  });
+  // ส่วนจัดการสิทธิ์ (_Permissions) และ audit log — Super Admin เท่านั้นที่เห็น แม้จะอยู่ในแท็บตั้งค่าเดียวกับ Admin ก็ตาม
+  document.querySelectorAll('.js-superadmin-only').forEach(function(el){
+    el.style.display = (role==='superadmin') ? '' : 'none';
+  });
+  // ปุ่มจัดการรถ (เพิ่ม/วิเคราะห์กลุ่ม) — บัญชียังไม่มีสิทธิ์แก้ไขข้อมูลรถในรอบนี้ (backend บล็อกอยู่แล้ว ซ่อนปุ่มไปเลยกันสับสน)
+  document.querySelectorAll('.js-car-manage-btn').forEach(function(el){
+    el.style.display = (role==='accounting') ? 'none' : '';
   });
 }
 
@@ -1364,7 +1423,7 @@ async function loadAdminData(){
     if(settings.branches)document.getElementById('set-branches').value=settings.branches;
     document.getElementById('set-min-received').value=(settings.minReceivedThreshold!==undefined&&settings.minReceivedThreshold!==null)?settings.minReceivedThreshold:5;
     updateGeminiKeyStatus(!!settings.geminiApiKeySet);
-    loadAlerts();
+    if(role!=='accounting') loadAlerts(); else { var ac=document.getElementById('alert-cards'); if(ac)ac.innerHTML=''; }
     startAutoRefresh();
   }catch(e){
     console.error('loadAdminData error:',e);
@@ -1863,7 +1922,9 @@ function renderAdminList(cars){
       +(o2c&&o2c.indexOf('http')===0?'<a href="'+o2c+'" target="_blank" class="btn btn-out btn-xs">🔗 one2car</a>':'')
       +(niwat&&niwat.indexOf('http')===0?'<a href="'+niwat+'" target="_blank" class="btn btn-act btn-xs">🔗 54niwat</a>':'')
       +'</div></td>'
-      +'<td onclick="event.stopPropagation()"><div style="display:flex;gap:4px;flex-wrap:wrap;"><button class="btn btn-out btn-xs" onclick="openEditCarModal('+idx+')">✏️ แก้ไข</button><button class="btn btn-act btn-xs" onclick="openMarkSoldModal('+idx+')">✅ ขายแล้ว</button></div></td>'
+      +'<td onclick="event.stopPropagation()"><div style="display:flex;gap:4px;flex-wrap:wrap;">'
+      +((role==='admin'||role==='ceo'||role==='superadmin')?'<button class="btn btn-out btn-xs" onclick="openEditCarModal('+idx+')">✏️ แก้ไข</button><button class="btn btn-act btn-xs" onclick="openMarkSoldModal('+idx+')">✅ ขายแล้ว</button>':'<span style="font-size:11px;color:var(--gray-500);">อ่านอย่างเดียว</span>')
+      +'</div></td>'
       +'</tr>';
   });
   tbody.innerHTML=html;
@@ -1939,6 +2000,15 @@ function showDetail(idx){
   if(niwat&&niwat.indexOf('http')===0)html+='<a href="'+niwat+'" target="_blank" class="link-btn lk2">🔗 54niwat.com</a>';
   html+='</div>';
   
+  // ปุ่มดูต้นทุน/ค่าใช้จ่าย — โชว์เฉพาะ role ที่มีสิทธิ์อ่านอย่างน้อย 1 ใน 2 โดเมน (ไม่งั้นกดไปก็เจอ error 403 เฉยๆ)
+  if(costPermAtLeast('purchaseCost','read')||costPermAtLeast('expenseCost','read')){
+    html+='<div style="margin-top:15px;padding-top:15px;border-top:1px dashed var(--gray-200);">'
+      +'<button class="btn btn-out" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;" onclick="openCarCostModal('+idx+')">'
+      +'<span>💰 ต้นทุน / ค่าใช้จ่าย</span>'
+      +'</button>'
+      +'</div>';
+  }
+
   // เพิ่มปุ่มสร้างคอนเทนต์ AI (เฉพาะ Admin/CEO)
   if(role==='admin'||role==='ceo'){
     html+='<div style="margin-top:15px;padding-top:15px;border-top:1px dashed var(--gray-200);">'
@@ -1989,6 +2059,217 @@ function copyAiContent(){
   document.execCommand('copy');
   document.body.removeChild(el);
   showToast('คัดลอกคอนเทนต์แล้ว ✅','s');
+}
+
+// ===== ต้นทุน / ค่าใช้จ่ายรถรายคัน (_CarCosts) =====
+// สิทธิ์แยก 2 โดเมนอิสระกัน: purchaseCost (ทุนซื้อเข้า+ข้อมูลผู้ขาย) กับ expenseCost (ค่าใช้จ่าย/ค่าซ่อม 18 รายการ)
+// ปุ่ม/ช่องกรอกแต่ละส่วนจะโชว์แบบแก้ไขได้เฉพาะถ้ามีสิทธิ์ write/manage ในโดเมนนั้น ไม่งั้นโชว์เป็นตัวเลขอ่านอย่างเดียว
+var ccCurrentPlate='', ccCurrentBranch='';
+const EXPENSE_FIELDS_UI=[
+  {key:'feePct5',label:'5%ซื้อ'},
+  {key:'titleCheck',label:'เช็คต้น (ประวัติกรมขนส่ง)'},
+  {key:'pickupCost',label:'รับรถ (เดินทาง/น้ำมัน)'},
+  {key:'paintwork',label:'เก็บสี'},
+  {key:'seatwork',label:'เบาะ'},
+  {key:'mileageAdjust',label:'ปรับไมล์'},
+  {key:'fuel',label:'น้ำมัน'},
+  {key:'battery',label:'แบตเตอรี่'},
+  {key:'engineWork',label:'ทำเครื่อง'},
+  {key:'plateWork',label:'ทำป้ายทะเบียน'},
+  {key:'aircon',label:'ทำแอร์'},
+  {key:'keyWork',label:'ทำกุญแจ'},
+  {key:'filmWork',label:'ทำฟิล์ม'},
+  {key:'electricalCheck',label:'เช็คระบบไฟฟ้ารถ'},
+  {key:'rimPolish',label:'ปัดแมกซ์'},
+  {key:'misc',label:'เบ็ดเตล็ด'},
+  {key:'commission',label:'คอมมิชชั่นนายหน้า'},
+  {key:'insurance',label:'W-Smart/GPS/Asia Care'},
+];
+
+function openCarCostModal(idx){
+  var car=allCars[idx];if(!car)return;
+  ccCurrentPlate=String(car[COL.plate]||'').trim();
+  ccCurrentBranch=car['_sheet']||'';
+  if(!ccCurrentPlate){showToast('รถคันนี้ยังไม่มีทะเบียน กรอกทะเบียนก่อนถึงจะบันทึกต้นทุนได้','e');return;}
+  document.getElementById('cc-title').textContent='💰 ต้นทุน/ค่าใช้จ่าย — '+(car[COL.brand]||'')+' '+(car[COL.model]||'')+' ('+ccCurrentPlate+')';
+  document.getElementById('cc-body').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  openMo('modal-car-cost');
+  loadCarCostModal();
+}
+
+async function loadCarCostModal(){
+  var body=document.getElementById('cc-body');
+  try{
+    var res=await apiGet('getCarCost',{plate:ccCurrentPlate,branch:ccCurrentBranch});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'โหลดไม่สำเร็จ');
+    renderCarCostModal(res.data);
+  }catch(e){
+    body.innerHTML='<div class="empty">❌ '+e.message+'</div>';
+  }
+}
+
+function renderCarCostModal(d){
+  var html='';
+
+  if(d.canReadPurchase){
+    html+='<div style="font-size:13px;font-weight:700;margin-bottom:8px;">🧾 ข้อมูลผู้ขาย / ต้นทุนซื้อเข้า</div>';
+    html+='<div class="form-2col">'
+      +'<div class="fg"><label>ชื่อผู้ขาย</label><input type="text" id="cc-sellerName" value="'+esc(d.sellerName)+'" '+(d.canWritePurchase?'':'disabled')+'></div>'
+      +'<div class="fg"><label>เบอร์โทรศัพท์</label><input type="text" id="cc-sellerPhone" value="'+esc(d.sellerPhone)+'" '+(d.canWritePurchase?'':'disabled')+'></div>'
+      +'<div class="fg"><label>สรุปบัญชีเดือน</label><input type="month" id="cc-accountMonth" value="'+esc(d.accountMonth)+'" '+(d.canWritePurchase?'':'disabled')+'></div>'
+      +'<div class="fg"><label>วันที่ซื้อเข้า</label><input type="date" id="cc-costDate" value="'+esc(d.costDate)+'" '+(d.canWritePurchase?'':'disabled')+'></div>'
+      +'</div>'
+      +'<div class="fg" style="max-width:220px;"><label>ทุนซื้อเข้า (บาท)</label><input type="number" id="cc-purchaseCost" value="'+(d.purchaseCost||0)+'" '+(d.canWritePurchase?'':'disabled')+'></div>';
+    if(d.canWritePurchase){
+      html+='<button class="btn btn-act btn-sm" onclick="saveCarPurchaseCostModal()">💾 บันทึกต้นทุนซื้อเข้า</button>';
+    }else{
+      html+='<div style="font-size:11px;color:var(--gray-500);">🔒 คุณมีสิทธิ์ดูอย่างเดียว ไม่สามารถแก้ไขส่วนนี้ได้</div>';
+    }
+    html+='<div style="height:1px;background:var(--gray-100);margin:16px 0;"></div>';
+  }
+
+  if(d.canReadExpense){
+    html+='<div style="font-size:13px;font-weight:700;margin-bottom:8px;">🔧 ค่าใช้จ่าย / ค่าซ่อม</div>';
+    html+='<div class="form-2col">';
+    EXPENSE_FIELDS_UI.forEach(function(f){
+      var val=(d.expenses&&d.expenses[f.key])||0;
+      html+='<div class="fg"><label>'+f.label+'</label><input type="number" class="cc-exp-input" data-key="'+f.key+'" value="'+val+'" '+(d.canWriteExpense?'':'disabled')+'></div>';
+    });
+    html+='</div>';
+    if(d.canWriteExpense){
+      html+='<button class="btn btn-act btn-sm" onclick="saveCarExpensesModal()">💾 บันทึกค่าใช้จ่าย</button>';
+    }else{
+      html+='<div style="font-size:11px;color:var(--gray-500);">🔒 คุณมีสิทธิ์ดูอย่างเดียว ไม่สามารถแก้ไขส่วนนี้ได้</div>';
+    }
+    html+='<div style="height:1px;background:var(--gray-100);margin:16px 0;"></div>';
+  }
+
+  if(d.canReadPurchase&&d.canReadExpense){
+    html+='<div class="price-box"><div style="font-size:11px;color:var(--gray-500);margin-bottom:4px;">ต้นทุนรถรวม (คำนวณอัตโนมัติ)</div>'
+      +'<div class="price-main" id="cc-total-cost">฿'+fmtM(d.totalCost||0)+'</div>'
+      +'<div style="font-size:11px;color:var(--gray-500);margin-top:4px;">= ทุนซื้อเข้า ฿'+fmtM(d.purchaseCost||0)+' + ค่าใช้จ่ายรวม <span id="cc-total-expense">฿'+fmtM(d.totalExpense||0)+'</span></div>'
+      +'</div>';
+  }
+
+  if(d.lastEditedBy){
+    html+='<div style="font-size:11px;color:var(--gray-500);margin-top:8px;">แก้ไขล่าสุดโดย '+esc(d.lastEditedBy)+' • '+fmtDate(d.lastEditedAt)+'</div>';
+  }
+
+  document.getElementById('cc-body').innerHTML=html;
+  polyfillDateInputs(); // ช่อง cc-costDate เพิ่งถูกสร้างใหม่ตอนนี้ ต้องเรียกซ้ำเผื่อ webview ไม่รองรับ date picker
+}
+
+function esc(v){return String(v==null?'':v).replace(/"/g,'&quot;');}
+
+async function saveCarPurchaseCostModal(){
+  var payload={
+    action:'saveCarPurchaseCost',
+    plate:ccCurrentPlate, branch:ccCurrentBranch,
+    sellerName:document.getElementById('cc-sellerName').value.trim(),
+    sellerPhone:document.getElementById('cc-sellerPhone').value.trim(),
+    accountMonth:document.getElementById('cc-accountMonth').value,
+    costDate:safeDateFromInput('cc-costDate'),
+    purchaseCost:Number(document.getElementById('cc-purchaseCost').value)||0,
+  };
+  try{
+    var res=await apiPost(payload);
+    if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
+    showToast('✅ '+(res.message||'บันทึกสำเร็จ'),'s');
+    loadCarCostModal();
+  }catch(e){
+    showToast('⚠️ '+e.message,'e');
+  }
+}
+
+async function saveCarExpensesModal(){
+  var expenses={};
+  document.querySelectorAll('#cc-body .cc-exp-input').forEach(function(el){
+    expenses[el.getAttribute('data-key')]=Number(el.value)||0;
+  });
+  try{
+    var res=await apiPost({action:'saveCarExpenses',plate:ccCurrentPlate,branch:ccCurrentBranch,expenses:expenses});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
+    showToast('✅ '+(res.message||'บันทึกสำเร็จ'),'s');
+    loadCarCostModal();
+  }catch(e){
+    showToast('⚠️ '+e.message,'e');
+  }
+}
+
+// ===== จัดการสิทธิ์ (_Permissions) — Super Admin เท่านั้น =====
+var permMatrixData=null;
+async function loadPermissionsMatrix(){
+  var body=document.getElementById('perm-matrix-body');
+  if(!body)return;
+  body.innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  try{
+    var res=await apiGet('getPermissionsMatrix',{});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'โหลดไม่สำเร็จ');
+    permMatrixData=res;
+    renderPermMatrix(res);
+  }catch(e){
+    body.innerHTML='<div class="empty">❌ '+e.message+'</div>';
+  }
+}
+
+function renderPermMatrix(res){
+  var body=document.getElementById('perm-matrix-body');
+  var html='<table class="list-table"><thead><tr><th>บทบาท</th>';
+  res.domains.forEach(function(d){html+='<th>'+(res.domainLabels[d]||d)+'</th>';});
+  html+='</tr></thead><tbody>';
+  res.roles.forEach(function(r){
+    html+='<tr><td class="ss-name-cell">'+r+'</td>';
+    res.domains.forEach(function(d){
+      var row=res.rows.find(function(x){return x.role===r&&x.domain===d;});
+      var current=row?row.level:'none';
+      html+='<td><select class="perm-select" data-role="'+r+'" data-domain="'+d+'" style="font-size:12px;padding:4px 6px;">';
+      res.levels.forEach(function(lv){html+='<option value="'+lv+'" '+(lv===current?'selected':'')+'>'+lv+'</option>';});
+      html+='</select></td>';
+    });
+    html+='</tr>';
+  });
+  html+='</tbody></table>';
+  body.innerHTML=html;
+}
+
+async function savePermissionsMatrix(){
+  if(!permMatrixData)return;
+  var rows=[];
+  document.querySelectorAll('.perm-select').forEach(function(el){
+    rows.push({role:el.getAttribute('data-role'),domain:el.getAttribute('data-domain'),level:el.value});
+  });
+  try{
+    var res=await apiPost({action:'savePermissionsMatrix',rows:rows});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
+    showToast('✅ '+(res.message||'บันทึกสิทธิ์สำเร็จ'),'s');
+    loadPermissionsMatrix();
+  }catch(e){
+    showToast('⚠️ '+e.message,'e');
+  }
+}
+
+// ===== Audit Log — Super Admin เท่านั้น (ดูอย่างเดียว) =====
+async function loadAuditLog(){
+  var body=document.getElementById('audit-log-body');
+  body.innerHTML='<tr><td colspan="8"><div class="loading"><div class="spinner"></div></div></td></tr>';
+  try{
+    var res=await apiGet('getAuditLog',{});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'โหลดไม่สำเร็จ');
+    renderAuditLog(res.rows||[]);
+  }catch(e){
+    body.innerHTML='<tr><td colspan="8"><div class="empty">❌ '+e.message+'</div></td></tr>';
+  }
+}
+function renderAuditLog(rows){
+  var body=document.getElementById('audit-log-body');
+  if(!rows.length){body.innerHTML='<tr><td colspan="8"><div class="empty">ยังไม่มีประวัติการแก้ไข</div></td></tr>';return;}
+  var html='';
+  rows.forEach(function(r){
+    html+='<tr><td class="mono">'+r.time+'</td><td>'+r.name+'</td><td>'+roleLabel(r.role)+'</td><td>'+(r.branch||'-')+'</td>'
+      +'<td class="mono">'+(r.plate||'-')+'</td><td>'+r.field+'</td>'
+      +'<td class="mono">'+r.oldVal+'</td><td class="mono">'+r.newVal+'</td></tr>';
+  });
+  body.innerHTML=html;
 }
 
 /** เปลี่ยนสถานะรถ (ขาย/ใช้งาน) จาก dropdown ในหน้ารายละเอียดรถ — บันทึกเข้าชีตทันที ไม่ต้องเปิด Google Sheets */
@@ -2565,8 +2846,10 @@ async function loadUsersList(){
 }
 
 function roleLabel(r){
+  if(r==='superadmin')return '<span class="rbadge superadmin">Super Admin</span>';
   if(r==='admin')return '<span class="rbadge admin">Admin</span>';
   if(r==='ceo')return '<span class="rbadge ceo">CEO</span>';
+  if(r==='accounting')return '<span class="rbadge accounting">บัญชี</span>';
   return '<span class="rbadge sales">พนักงานขาย</span>';
 }
 
@@ -2598,6 +2881,15 @@ function renderUsersList(users){
   body.innerHTML=html;
 }
 
+/** ซ่อนตัวเลือก "Super Admin" ออกจาก dropdown ถ้าคนที่ล็อกอินอยู่ไม่ใช่ Super Admin เอง — กัน Admin ทั่วไปตั้งคนอื่นเป็น Super Admin ได้ตามใจ */
+function restrictRoleOptions(){
+  var sel=document.getElementById('u-role');
+  var superOpt=sel.querySelector('option[value="superadmin"]');
+  if(superOpt) superOpt.style.display = (role==='superadmin') ? '' : 'none';
+  var hint=document.getElementById('u-role-hint');
+  if(hint) hint.textContent = (role==='superadmin') ? '' : 'เฉพาะ Super Admin เท่านั้นที่ตั้งพนักงานคนอื่นเป็น Super Admin ได้';
+}
+
 function openAddUserModal(){
   userModalMode='add';
   userModalEditRow=null;
@@ -2608,6 +2900,7 @@ function openAddUserModal(){
   document.getElementById('u-pwd-group').style.display='';
   document.getElementById('u-pwd-hint').style.display='';
   document.getElementById('u-save-btn').textContent='เพิ่ม';
+  restrictRoleOptions();
   openMo('modal-user');
 }
 
@@ -2623,6 +2916,7 @@ function openEditUserModal(rowIndex){
   document.getElementById('u-pwd-group').style.display='none';
   document.getElementById('u-pwd-hint').style.display='none';
   document.getElementById('u-save-btn').textContent='บันทึกการแก้ไข';
+  restrictRoleOptions();
   openMo('modal-user');
 }
 
@@ -2814,6 +3108,7 @@ function switchTab(tab){
   if(tab==='sold')filterSold();
   if(tab==='salesstats')initSalesStatsTab();
   if(tab==='users')loadUsersList();
+  if(tab==='settings'&&role==='superadmin')loadPermissionsMatrix();
 }
 
 // ===== UTILS =====
