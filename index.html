@@ -1350,10 +1350,12 @@ function renderAlertCards(data){
 
   var pd=data.pendingDeals||{count:0,redCount:0,yellowCount:0};
   var ba=data.belowAverage||{count:0};
+  var br=data.belowAverageRelease||{count:0};
   var ag=data.agingStock||{count:0,redCount:0,yellowCount:0};
 
   var pdClass=alertLevelClass(pd.count,pd.redCount);
   var baClass=ba.count>0?'warn-yellow':'ok';
+  var brClass=br.count>0?'warn-yellow':'ok';
   var agClass=alertLevelClass(ag.count,ag.redCount);
 
   var html='';
@@ -1367,6 +1369,12 @@ function renderAlertCards(data){
     +'<div class="alert-icon">📉</div>'
     +'<div class="alert-body"><div class="alert-num">'+ba.count+' คน</div><div class="alert-label">เซลล์ %จบ ต่ำกว่าเฉลี่ย</div>'
     +'<div class="alert-sub">'+(ba.eligibleCount?'เฉลี่ยกลุ่ม '+ba.avgPct+'% (เดือนนี้)':'ยังไม่มีคนเข้าเกณฑ์เทียบ')+'</div>'
+    +'</div></div>';
+
+  html+='<div class="alert-card '+brClass+'" onclick="openBelowAverageReleaseAlertModal()">'
+    +'<div class="alert-icon">📤</div>'
+    +'<div class="alert-body"><div class="alert-num">'+br.count+' คน</div><div class="alert-label">เซลล์ %ปล่อย ต่ำกว่าเฉลี่ย</div>'
+    +'<div class="alert-sub">'+(br.eligibleCount?'เฉลี่ยกลุ่ม '+br.avgPct+'% (เดือนนี้)':'ยังไม่มีคนเข้าเกณฑ์เทียบ')+'</div>'
     +'</div></div>';
 
   html+='<div class="alert-card '+agClass+'" onclick="openAgingStockAlertModal()">'
@@ -1413,6 +1421,28 @@ function openBelowAverageAlertModal(){
     html+='<div class="alert-detail-item lvl-yellow">'
       +'<div class="alert-detail-main"><strong>'+it.name+'</strong>'
       +'<div class="meta">รับเบอร์ '+it.received+' • จบ '+it.closed+' คัน • %จบ '+it.pctClosed+'%</div></div>'
+      +'<div class="alert-detail-days lvl-yellow">ต่ำกว่าเฉลี่ย '+diff+' จุด</div>'
+      +'</div>';
+  });
+  body.innerHTML=html;
+  openMo('modal-alert-detail');
+}
+
+function openBelowAverageReleaseAlertModal(){
+  if(!alertsData)return;
+  var br=alertsData.belowAverageRelease;
+  document.getElementById('alert-detail-title').textContent='📤 เซลล์ %ปล่อย ต่ำกว่าเฉลี่ย';
+  document.getElementById('alert-detail-sub').textContent='เดือน '+thMonthLabel(br.month)+' — เฉลี่ยกลุ่ม '+br.avgPct+'% (นับเฉพาะคนที่ได้รับเบอร์ตั้งแต่ '+br.minReceivedThreshold+' เบอร์ขึ้นไป'
+    +(br.excludedCount?', ไม่รวม '+br.excludedCount+' คนที่ได้เบอร์น้อยกว่าเกณฑ์':'')+')';
+  document.getElementById('alert-ai-section').style.display='none';
+  var body=document.getElementById('alert-detail-body');
+  if(!br.items.length){body.innerHTML='<div class="empty" style="padding:20px 0;">ไม่มีเซลล์ที่ %ปล่อย ต่ำกว่าค่าเฉลี่ยในขณะนี้ 🎉</div>';openMo('modal-alert-detail');return;}
+  var html='';
+  br.items.forEach(function(it){
+    var diff=Math.round((br.avgPct-it.pctReleased)*10)/10;
+    html+='<div class="alert-detail-item lvl-yellow">'
+      +'<div class="alert-detail-main"><strong>'+it.name+'</strong>'
+      +'<div class="meta">รับเบอร์ '+it.received+' • จบ '+it.closed+' คัน • ปล่อย '+it.released+' คัน • %ปล่อย '+it.pctReleased+'%</div></div>'
       +'<div class="alert-detail-days lvl-yellow">ต่ำกว่าเฉลี่ย '+diff+' จุด</div>'
       +'</div>';
   });
