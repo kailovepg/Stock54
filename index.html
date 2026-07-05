@@ -776,6 +776,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
         <div style="margin-top:12px;"><button class="btn btn-act btn-sm" onclick="savePermissionsMatrix()">💾 บันทึกสิทธิ์</button></div>
       </div>
       <div class="set-section js-superadmin-only" style="display:none;">
+        <div class="set-title">🔍 เติมสาขาอัตโนมัติจากทะเบียน (_CarCosts)</div>
+        <p style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">ใช้เมื่อ copy ข้อมูลต้นทุนจาก Excel มาวางในชีต <code>_CarCosts</code> แล้วไม่ได้ระบุคอลัมน์ "สาขา" ไว้ (เช่น บัญชีต้นทางไม่มีข้อมูลนี้) — ระบบจะค้นทะเบียนที่ไม่มีสาขาทุกแถว เทียบกับทะเบียนที่มีอยู่จริงในชีตสต๊อก/รถออกทุกสาขา แล้วเติมสาขาให้อัตโนมัติเฉพาะกรณีที่เจอสาขาเดียวชัดเจนเท่านั้น (ถ้าทะเบียนซ้ำกันข้ามสาขา หรือหาไม่เจอเลย จะข้ามไว้ให้แก้เอง ไม่เดามั่ว)</p>
+        <button class="btn btn-act btn-sm" onclick="resolveCostBranches()">🔍 เริ่มเติมสาขาอัตโนมัติ</button>
+        <div id="resolve-branch-result" style="margin-top:12px;"></div>
+      </div>
+      <div class="set-section js-superadmin-only" style="display:none;">
         <div class="set-title">📜 ประวัติการแก้ไขข้อมูล (Audit Log) — เฉพาะ Super Admin</div>
         <p style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">บันทึกอัตโนมัติทุกครั้งที่มีการแก้ไขต้นทุน/ค่าใช้จ่าย/สิทธิ์ — แก้ไข/ลบผ่านหน้าเว็บไม่ได้ (ดูได้อย่างเดียว) แสดง 300 รายการล่าสุด</p>
         <button class="btn btn-out btn-sm" onclick="loadAuditLog()" style="margin-bottom:10px;">🔄 โหลดประวัติ</button>
@@ -2288,6 +2294,28 @@ async function savePermissionsMatrix(){
     loadPermissionsMatrix();
   }catch(e){
     showToast('⚠️ '+e.message,'e');
+  }
+}
+
+async function resolveCostBranches(){
+  var resultEl=document.getElementById('resolve-branch-result');
+  resultEl.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังค้นหาสาขาจากทะเบียน...</div>';
+  try{
+    var res=await apiPost({action:'resolveCostBranches'});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'ทำรายการไม่สำเร็จ');
+    var html='<div class="ai-result-box">✅ เติมสาขาอัตโนมัติสำเร็จ <strong>'+res.resolvedCount+'</strong> แถว</div>';
+    if(res.ambiguous&&res.ambiguous.length){
+      html+='<div class="dd-warn" style="margin-top:8px;">⚠️ พบทะเบียนซ้ำกันมากกว่า 1 สาขา '+res.ambiguous.length+' รายการ (ต้องเข้าไปแก้เองใน _CarCosts):<br>'
+        +res.ambiguous.map(function(a){return a.plate+' → พบใน: '+a.branches.join(', ');}).join('<br>')
+        +'</div>';
+    }
+    if(res.unresolved&&res.unresolved.length){
+      html+='<div class="dd-warn" style="margin-top:8px;">❌ หาทะเบียนเหล่านี้ไม่เจอในระบบเลย '+res.unresolved.length+' รายการ (อาจพิมพ์ทะเบียนผิด หรือรถยังไม่เคยเข้าสต๊อก):<br>'+res.unresolved.join(', ')+'</div>';
+    }
+    resultEl.innerHTML=html;
+    showToast('✅ '+res.message,'s');
+  }catch(e){
+    resultEl.innerHTML='<div class="ai-result-box err">❌ '+e.message+'</div>';
   }
 }
 
