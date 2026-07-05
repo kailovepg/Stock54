@@ -2003,7 +2003,17 @@ function showDetail(idx){
   if(photo&&photo.indexOf('http')===0)html+='<a href="'+photo+'" target="_blank" class="link-btn lk1">🔗 one2car</a>';
   if(niwat&&niwat.indexOf('http')===0)html+='<a href="'+niwat+'" target="_blank" class="link-btn lk2">🔗 54niwat.com</a>';
   html+='</div>';
-  
+
+  // ปุ่มแก้ไข/ขายแล้ว — เดิมมีแค่ในตารางที่จอกว้าง แต่บนมือถือคอลัมน์ "จัดการ" ถูกซ่อนไปกับคอลัมน์ที่ 5 เป็นต้นไป
+  // (ดู CSS: .list-table td:nth-child(n+5){display:none}) ทำให้กดแก้ไข/บันทึกขายจากมือถือไม่ได้เลย
+  // ย้ายมาใส่ในนี้ด้วย เพื่อให้กดได้จากหน้ารายละเอียดเสมอ ไม่ว่าจะเปิดจากจอมือถือหรือจอกว้าง
+  if(role==='admin'||role==='ceo'||role==='superadmin'){
+    html+='<div style="display:flex;gap:8px;margin-top:12px;">'
+      +'<button class="btn btn-out" style="flex:1;" onclick="closeMo(\'modal-detail\');openEditCarModal('+idx+')">✏️ แก้ไขข้อมูลรถ</button>'
+      +'<button class="btn btn-act" style="flex:1;" onclick="closeMo(\'modal-detail\');openMarkSoldModal('+idx+')">✅ บันทึกขายแล้ว</button>'
+      +'</div>';
+  }
+
   // ปุ่มดูต้นทุน/ค่าใช้จ่าย — โชว์เฉพาะ role ที่มีสิทธิ์อ่านอย่างน้อย 1 ใน 2 โดเมน (ไม่งั้นกดไปก็เจอ error 403 เฉยๆ)
   if(costPermAtLeast('purchaseCost','read')||costPermAtLeast('expenseCost','read')){
     html+='<div style="margin-top:15px;padding-top:15px;border-top:1px dashed var(--gray-200);">'
