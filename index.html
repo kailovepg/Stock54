@@ -778,7 +778,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       <div class="set-section js-superadmin-only" style="display:none;">
         <div class="set-title">🔍 เติมสาขาอัตโนมัติจากทะเบียน (_CarCosts)</div>
         <p style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">ใช้เมื่อ copy ข้อมูลต้นทุนจาก Excel มาวางในชีต <code>_CarCosts</code> แล้วไม่ได้ระบุคอลัมน์ "สาขา" ไว้ (เช่น บัญชีต้นทางไม่มีข้อมูลนี้) — ระบบจะค้นทะเบียนที่ไม่มีสาขาทุกแถว เทียบกับทะเบียนที่มีอยู่จริงในชีตสต๊อก/รถออกทุกสาขา แล้วเติมสาขาให้อัตโนมัติเฉพาะกรณีที่เจอสาขาเดียวชัดเจนเท่านั้น (ถ้าทะเบียนซ้ำกันข้ามสาขา หรือหาไม่เจอเลย จะข้ามไว้ให้แก้เอง ไม่เดามั่ว)</p>
-        <button class="btn btn-act btn-sm" onclick="resolveCostBranches()">🔍 เริ่มเติมสาขาอัตโนมัติ</button>
+        <button class="btn btn-act btn-sm" onclick="resolveCostBranches(this)">🔍 เริ่มเติมสาขาอัตโนมัติ</button>
         <div id="resolve-branch-result" style="margin-top:12px;"></div>
       </div>
       <div class="set-section js-superadmin-only" style="display:none;">
@@ -1277,13 +1277,24 @@ async function apiGet(action,params){
 }
 async function apiPost(data){
   data.token=authToken;
-  var res=await fetch(API,{method:'POST',body:JSON.stringify(data),headers:{'Content-Type':'text/plain;charset=utf-8'}});
-  var text=await res.text();
-  var parsed;
-  try{parsed=JSON.parse(text);}
-  catch(e){console.error('POST parse error:',text.substring(0,200));return{success:false,error:'ตอบกลับไม่ถูกต้อง'};}
-  if(res.status===401||parsed.code==='AUTH_REQUIRED'){handleAuthExpired();return{success:false,error:'เซสชันหมดอายุ'};}
-  return parsed;
+  // ตั้ง timeout ไว้ 5 นาที (ใกล้เคียงเพดานสูงสุดที่ Apps Script รันได้จริงคือ 6 นาที) — เดิมไม่มี timeout เลย
+  // ทำให้ตอนที่ backend ค้าง/ช้าผิดปกติ (เช่น query ข้อมูลเยอะเกินไป) หน้าเว็บจะรอเงียบๆ ไม่มีที่สิ้นสุด ไม่รู้ว่าเกิดอะไรขึ้น
+  var controller=new AbortController();
+  var tid=setTimeout(function(){controller.abort();},300000);
+  try{
+    var res=await fetch(API,{method:'POST',body:JSON.stringify(data),headers:{'Content-Type':'text/plain;charset=utf-8'},signal:controller.signal});
+    clearTimeout(tid);
+    var text=await res.text();
+    var parsed;
+    try{parsed=JSON.parse(text);}
+    catch(e){console.error('POST parse error:',text.substring(0,200));return{success:false,error:'ตอบกลับไม่ถูกต้อง'};}
+    if(res.status===401||parsed.code==='AUTH_REQUIRED'){handleAuthExpired();return{success:false,error:'เซสชันหมดอายุ'};}
+    return parsed;
+  }catch(fe){
+    clearTimeout(tid);
+    if(fe.name==='AbortError')return{success:false,error:'คำขอใช้เวลานานเกินไป (เกิน 5 นาที) — ข้อมูลอาจเยอะเกินไปสำหรับการประมวลผลครั้งเดียว ลองใหม่อีกครั้งหรือแจ้งผู้ดูแลระบบ'};
+    return{success:false,error:'เชื่อมต่อไม่ได้: '+fe.message};
+  }
 }
 
 // ===== PRICE HELPERS =====
@@ -2297,9 +2308,10 @@ async function savePermissionsMatrix(){
   }
 }
 
-async function resolveCostBranches(){
+async function resolveCostBranches(btn){
   var resultEl=document.getElementById('resolve-branch-result');
-  resultEl.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังค้นหาสาขาจากทะเบียน...</div>';
+  if(btn){btn.disabled=true;btn.textContent='⏳ กำลังประมวลผล...';}
+  resultEl.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังไล่ตรวจข้อมูลทุกสาขา — ถ้าข้อมูลเยอะอาจใช้เวลาถึง 1-2 นาที กรุณาอย่าปิดหน้าเว็บ...</div>';
   try{
     var res=await apiPost({action:'resolveCostBranches'});
     if(!res||res.success===false)throw new Error((res&&res.error)||'ทำรายการไม่สำเร็จ');
@@ -2316,6 +2328,8 @@ async function resolveCostBranches(){
     showToast('✅ '+res.message,'s');
   }catch(e){
     resultEl.innerHTML='<div class="ai-result-box err">❌ '+e.message+'</div>';
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='🔍 เริ่มเติมสาขาอัตโนมัติ';}
   }
 }
 
