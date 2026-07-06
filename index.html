@@ -551,9 +551,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
           <div class="ss-month-pick"><input type="month" id="ss-month" onchange="loadSalesStatsDashboard()"></div>
           <div style="position:relative;">
             <button class="btn btn-out btn-sm" onclick="toggleExportMenu()">⬇️ ส่งออก</button>
-            <div id="export-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--gray-200);border-radius:var(--r);box-shadow:var(--shl);z-index:50;min-width:140px;overflow:hidden;">
-              <button class="btn" style="width:100%;justify-content:flex-start;border-radius:0;background:none;" onclick="exportSalesStatsReport('pdf')">📄 PDF</button>
-              <button class="btn" style="width:100%;justify-content:flex-start;border-radius:0;background:none;" onclick="exportSalesStatsReport('jpg')">🖼️ JPG</button>
+            <div id="export-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--gray-200);border-radius:var(--r);box-shadow:var(--shl);z-index:50;min-width:180px;overflow:hidden;">
+              <button class="btn" style="width:100%;justify-content:flex-start;border-radius:0;background:none;" onclick="exportSalesStatsReport('pdf')">📄 PDF (สรุปเดือนนี้)</button>
+              <button class="btn" style="width:100%;justify-content:flex-start;border-radius:0;background:none;" onclick="exportSalesStatsReport('jpg')">🖼️ JPG (สรุปเดือนนี้)</button>
+              <button class="btn" style="width:100%;justify-content:flex-start;border-radius:0;background:none;border-top:1px solid var(--gray-100);" onclick="openDetailedReportModal()">📋 รายงานละเอียด (แยกรายคัน)</button>
             </div>
           </div>
         </div>
@@ -1020,6 +1021,27 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
     <div class="mh"><h3 id="cc-title">💰 ต้นทุน / ค่าใช้จ่าย</h3><button class="mc" onclick="closeMo('modal-car-cost')">✕</button></div>
     <div class="mb" id="cc-body"><div class="loading"><div class="spinner"></div></div></div>
     <div class="mf"><button class="btn btn-out" onclick="closeMo('modal-car-cost')">ปิด</button></div>
+  </div>
+</div>
+
+<!-- MODAL: เลือกช่วงเวลารายงานละเอียด (แยกรายคัน) -->
+<div class="mo" id="modal-detailed-report">
+  <div class="modal" style="max-width:380px;">
+    <div class="mh"><h3>📋 รายงานละเอียด</h3><button class="mc" onclick="closeMo('modal-detailed-report')">✕</button></div>
+    <div class="mb">
+      <p style="font-size:12px;color:var(--gray-500);margin-bottom:14px;">รายงานนี้แจกแจงเป็นรายคัน: รับไปกี่เบอร์ จบรถอะไร ปล่อยรถอะไร หลุดรถอะไร และรอผลอยู่กี่คัน — นับถอยหลังจากวันนี้</p>
+      <div class="fg"><label>ช่วงเวลา</label>
+        <select id="dr-period">
+          <option value="7">7 วันล่าสุด</option>
+          <option value="14">14 วันล่าสุด</option>
+          <option value="30">30 วันล่าสุด (1 เดือน)</option>
+        </select>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-out" onclick="closeMo('modal-detailed-report')">ยกเลิก</button>
+      <button class="btn btn-act" id="dr-generate-btn" onclick="generateDetailedReport()">📄 สร้างรายงาน (PDF)</button>
+    </div>
   </div>
 </div>
 
@@ -3334,6 +3356,78 @@ async function exportSalesStatsReport(format){
     console.error('export error:',e);
     showToast('⚠️ ส่งออกไม่สำเร็จ: '+e.message,'e');
   }
+}
+
+// ===== รายงานละเอียด (แยกรายคัน) — 7/14/30 วัน =====
+function openDetailedReportModal(){
+  var menu=document.getElementById('export-menu');
+  if(menu)menu.style.display='none';
+  openMo('modal-detailed-report');
+}
+
+async function generateDetailedReport(){
+  var days=document.getElementById('dr-period').value;
+  var btn=document.getElementById('dr-generate-btn');
+  btn.disabled=true;btn.textContent='⏳ กำลังสร้าง...';
+  try{
+    var res=await apiGet('getSalesStatsDetailedReport',{days:days});
+    if(!res||res.success===false)throw new Error((res&&res.error)||'สร้างรายงานไม่สำเร็จ');
+    renderDetailedReportPrintWindow(res);
+    closeMo('modal-detailed-report');
+  }catch(e){
+    showToast('⚠️ '+e.message,'e');
+  }finally{
+    btn.disabled=false;btn.textContent='📄 สร้างรายงาน (PDF)';
+  }
+}
+
+function renderDetailedReportPrintWindow(res){
+  var periodLabel=res.days+' วันล่าสุด ('+fmtDate(res.dateFrom)+' — '+fmtDate(res.dateTo)+')';
+  var carLine=function(c){return (c.brand||'')+' '+(c.model||'')+' — ทะเบียน '+(c.plate||'-')+' ('+(c.branch||'-')+') '+(c.date?'• '+fmtDate(c.date):'');};
+
+  var sections='';
+  res.employees.forEach(function(e){
+    sections+='<div class="emp-block">'
+      +'<div class="emp-name">'+e.name+' <span class="emp-received">รับเบอร์ '+e.received+' เบอร์</span></div>';
+
+    function group(title,cars,cls){
+      var html='<div class="grp"><div class="grp-title '+cls+'">'+title+' ('+cars.length+')</div>';
+      if(!cars.length){
+        html+='<div class="grp-empty">— ไม่มี —</div>';
+      }else{
+        html+='<ul>'+cars.map(function(c){return '<li>'+carLine(c)+'</li>';}).join('')+'</ul>';
+      }
+      html+='</div>';
+      return html;
+    }
+    sections+=group('✅ จบ',e.closedCars,'g-closed');
+    sections+=group('🔵 ปล่อย',e.releasedCars,'g-released');
+    sections+=group('🔴 หลุด',e.lostCars,'g-lost');
+    sections+=group('⏳ รอผล (ปัจจุบัน)',e.pendingCars,'g-pending');
+    sections+='</div>';
+  });
+
+  var win=window.open('','_blank');
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>รายงานละเอียดผลงานเซลล์</title>'
+    +'<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">'
+    +'<style>'
+    +'*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Sarabun,sans-serif;color:#111;padding:20px;line-height:1.5;}'
+    +'h1{font-size:18px;margin-bottom:2px;}.sub{font-size:12px;color:#666;margin-bottom:18px;}'
+    +'.emp-block{border:1px solid #ddd;border-radius:8px;padding:14px 16px;margin-bottom:14px;page-break-inside:avoid;}'
+    +'.emp-name{font-size:15px;font-weight:700;margin-bottom:8px;}'
+    +'.emp-received{font-size:12px;font-weight:400;color:#555;margin-left:8px;}'
+    +'.grp{margin-bottom:8px;}.grp-title{font-size:12px;font-weight:700;margin-bottom:3px;}'
+    +'.g-closed{color:#1A6B4A;}.g-released{color:#1D4ED8;}.g-lost{color:#C0392B;}.g-pending{color:#8C8880;}'
+    +'.grp ul{margin:0 0 0 18px;padding:0;font-size:12px;}'
+    +'.grp-empty{font-size:11px;color:#aaa;margin-left:2px;}'
+    +'@media print{@page{margin:12mm;}}'
+    +'</style></head><body>'
+    +'<h1>📋 รายงานละเอียดผลงานเซลล์ (แยกรายคัน)</h1>'
+    +'<div class="sub">ช่วงเวลา: '+periodLabel+' • สร้างเมื่อ '+new Date().toLocaleString('th-TH')+'</div>'
+    +sections
+    +'<script>window.onload=function(){setTimeout(function(){window.print();},400);}<\/script></body></html>');
+  win.document.close();
+  showToast('เปิดหน้าต่างพิมพ์แล้ว — เลือก "Save as PDF" ได้เลย ✅','s');
 }
 
 async function loadSalesStatsDashboard(){
