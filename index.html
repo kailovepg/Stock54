@@ -40,6 +40,7 @@ nav{background:var(--black);color:#fff;padding:0 22px;height:54px;display:flex;a
 .rbadge.ceo{background:var(--black);color:#fff;}
 .rbadge.superadmin{background:#6D28D9;color:#fff;}
 .rbadge.accounting{background:var(--green);color:#fff;}
+.rbadge.maintenance{background:var(--amber);color:#fff;}
 .btn-nav{background:none;border:1px solid var(--gray-700);color:var(--gray-300);padding:4px 12px;border-radius:var(--r);cursor:pointer;font-size:12px;font-family:var(--font);transition:all .15s;}
 .btn-nav:hover{border-color:#fff;color:#fff;}
 
@@ -330,7 +331,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
   <nav>
     <div class="nav-logo">AutoStock Pro <span class="nbadge">SALES</span></div>
 	    <div class="nav-r">
-	      <div class="nav-user"><span id="sales-name"></span> <span class="rbadge sales">พนักงานขาย</span></div>
+	      <div class="nav-user"><span id="sales-name"></span> <span id="sales-role-badge"></span></div>
 	      <button class="btn-nav" onclick="loadSalesData()" title="โหลดข้อมูลใหม่">รีเฟรช</button>
 	      <button id="sales-logout-btn" class="btn-nav" onclick="logout()">ออก</button>
 	    </div>
@@ -855,6 +856,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       <div class="fg"><label>บทบาท</label>
         <select id="u-role">
           <option value="sales">พนักงานขาย (Sales)</option>
+          <option value="maintenance">ทีมช่าง (Maintenance)</option>
           <option value="admin">Admin</option>
           <option value="ceo">CEO</option>
           <option value="accounting">บัญชี (Accounting)</option>
@@ -1242,7 +1244,13 @@ polyfillDateInputs();
 	  } else {
 	    showPage('sales');
 	    document.getElementById('sales-name').textContent = userName;
+	    var badgeEl=document.getElementById('sales-role-badge');
+	    if(badgeEl) badgeEl.outerHTML = role==='maintenance' ? '<span class="rbadge maintenance">ทีมช่าง</span>' : '<span class="rbadge sales">พนักงานขาย</span>';
 	    loadSalesData();
+	    if(role==='maintenance'){
+	      document.getElementById('sales-tabs').style.display='none'; // ทีมช่างไม่ต้องเห็นแท็บ Dashboard/รถออก แค่ค้นหารถแล้วแก้ไมล์เท่านั้น
+	      switchSalesTab('stock');
+	    }
 	  }
 	}
 
@@ -1386,7 +1394,7 @@ function startAutoRefresh(){
 
     var dashboardTab=document.getElementById('stab-dashboard')||document.getElementById('atab-dashboard');
     if(dashboardTab && dashboardTab.style.display !== 'none'){
-      if(role==='admin'||role==='ceo') loadAdminData(); else loadSalesData();
+      if(role==='admin'||role==='ceo'||role==='superadmin') loadAdminData(); else loadSalesData();
     }
   },600000); 
 }
@@ -2012,7 +2020,9 @@ function showDetail(idx){
   html+=drow('ปี',car[COL.year])+drow('สี',car[COL.color]);
   html+=drow('เกียร์',car[COL.gear])+drow('เชื้อเพลิง',car[COL.fuel]||'—');
   var mileInfo='';
-  if(role==='admin'||role==='ceo'){
+  if(role==='maintenance'){
+    mileInfo = drowInput('ไมล์แรกเข้า','mn-mileFirst',car[COL.mileFirst]||'')+drowInput('ไมล์ศูนย์','mn-mileCenter',car[COL.mileCenter]||'')+drowInput('เลขไมล์ล่าสุด','mn-mileLast',car[COL.mileLast]||'');
+  } else if(role==='admin'||role==='ceo'||role==='superadmin'){
     mileInfo = drow('ไมล์แรกเข้า',car[COL.mileFirst]||'—')+drow('ไมล์ศูนย์',car[COL.mileCenter]||'—')+drow('เลขไมล์xxx',car[COL.mileLast]||'—');
   } else {
     mileInfo = drow('เลขไมล์ล่าสุด',getDisplayMile(car));
@@ -2020,7 +2030,7 @@ function showDetail(idx){
   html+=drow('ทะเบียน',car[COL.plate]||'—')+mileInfo;
   html+=drow('วันที่เข้า',fmtDate(car[COL.date]))+drow('สาขา',car['_sheet']||'—');
   html+='</div>';
-  if(role==='admin'||role==='ceo'){
+  if(role==='admin'||role==='ceo'||role==='superadmin'){
     var curStatus=String(car[COL.carStatus]||'ขาย').trim()||'ขาย';
     html+='<div class="fg" style="margin-bottom:14px;"><label>สถานะรถ</label>'
       +'<select id="detail-car-status" onchange="updateCarStatusFromDetail('+idx+')">'
@@ -2037,7 +2047,12 @@ function showDetail(idx){
   html+='<div style="font-size:10px;font-weight:700;color:var(--gray-500);letter-spacing:.05em;margin-bottom:6px;">📦 อุปกรณ์ประกอบ</div>';
   html+='<div class="equip-grid">'+equipBox('Book Service',car[COL.bookService])+equipBox('คู่มือ',car[COL.manual])+equipBox('กุญแจสำรอง',car[COL.spareKey])+'</div>';
   var rem=car[COL.remark];
-  if(rem&&String(rem).trim()&&String(rem).trim()!=='-')html+='<div style="background:var(--amber-light);border-radius:var(--r);padding:8px 12px;font-size:12px;color:#92400e;margin-bottom:10px;">📝 '+rem+'</div>';
+  if(role==='maintenance'){
+    html+='<div class="fg"><label>หมายเหตุ</label><textarea id="mn-remark" rows="3">'+((rem&&String(rem).trim()!=='-')?rem:'')+'</textarea></div>'
+      +'<button class="btn btn-act" style="width:100%;margin-bottom:12px;" onclick="saveMileageNoteFromDetail('+idx+',this)">💾 บันทึกไมล์ / หมายเหตุ</button>';
+  } else if(rem&&String(rem).trim()&&String(rem).trim()!=='-'){
+    html+='<div style="background:var(--amber-light);border-radius:var(--r);padding:8px 12px;font-size:12px;color:#92400e;margin-bottom:10px;">📝 '+rem+'</div>';
+  }
   html+='<div class="link-row">';
   if(photo&&photo.indexOf('http')===0)html+='<a href="'+photo+'" target="_blank" class="link-btn lk1">🔗 one2car</a>';
   if(niwat&&niwat.indexOf('http')===0)html+='<a href="'+niwat+'" target="_blank" class="link-btn lk2">🔗 54niwat.com</a>';
@@ -2063,7 +2078,7 @@ function showDetail(idx){
   }
 
   // เพิ่มปุ่มสร้างคอนเทนต์ AI (เฉพาะ Admin/CEO)
-  if(role==='admin'||role==='ceo'){
+  if(role==='admin'||role==='ceo'||role==='superadmin'){
     html+='<div style="margin-top:15px;padding-top:15px;border-top:1px dashed var(--gray-200);">'
       +'<button class="btn btn-act" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;" onclick="generateCarContentAI('+idx+')">'
       +'<span>🪄 สร้างคอนเทนต์ AI (Facebook/TikTok)</span>'
@@ -2398,6 +2413,34 @@ async function updateCarStatusFromDetail(idx){
     sel.disabled=false;
   }
 }
+
+/** บันทึกไมล์/หมายเหตุจากบัญชี "ทีมช่าง" (role=maintenance) — แก้ได้แค่ 4 ฟิลด์นี้เท่านั้น backend เช็คสิทธิ์ซ้ำอีกชั้น */
+async function saveMileageNoteFromDetail(idx,btn){
+  var car=allCars[idx];if(!car)return;
+  if(btn){btn.disabled=true;btn.textContent='⏳ กำลังบันทึก...';}
+  var payload={
+    action:'updateCarMileageNote',
+    sheet:car['_sheet'], row:car['_row'], plate:car[COL.plate]||'',
+    mileFirst:document.getElementById('mn-mileFirst').value.trim(),
+    mileCenter:document.getElementById('mn-mileCenter').value.trim(),
+    mileLast:document.getElementById('mn-mileLast').value.trim(),
+    remark:document.getElementById('mn-remark').value.trim(),
+  };
+  try{
+    var res=await apiPost(payload);
+    if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
+    car[COL.mileFirst]=payload.mileFirst;
+    car[COL.mileCenter]=payload.mileCenter;
+    car[COL.mileLast]=payload.mileLast;
+    car[COL.remark]=payload.remark;
+    showToast('✅ '+(res.message||'บันทึกสำเร็จ'),'s');
+    closeMo('modal-detail');
+  }catch(e){
+    showToast('⚠️ '+e.message,'e');
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='💾 บันทึกไมล์ / หมายเหตุ';}
+  }
+}
 // ===== เพิ่ม / แก้ไขรถ (ใช้ modal เดียวกัน) =====
 var carFormMode='add'; // 'add' | 'edit'
 var carFormEditRef=null; // {sheet,row,plate} ตอนแก้ไข
@@ -2578,6 +2621,7 @@ async function performUndoMarkSold(){
 }
 
 function drow(l,v){return'<div class="drow"><div class="drow-lbl">'+l+'</div><div class="drow-val">'+(v||'—')+'</div></div>';}
+function drowInput(l,id,v){return'<div class="drow"><div class="drow-lbl">'+l+'</div><input type="text" id="'+id+'" value="'+esc(v)+'" style="width:100%;padding:2px 0;border:none;border-bottom:1.5px solid var(--gray-300);font-size:13px;font-weight:500;background:transparent;"></div>';}
 function equipBox(l,v){var has=v&&String(v).trim()&&String(v).trim()!=='-'&&String(v).toUpperCase()!=='FALSE'&&String(v).toUpperCase()!=='ไม่มี';return'<div class="equip-box '+(has?'has':'no')+'"><div>'+(has?'✅':'❌')+'</div><div class="equip-lbl">'+l+'</div></div>';}
 
 // ===== DASHBOARD =====
@@ -2957,6 +3001,7 @@ function roleLabel(r){
   if(r==='admin')return '<span class="rbadge admin">Admin</span>';
   if(r==='ceo')return '<span class="rbadge ceo">CEO</span>';
   if(r==='accounting')return '<span class="rbadge accounting">บัญชี</span>';
+  if(r==='maintenance')return '<span class="rbadge maintenance">ทีมช่าง</span>';
   return '<span class="rbadge sales">พนักงานขาย</span>';
 }
 
@@ -3118,9 +3163,9 @@ async function saveUserPassword(){
 // ===== EXPORT =====
 function exportCSV(cars,name){
   if(!cars||!cars.length){showToast('ไม่มีข้อมูล','e');return;}
-  var hdrs = (role==='admin'||role==='ceo') ? ['สาขา','วันที่','ยี่ห้อ','รุ่น','ปี','สี','เกียร์','ทะเบียน','ไมล์แรกเข้า','ไมล์ศูนย์','เลขไมล์xxx','ราคา'] : ['สาขา','วันที่','ยี่ห้อ','รุ่น','ปี','สี','เกียร์','ทะเบียน','เลขไมล์ล่าสุด','ราคา'];
+  var hdrs = (role==='admin'||role==='ceo'||role==='superadmin') ? ['สาขา','วันที่','ยี่ห้อ','รุ่น','ปี','สี','เกียร์','ทะเบียน','ไมล์แรกเข้า','ไมล์ศูนย์','เลขไมล์xxx','ราคา'] : ['สาขา','วันที่','ยี่ห้อ','รุ่น','ปี','สี','เกียร์','ทะเบียน','เลขไมล์ล่าสุด','ราคา'];
   var rows=cars.map(function(c){
-    if(role==='admin'||role==='ceo'){
+    if(role==='admin'||role==='ceo'||role==='superadmin'){
       return [c['_sheet']||c['_branch']||'',fmtDate(c[COL.date]),c[COL.brand]||'',c[COL.model]||'',c[COL.year]||'',c[COL.color]||'',c[COL.gear]||'',c[COL.plate]||'',c[COL.mileFirst]||'',c[COL.mileCenter]||'',c[COL.mileLast]||'',latestP(c[COL.price])?'฿'+fmtM(latestP(c[COL.price])):'—'];
     } else {
       return [c['_sheet']||c['_branch']||'',fmtDate(c[COL.date]),c[COL.brand]||'',c[COL.model]||'',c[COL.year]||'',c[COL.color]||'',c[COL.gear]||'',c[COL.plate]||'',getDisplayMile(c),latestP(c[COL.price])?'฿'+fmtM(latestP(c[COL.price])):'—'];
