@@ -766,6 +766,27 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
         </div>
       </div>
       <div class="set-section">
+        <div class="set-title">🤖 LINE Bot — ค้นหาข้อมูลรถผ่านไลน์</div>
+        <p style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">ให้เซลล์พิมพ์ยี่ห้อ/รุ่น/ทะเบียนในกลุ่มไลน์ บอทจะตอบข้อมูลรถกลับให้อัตโนมัติ (ไม่โชว์ต้นทุน/ค่าใช้จ่ายเด็ดขาด) — เอา Channel Access Token กับ Channel Secret มาจาก <a href="https://developers.line.biz/" target="_blank" style="color:var(--blue);">LINE Developers Console</a> &gt; Messaging API</p>
+        <div style="background:var(--gray-50);padding:15px;border-radius:var(--r);border:1px solid var(--gray-200);">
+          <div id="line-key-status" style="font-size:11px;margin-bottom:8px;"></div>
+          <div class="fg" style="max-width:100%;margin-bottom:10px;">
+            <label>LINE Channel Access Token</label>
+            <input type="password" id="set-line-token" placeholder="วาง Channel Access Token">
+          </div>
+          <div class="fg" style="max-width:100%;margin-bottom:10px;">
+            <label>LINE Channel Secret</label>
+            <input type="password" id="set-line-secret" placeholder="วาง Channel Secret (สำรองไว้สำหรับตรวจสอบความปลอดภัยในอนาคต)">
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-act btn-sm" onclick="saveLineKeys()">บันทึกค่า LINE Bot</button>
+            <button class="btn btn-out btn-sm" onclick="testLineBotConnection()">🔬 ทดสอบเชื่อมต่อ</button>
+          </div>
+          <div id="line-test-result" style="margin-top:8px;font-size:12px;"></div>
+          <p style="font-size:11px;color:var(--gray-500);margin-top:10px;">💡 หลังบันทึกแล้ว ให้เอา URL ของเว็บแอปนี้ (Deploy URL) ไปตั้งเป็น "Webhook URL" ในหน้า LINE Developers Console แล้วเปิด "Use webhook" ด้วย ไม่ต้องใช้ Group ID ใดๆ เพราะบอทตอบกลับอัตโนมัติตามข้อความที่มีคนทักมา</p>
+        </div>
+      </div>
+      <div class="set-section">
         <div class="set-title">👁️ คอลัมน์ที่ซ่อนจากพนักงานขาย</div>
         <p style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">ปิด toggle = ซ่อนจาก Sales</p>
         <div id="col-toggles"><div class="loading"><div class="spinner"></div></div></div>
@@ -1474,6 +1495,7 @@ async function loadAdminData(){
     if(settings.branches)document.getElementById('set-branches').value=settings.branches;
     document.getElementById('set-min-received').value=(settings.minReceivedThreshold!==undefined&&settings.minReceivedThreshold!==null)?settings.minReceivedThreshold:5;
     updateGeminiKeyStatus(!!settings.geminiApiKeySet);
+    updateLineKeyStatus(!!settings.lineChannelAccessTokenSet);
     if(role!=='accounting') loadAlerts(); else { var ac=document.getElementById('alert-cards'); if(ac)ac.innerHTML=''; }
     startAutoRefresh();
   }catch(e){
@@ -2973,6 +2995,47 @@ async function testOpenAIConnection(){
     if(!res||res.success===false)throw new Error((res&&res.error)||'ทดสอบไม่สำเร็จ');
     resultEl.innerHTML='<div class="ai-result-box">✅ สำเร็จ! ('+elapsed+' วินาที)<br>OpenAI: "'+res.analysis+'"</div>';
     showToast('เชื่อมต่อ OpenAI สำเร็จ ✅','s');
+  }catch(e){
+    resultEl.innerHTML='<div class="ai-result-box err">❌ ไม่สำเร็จ: '+e.message+'</div>';
+    showToast('⚠️ '+e.message,'e');
+  }
+}
+
+// ===== LINE Bot Settings =====
+async function saveLineKeys(){
+  var token=document.getElementById('set-line-token').value.trim();
+  var secret=document.getElementById('set-line-secret').value.trim();
+  if(!token && !secret){showToast('กรุณากรอกอย่างน้อย Channel Access Token ก่อนบันทึก','e');return;}
+  var data={};
+  if(token)data.lineChannelAccessToken=token;
+  if(secret)data.lineChannelSecret=secret;
+  var res=await apiPost({action:'saveSettings',data:data});
+  if(res.success){
+    showToast('บันทึกค่า LINE Bot แล้ว ✅','s');
+    document.getElementById('set-line-token').value='';
+    document.getElementById('set-line-secret').value='';
+    updateLineKeyStatus(true);
+  }else{
+    showToast(res.error||'ไม่สำเร็จ','e');
+  }
+}
+function updateLineKeyStatus(isSet){
+  var el=document.getElementById('line-key-status');
+  if(!el)return;
+  el.innerHTML=isSet
+    ?'<span style="color:var(--green);font-weight:600;">✅ ตั้งค่า LINE Bot แล้ว</span>'
+    :'<span style="color:var(--gray-500);">⚠️ ยังไม่ได้ตั้งค่า LINE Bot</span>';
+}
+async function testLineBotConnection(){
+  var resultEl=document.getElementById('line-test-result');
+  var startTime=Date.now();
+  resultEl.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังทดสอบ...</div>';
+  try{
+    var res=await apiGet('testLineBot',{});
+    var elapsed=((Date.now()-startTime)/1000).toFixed(1);
+    if(!res||res.success===false)throw new Error((res&&res.error)||'ทดสอบไม่สำเร็จ');
+    resultEl.innerHTML='<div class="ai-result-box">✅ เชื่อมต่อสำเร็จ! ('+elapsed+' วินาที)<br>ชื่อบอท: "'+res.botName+'"</div>';
+    showToast('เชื่อมต่อ LINE Bot สำเร็จ ✅','s');
   }catch(e){
     resultEl.innerHTML='<div class="ai-result-box err">❌ ไม่สำเร็จ: '+e.message+'</div>';
     showToast('⚠️ '+e.message,'e');
