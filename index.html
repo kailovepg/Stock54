@@ -398,6 +398,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
             <button id="sales-view-list" class="active" onclick="setSalesView('list')">☰ รายการ</button>
             <button id="sales-view-grid" onclick="setSalesView('grid')">▦ Grid</button>
           </div>
+          <button class="btn btn-act btn-sm" onclick="exportCarGridImages(filteredCars,'รายการรถ')">🖼️ ส่งออกภาพ (ส่งลูกค้า)</button>
           <button class="btn btn-out btn-sm" onclick="exportPDF(filteredCars,'รายการรถ')">📄 PDF</button>
           <button class="btn btn-out btn-sm" onclick="exportCSV(filteredCars,'stock')">📤 CSV</button>
         </div>
@@ -608,6 +609,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
           <button class="btn btn-act btn-sm js-car-manage-btn" onclick="openAddCarModal()">➕ เพิ่มรถใหม่</button>
           <button class="btn btn-out btn-sm js-car-manage-btn" onclick="openCarGroupAIModal()">✨ วิเคราะห์กลุ่มรถ</button>
           <button class="btn btn-out btn-sm" id="btn-cost-preentry" style="display:none;" onclick="openCarCostModalPreEntry()">💰 บันทึกต้นทุนล่วงหน้า</button>
+          <button class="btn btn-act btn-sm" onclick="exportCarGridImages(adminFiltered,'สต๊อกรถ')">🖼️ ส่งออกภาพ (ส่งลูกค้า)</button>
           <button class="btn btn-out btn-sm" onclick="exportPDF(adminFiltered,'สต๊อกรถ (Admin)')">📄 PDF</button>
           <button class="btn btn-out btn-sm" onclick="exportCSV(adminFiltered,'stock_admin')">📤 CSV</button>
         </div>
@@ -724,6 +726,18 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
         <p style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">แก้ไขในไฟล์ _Settings ใน Google Sheets<br>รูปแบบ: <strong>ราชพฤกษ์:รถออกราชฯ,กัลปพฤกษ์:รถออกกัลฯ,บางใหญ่:รถออกบางใหญ่</strong></p>
         <div class="fg"><label>ค่าปัจจุบัน (branches)</label><input type="text" id="set-branches" placeholder="ราชพฤกษ์:รถออกราชฯ,กัลปพฤกษ์:รถออกกัลฯ"></div>
         <button class="btn btn-act btn-sm" onclick="saveBranches()">บันทึกสาขา</button>
+      </div>
+      <div class="set-section">
+        <div class="set-title">🔎 กลุ่มคำค้นหาเหมารวม (สำหรับรุ่นที่ชื่อเรียกไม่เหมือนกันแต่เป็นประเภทเดียวกัน)</div>
+        <p style="font-size:12px;color:var(--gray-500);margin-bottom:10px;">
+          ใช้แก้ปัญหารุ่นเดียวกันแต่ชื่อเรียกในระบบไม่ตรงกันตามปี เช่น กระบะตอนเดียวรุ่นเก่าเรียก "Singlecab" ส่วนปี 2022 ขึ้นไปเรียก "Standard" —
+          ตั้งกลุ่มไว้ครั้งเดียว แล้วพิมพ์ค้นหาด้วยชื่อกลุ่มในช่องค้นหาปกติ (หน้าสต๊อกรถ/ค้นหารถ) ระบบจะเหมาทุกคำในกลุ่มให้อัตโนมัติ<br>
+          <strong>รูปแบบ:</strong> ชื่อกลุ่ม:คำที่1,คำที่2,คำที่3 — คั่นแต่ละกลุ่มด้วยเครื่องหมาย <strong>|</strong><br>
+          <strong>ตัวอย่าง:</strong> <code>กระบะตอนเดียว:SINGLECAB,STANDARD,STD|กระบะแค็บ:SMARTCAB,EXTRACAB|กระบะ4ประตู:DOUBLECAB</code><br>
+          พิมพ์ค้นหาว่า "กระบะตอนเดียว" ในช่องค้นหา จะเจอทั้งคันที่ชื่อรุ่นมีคำว่า SINGLECAB, STANDARD หรือ STD ปนอยู่ (พิมพ์รวมกับคำอื่นได้ เช่น "revo กระบะตอนเดียว")
+        </p>
+        <div class="fg"><label>กลุ่มคำค้นหา (searchGroups)</label><textarea id="set-search-groups" rows="3" placeholder="กระบะตอนเดียว:SINGLECAB,STANDARD,STD|กระบะแค็บ:SMARTCAB,EXTRACAB"></textarea></div>
+        <button class="btn btn-act btn-sm" onclick="saveSearchGroups()">บันทึกกลุ่มคำค้นหา</button>
       </div>
       <div class="set-section">
         <div class="set-title">📊 เกณฑ์ขั้นต่ำจำนวนเบอร์ (สำหรับเทียบ %จบ ค่าเฉลี่ย)</div>
@@ -1525,6 +1539,8 @@ async function loadAdminData(){
     initSalesStatsDashboardDefaults();
     loadSalesStatsDashboard();
     if(settings.branches)document.getElementById('set-branches').value=settings.branches;
+    if(settings.searchGroups)document.getElementById('set-search-groups').value=settings.searchGroups;
+    searchGroupsCache=null; // ล้างแคชกลุ่มคำค้นหาฝั่งหน้าเว็บ เผื่อมีการแก้ไขมาจากที่อื่น ให้คำนวณใหม่จากค่าล่าสุด
     document.getElementById('set-min-received').value=(settings.minReceivedThreshold!==undefined&&settings.minReceivedThreshold!==null)?settings.minReceivedThreshold:5;
     updateGeminiKeyStatus(!!settings.geminiApiKeySet);
     updateLineKeyStatus(!!settings.lineChannelAccessTokenSet);
@@ -1850,9 +1866,47 @@ function matchesQuery(text,chunks){
   return chunks.every(function(c){return combined.indexOf(c)!==-1;});
 }
 
+// ===== กลุ่มคำค้นหาเหมารวม (searchGroups) — แก้ปัญหารถประเภทเดียวกันแต่ชื่อรุ่นเรียกไม่ตรงกันตามปี =====
+// ตั้งค่าไว้ที่หน้า ตั้งค่า > กลุ่มคำค้นหาเหมารวม รูปแบบ "ชื่อกลุ่ม:คำ1,คำ2|ชื่อกลุ่ม2:คำ1,คำ2"
+var searchGroupsCache=null;
+function parseSearchGroups(raw){
+  var groups={};
+  String(raw||'').split('|').forEach(function(seg){
+    var parts=seg.split(':');
+    if(parts.length<2)return;
+    var name=parts[0].trim();
+    var kws=parts[1].split(',').map(function(k){return k.trim().toLowerCase();}).filter(Boolean);
+    if(name&&kws.length)groups[name.toLowerCase()]=kws;
+  });
+  return groups;
+}
+function getSearchGroups(){
+  if(!searchGroupsCache)searchGroupsCache=parseSearchGroups(settings&&settings.searchGroups);
+  return searchGroupsCache;
+}
+/**
+ * ค้นหาแบบฉลาด: แยกคำค้นหาด้วยช่องว่างเป็นคำๆ (แต่ละคำต้องเจอ — AND กันเอง เหมือน "revo กระบะตอนเดียว" ต้องเจอทั้งคู่)
+ * ถ้าคำไหนตรงกับ "ชื่อกลุ่ม" ที่ตั้งไว้พอดี จะเปลี่ยนไปเช็คแบบ "เจอคำใดคำหนึ่งในกลุ่มก็นับผ่าน" (OR) แทน
+ * เช่นกลุ่ม "กระบะตอนเดียว" มี SINGLECAB,STANDARD,STD — เจอคำไหนคำหนึ่งในชื่อรุ่นก็ถือว่าตรง ไม่ต้องเจอครบทุกคำ
+ * ถ้าคำนั้นไม่ตรงกับกลุ่มไหนเลย จะกลับไปค้นหาแบบเดิม (fuzzy chunk ตัวอักษร/ตัวเลข)
+ */
+function matchesQuerySmart(text,rawQuery){
+  var q=String(rawQuery||'').trim();
+  if(!q)return true;
+  var combined=String(text||'').toLowerCase().replace(/\s+/g,'');
+  var groups=getSearchGroups();
+  var words=q.split(/\s+/).filter(Boolean);
+  return words.every(function(w){
+    var kws=groups[w.toLowerCase()];
+    if(kws)return kws.some(function(kw){return combined.indexOf(kw)!==-1;});
+    var chunks=toQueryChunks(w);
+    return chunks.every(function(c){return combined.indexOf(c)!==-1;});
+  });
+}
+
 // ===== FILTER SALES =====
 function filterSales(){
-  var qChunks=toQueryChunks(document.getElementById('sf-q').value);
+  var qRaw=document.getElementById('sf-q').value;
   var brand=document.getElementById('sf-brand').value;
   var model=document.getElementById('sf-model').value;
   var year=document.getElementById('sf-year').value;
@@ -1860,7 +1914,7 @@ function filterSales(){
   var gear=document.getElementById('sf-gear').value;
   var res=allCars.filter(function(c){
     if(sfBranch&&c['_sheet']!==sfBranch)return false;
-    if(qChunks.length){var s=(c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'')+' '+(c[COL.mileFirst]||'');if(!matchesQuery(s,qChunks))return false;}
+    if(qRaw.trim()){var s=(c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'')+' '+(c[COL.mileFirst]||'');if(!matchesQuerySmart(s,qRaw))return false;}
     if(brand&&c[COL.brand]!==brand)return false;
     if(model&&c[COL.model]!==model)return false;
     if(year&&String(c[COL.year])!==year)return false;
@@ -1880,7 +1934,7 @@ function resetSF(){
 
 // ===== FILTER ADMIN =====
 function filterAdmin(){
-  var qChunks=toQueryChunks(document.getElementById('af-q').value);
+  var qRaw=document.getElementById('af-q').value;
   var brand=document.getElementById('af-brand').value;
   var model=document.getElementById('af-model').value;
   var year=document.getElementById('af-year').value;
@@ -1888,7 +1942,7 @@ function filterAdmin(){
   var gear=document.getElementById('af-gear').value;
   var res=allCars.filter(function(c){
     if(afBranch&&c['_sheet']!==afBranch)return false;
-    if(qChunks.length){var s=(c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'');if(!matchesQuery(s,qChunks))return false;}
+    if(qRaw.trim()){var s=(c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'');if(!matchesQuerySmart(s,qRaw))return false;}
     if(brand&&c[COL.brand]!==brand)return false;
     if(model&&c[COL.model]!==model)return false;
     if(year&&String(c[COL.year])!==year)return false;
@@ -1908,7 +1962,7 @@ function resetAF(){
 
 // ===== FILTER SOLD =====
 function filterSold(){
-  var qChunks=toQueryChunks(document.getElementById('asd-q').value);
+  var qRaw=document.getElementById('asd-q').value;
   var brand=document.getElementById('asd-brand').value;
   var model=document.getElementById('asd-model').value;
   var df=document.getElementById('asd-df').value;
@@ -1916,7 +1970,7 @@ function filterSold(){
   filteredSold=soldCars.filter(function(c){
     var cb=c['_branch']||c['_sheet']||'';
     if(asdBranch&&cb!==asdBranch)return false;
-    if(qChunks.length){var s=(c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'');if(!matchesQuery(s,qChunks))return false;}
+    if(qRaw.trim()){var s=(c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'');if(!matchesQuerySmart(s,qRaw))return false;}
     if(brand&&c[COL.brand]!==brand)return false;
     if(model&&c[COL.model]!==model)return false;
     if(df||dt){var d=toDate(c[COL.soldDate]||c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;}
@@ -1931,7 +1985,7 @@ function resetASD(){
 }
 
 function filterSoldSales(){
-  var qChunks=toQueryChunks(document.getElementById('ssf-q').value);
+  var qRaw=document.getElementById('ssf-q').value;
   var brand=document.getElementById('ssf-brand').value;
   var model=document.getElementById('ssf-model').value;
   var df=document.getElementById('ssf-df').value;
@@ -1939,7 +1993,7 @@ function filterSoldSales(){
   filteredSoldSales=soldCars.filter(function(c){
     var cb=c['_branch']||c['_sheet']||'';
     if(ssfBranch&&cb!==ssfBranch)return false;
-    if(qChunks.length){var s=(c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'');if(!matchesQuery(s,qChunks))return false;}
+    if(qRaw.trim()){var s=(c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'');if(!matchesQuerySmart(s,qRaw))return false;}
     if(brand&&c[COL.brand]!==brand)return false;
     if(model&&c[COL.model]!==model)return false;
     if(df||dt){var d=toDate(c[COL.soldDate]||c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;}
@@ -1999,20 +2053,24 @@ function setSalesView(mode){
 
 // ===== ดึงรูปแรกจาก 54niwat.com มาใส่ในการ์ด (เรียก backend ทีละคัน + มีแคชกันขอซ้ำ) =====
 function carCardImgId(car,idx){return 'cimg-'+String(car['_sheet']||'').replace(/[^a-zA-Z0-9ก-๙]/g,'')+'-'+(car['_row']||idx);}
-async function loadCarImageInto(elId,url){
-  var el=document.getElementById(elId);
-  if(!el)return;
-  if(!url||url.indexOf('http')!==0){el.innerHTML='<div class="ph-icon">🚗</div>';return;}
-  if(carImageCache.hasOwnProperty(url)){applyCarImage(elId,carImageCache[url]);return;}
+/** ขอรูป + เก็บเข้าแคช โดยไม่ต้องอิงกับ element บนหน้าจอ (ใช้ตอนส่งออกภาพ ที่ยังไม่ได้เปิดโหมด Grid ก็ต้องขอรูปได้) */
+async function ensureCarImageCached(url){
+  if(!url||url.indexOf('http')!==0)return '';
+  if(carImageCache.hasOwnProperty(url))return carImageCache[url];
   try{
     var res=await apiGet('getCarImage',{url:url});
     var img=(res&&res.success)?(res.image||''):'';
     carImageCache[url]=img;
-    applyCarImage(elId,img);
+    return img;
   }catch(e){
     carImageCache[url]='';
-    applyCarImage(elId,'');
+    return '';
   }
+}
+async function loadCarImageInto(elId,url){
+  if(!url||url.indexOf('http')!==0){var elEmpty=document.getElementById(elId);if(elEmpty)elEmpty.innerHTML='<div class="ph-icon">🚗</div>';return;}
+  var img=await ensureCarImageCached(url);
+  applyCarImage(elId,img);
 }
 function applyCarImage(elId,imgUrl){
   var el=document.getElementById(elId);
@@ -2068,6 +2126,75 @@ function renderCarGrid(containerId,cars){
   });
   carGridLoadToken++;
   loadCarImagesQueued(items,carGridLoadToken);
+}
+
+/** ทยอยขอรูปให้ครบทุกคันในลิสต์ (ไม่สนใจว่ามี element บนจอไหม) ใช้ก่อนส่งออกภาพให้ลูกค้า เผื่อยังไม่เคยเปิดโหมด Grid มาก่อน */
+async function ensureImagesForExport(cars){
+  for(var i=0;i<cars.length;i+=IMAGE_LOAD_BATCH_SIZE){
+    var batch=cars.slice(i,i+IMAGE_LOAD_BATCH_SIZE);
+    await Promise.all(batch.map(function(c){return ensureCarImageCached(c[COL.siteUrl]);}));
+  }
+}
+
+/**
+ * ส่งออกรายการรถที่กรองอยู่เป็น "หน้าต่างพิมพ์" แบบการ์ดรูปภาพ+ราคา (คล้ายที่แคปจาก 54niwat.com ส่งลูกค้า)
+ * ใช้วิธีเปิดหน้าต่างใหม่แล้วสั่งพิมพ์ (เหมือน exportPDF/exportSalesStatsReport เดิม) แทนการแคปหน้าจอด้วย html2canvas
+ * เพราะรูปภาพมาจาก 54niwat.com คนละโดเมน ถ้าเว็บนั้นไม่เปิด CORS ให้ การแคปด้วย html2canvas จะได้ภาพเสีย/ว่างเปล่า
+ * แต่การแสดงรูปใน <img> ธรรมดาแล้วสั่ง "พิมพ์/บันทึกเป็น PDF" ผ่านเบราว์เซอร์ไม่ติดปัญหานี้ ใช้ได้เสมอ
+ */
+var carImageExportRunning=false;
+async function exportCarGridImages(cars,title){
+  if(!cars||!cars.length){showToast('ไม่มีข้อมูล','e');return;}
+  if(carImageExportRunning){showToast('กำลังเตรียมไฟล์อยู่ กรุณารอสักครู่','e');return;}
+  carImageExportRunning=true;
+  showToast('กำลังเตรียมรูปภาพ อาจใช้เวลาสักครู่ถ้ามีหลายคัน...','');
+  try{
+    await ensureImagesForExport(cars);
+    var now=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+    var cardsHtml=cars.map(function(c){
+      var url=String(c[COL.siteUrl]||'').trim();
+      var imgUrl=carImageCache[url]||'';
+      var imgTag=imgUrl?'<img src="'+imgUrl+'">':'<div class="ph">🚗</div>';
+      var pnums=parsePNums(c[COL.price]);
+      var latest=pnums.length?'฿'+fmtM(pnums[pnums.length-1]):'—';
+      var prev=pnums.length>=2?'<div class="old">฿'+fmtM(pnums[pnums.length-2])+'</div>':'';
+      return '<div class="card">'
+        +'<div class="img-wrap">'+imgTag+'</div>'
+        +'<div class="body">'
+          +'<div class="title">'+(c[COL.year]||'')+' '+(c[COL.brand]||'')+' '+(c[COL.model]||'')+'</div>'
+          +'<div class="meta">สี '+(c[COL.color]||'—')+' • เกียร์ '+(c[COL.gear]||'—')+' • '+(c[COL.fuel]||'—')+'</div>'
+          +'<div class="price">'+prev+'<span class="latest">'+latest+'</span></div>'
+        +'</div></div>';
+    }).join('');
+
+    var win=window.open('','_blank');
+    win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title>'
+      +'<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">'
+      +'<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Sarabun,sans-serif;padding:16px;background:#fff;color:#111;}'
+      +'h1{font-size:18px;margin-bottom:2px;}.sub{font-size:11px;color:#666;margin-bottom:14px;}'
+      +'.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}'
+      +'.card{border:1px solid #eee;border-radius:8px;overflow:hidden;page-break-inside:avoid;}'
+      +'.img-wrap{width:100%;height:170px;background:#f4f3f0;display:flex;align-items:center;justify-content:center;overflow:hidden;}'
+      +'.img-wrap img{width:100%;height:100%;object-fit:cover;}'
+      +'.ph{font-size:30px;color:#ccc;}'
+      +'.body{padding:10px 12px;}'
+      +'.title{font-weight:700;font-size:12px;color:#B8860B;margin-bottom:6px;}'
+      +'.meta{font-size:10px;color:#777;margin-bottom:8px;}'
+      +'.price{text-align:right;}'
+      +'.old{font-size:10px;color:#bbb;text-decoration:line-through;}'
+      +'.latest{font-size:16px;font-weight:700;}'
+      +'@media print{@page{margin:10mm;}.card{break-inside:avoid;}}'
+      +'@media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr);}}'
+      +'</style></head><body>'
+      +'<h1>'+title+'</h1><div class="sub">ข้อมูล ณ วันที่: '+now+' | ทั้งหมด '+cars.length+' คัน — เลือก "Save as PDF" หรือ "บันทึกเป็นรูปภาพ" ที่หน้าต่างพิมพ์ได้เลย</div>'
+      +'<div class="grid">'+cardsHtml+'</div>'
+      +'<script>window.onload=function(){setTimeout(function(){window.print();},600);}<\/script></body></html>');
+    win.document.close();
+  }catch(e){
+    showToast('⚠️ เตรียมไฟล์ไม่สำเร็จ: '+e.message,'e');
+  }finally{
+    carImageExportRunning=false;
+  }
 }
 
 // ===== RENDER ADMIN LIST =====
@@ -2971,6 +3098,17 @@ async function saveBranches(){
   if(!val){showToast('กรุณาใส่ข้อมูลสาขา','e');return;}
   var res=await apiPost({action:'saveSettings',data:{branches:val}});
   showToast(res.success?'บันทึกสาขาแล้ว ✅ โหลดหน้าใหม่เพื่อดูผล':'ไม่สำเร็จ',res.success?'s':'e');
+}
+async function saveSearchGroups(){
+  var val=document.getElementById('set-search-groups').value.trim();
+  var res=await apiPost({action:'saveSettings',data:{searchGroups:val}});
+  if(res.success){
+    settings.searchGroups=val;
+    searchGroupsCache=null; // บังคับให้ parse กลุ่มคำค้นหาใหม่จากค่าที่เพิ่งบันทึก
+    showToast('บันทึกกลุ่มคำค้นหาแล้ว ✅','s');
+  }else{
+    showToast(res.error||'ไม่สำเร็จ','e');
+  }
 }
 async function saveMinReceivedThreshold(){
   var val=document.getElementById('set-min-received').value;
