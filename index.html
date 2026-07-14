@@ -225,7 +225,24 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 .link-btn.lk2{background:var(--black);color:#fff;}
 .link-btn.lk2:hover{background:var(--gray-700);}
 
-	/* MISC */
+	/* VIEW TOGGLE (List / Grid) */
+.view-toggle{display:flex;border:1.5px solid var(--gray-200);border-radius:var(--r);overflow:hidden;flex-shrink:0;}
+.view-toggle button{padding:6px 11px;background:#fff;border:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--gray-700);font-family:var(--font);}
+.view-toggle button.active{background:var(--black);color:#fff;}
+.stock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
+.car-card{background:#fff;border-radius:var(--rl);overflow:hidden;box-shadow:var(--sh);cursor:pointer;transition:transform .12s;}
+.car-card:hover{transform:translateY(-2px);}
+.car-card-img{width:100%;height:130px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.car-card-img img{width:100%;height:100%;object-fit:cover;display:block;}
+.car-card-img .ph-icon{font-size:28px;color:var(--gray-300);}
+.car-card-body{padding:10px 12px;}
+.car-card-title{font-weight:700;font-size:13px;line-height:1.3;}
+.car-card-sub{font-size:11px;color:var(--gray-500);margin-top:3px;}
+.car-card-price{margin-top:6px;font-family:var(--mono);font-weight:700;color:var(--red);font-size:14px;}
+.car-card-badges{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;}
+@media(max-width:640px){.stock-grid{grid-template-columns:repeat(2,1fr);gap:8px;}.car-card-img{height:100px;}}
+
+/* MISC */
 	.admin-access-btn{position:fixed;bottom:20px;right:20px;z-index:999;width:44px;height:44px;border-radius:50%;background:var(--black);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shl);opacity:0.2;transition:all 0.3s;}
 	.admin-access-btn:hover{opacity:1;transform:scale(1.1);}
 	.loading{display:flex;align-items:center;justify-content:center;padding:44px;color:var(--gray-500);font-size:13px;gap:8px;}
@@ -377,6 +394,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       <div class="ph">
         <div><div class="ph-title">ค้นหารถ</div><div class="ph-sub" id="sales-count"></div></div>
         <div class="ph-acts">
+          <div class="view-toggle">
+            <button id="sales-view-list" class="active" onclick="setSalesView('list')">☰ รายการ</button>
+            <button id="sales-view-grid" onclick="setSalesView('grid')">▦ Grid</button>
+          </div>
           <button class="btn btn-out btn-sm" onclick="exportPDF(filteredCars,'รายการรถ')">📄 PDF</button>
           <button class="btn btn-out btn-sm" onclick="exportCSV(filteredCars,'stock')">📤 CSV</button>
         </div>
@@ -448,6 +469,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
           <tbody id="sales-tbody"><tr><td colspan="9"><div class="loading"><div class="spinner"></div>กำลังโหลด...</div></td></tr></tbody>
         </table>
       </div>
+      <div class="stock-grid" id="sales-grid" style="display:none;"></div>
     </div>
 
     <!-- SALES: SOLD -->
@@ -583,6 +605,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       <div class="ph">
         <div><div class="ph-title">สต๊อกรถ</div><div class="ph-sub" id="admin-count"></div></div>
         <div class="ph-acts">
+          <div class="view-toggle">
+            <button id="admin-view-list" class="active" onclick="setAdminView('list')">☰ รายการ</button>
+            <button id="admin-view-grid" onclick="setAdminView('grid')">▦ Grid</button>
+          </div>
           <button class="btn btn-act btn-sm js-car-manage-btn" onclick="openAddCarModal()">➕ เพิ่มรถใหม่</button>
           <button class="btn btn-out btn-sm js-car-manage-btn" onclick="openCarGroupAIModal()">✨ วิเคราะห์กลุ่มรถ</button>
           <button class="btn btn-out btn-sm" id="btn-cost-preentry" style="display:none;" onclick="openCarCostModalPreEntry()">💰 บันทึกต้นทุนล่วงหน้า</button>
@@ -640,6 +666,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
           <tbody id="admin-tbody"><tr><td colspan="12"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
         </table>
       </div>
+      <div class="stock-grid" id="admin-grid" style="display:none;"></div>
     </div>
 
     <!-- ADMIN SOLD -->
@@ -1095,6 +1122,11 @@ var charts={};
 // สิทธิ์การเข้าถึงข้อมูลต้นทุน/ค่าใช้จ่ายของผู้ใช้ปัจจุบัน — โหลดครั้งเดียวตอน login แล้ว
 // ใช้ตัดสินใจว่าจะโชว์/ซ่อนปุ่ม "ต้นทุน" และปุ่มวิเคราะห์ AI ให้ role นี้ไหม (ค่าเริ่มต้น = ไม่มีสิทธิ์เลย ปลอดภัยไว้ก่อน)
 var myPermissions={purchaseCost:'none',expenseCost:'none'};
+// โหมดแสดงผลหน้าสต๊อกรถ: 'list' (ตารางเดิม) หรือ 'grid' (การ์ดรูปภาพ) — จำแยกกันระหว่างหน้า Sales กับ Admin
+var adminViewMode='list', salesViewMode='list';
+// แคชรูปภาพที่ดึงมาจาก 54niwat.com ไว้ในหน่วยความจำของหน้าเว็บ (key = ลิงก์ 54niwat, value = URL รูปภาพ หรือ '' ถ้าไม่เจอ)
+// กันไม่ให้ยิงขอรูปซ้ำๆ ของรถคันเดิมเวลาสลับตัวกรอง/แท็บไปมาในเซสชันเดียวกัน
+var carImageCache={};
 const COST_DOMAIN_LABELS_TH={purchaseCost:'ต้นทุนซื้อเข้า',expenseCost:'ค่าใช้จ่าย/ค่าซ่อม'};
 const COST_PERM_RANK={manage:3,write:2,read:1,none:0};
 function costPermAtLeast(domain,minLevel){return (COST_PERM_RANK[myPermissions[domain]]||0) >= (COST_PERM_RANK[minLevel]||0);}
@@ -1951,6 +1983,9 @@ function resetDashFilter(p){
 
 // ===== RENDER SALES LIST =====
 function renderSalesList(cars){
+  document.querySelector('#stab-stock .list-wrap').style.display = salesViewMode==='grid' ? 'none' : '';
+  document.getElementById('sales-grid').style.display = salesViewMode==='grid' ? '' : 'none';
+  if(salesViewMode==='grid'){ renderCarGrid('sales-grid',cars); return; }
   var tbody=document.getElementById('sales-tbody');
   if(!cars.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty">🚗 ไม่พบรถ</div></td></tr>';return;}
   var html='';
@@ -1971,8 +2006,80 @@ function renderSalesList(cars){
   tbody.innerHTML=html;
 }
 
+// ===== สลับมุมมอง รายการ / Grid =====
+function setAdminView(mode){
+  adminViewMode=mode;
+  document.getElementById('admin-view-list').classList.toggle('active',mode==='list');
+  document.getElementById('admin-view-grid').classList.toggle('active',mode==='grid');
+  renderAdminList(adminFiltered);
+}
+function setSalesView(mode){
+  salesViewMode=mode;
+  document.getElementById('sales-view-list').classList.toggle('active',mode==='list');
+  document.getElementById('sales-view-grid').classList.toggle('active',mode==='grid');
+  renderSalesList(filteredCars);
+}
+
+// ===== ดึงรูปแรกจาก 54niwat.com มาใส่ในการ์ด (เรียก backend ทีละคัน + มีแคชกันขอซ้ำ) =====
+function carCardImgId(car,idx){return 'cimg-'+String(car['_sheet']||'').replace(/[^a-zA-Z0-9ก-๙]/g,'')+'-'+(car['_row']||idx);}
+async function loadCarImageInto(elId,url){
+  var el=document.getElementById(elId);
+  if(!el)return;
+  if(!url||url.indexOf('http')!==0){el.innerHTML='<div class="ph-icon">🚗</div>';return;}
+  if(carImageCache.hasOwnProperty(url)){applyCarImage(elId,carImageCache[url]);return;}
+  try{
+    var res=await apiGet('getCarImage',{url:url});
+    var img=(res&&res.success)?(res.image||''):'';
+    carImageCache[url]=img;
+    applyCarImage(elId,img);
+  }catch(e){
+    carImageCache[url]='';
+    applyCarImage(elId,'');
+  }
+}
+function applyCarImage(elId,imgUrl){
+  var el=document.getElementById(elId);
+  if(!el)return;
+  if(imgUrl){
+    el.innerHTML='<img src="'+imgUrl+'" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=&quot;ph-icon&quot;>🚗</div>\'">';
+  }else{
+    el.innerHTML='<div class="ph-icon">🚗</div>';
+  }
+}
+
+/** สร้าง HTML การ์ดรถ 1 ใบสำหรับโหมด Grid — ใช้ร่วมกันทั้งหน้า Sales และ Admin */
+function buildCarCard(car,idx){
+  var brand=car[COL.brand]||'', model=car[COL.model]||'', plate=car[COL.plate]||'—';
+  var imgId=carCardImgId(car,idx);
+  return '<div class="car-card" onclick="showDetail('+idx+')">'
+    +'<div class="car-card-img" id="'+imgId+'"><div class="ph-icon">⏳</div></div>'
+    +'<div class="car-card-body">'
+      +'<div class="car-card-title">'+String(brand)+' '+String(model)+'</div>'
+      +'<div class="car-card-sub">ปี '+String(car[COL.year]||'—')+' • '+String(car[COL.color]||'—')+' • '+String(plate)+'</div>'
+      +'<div class="car-card-price">'+priceDisplay(car[COL.price])+'</div>'
+      +'<div class="car-card-badges">'+branchBadge(car['_sheet'])+'</div>'
+    +'</div></div>';
+}
+
+/** เรนเดอร์การ์ดทั้งหมดของ container ที่ระบุ แล้วค่อยยิงขอรูปแต่ละคันทีหลัง (ให้เห็นโครงการ์ดก่อน ไม่ต้องรอรูปครบ) */
+function renderCarGrid(containerId,cars){
+  var el=document.getElementById(containerId);
+  if(!el)return;
+  if(!cars.length){el.innerHTML='<div class="empty">🚗 ไม่พบรถ</div>';return;}
+  var html='';
+  cars.forEach(function(c){var idx=allCars.indexOf(c);html+=buildCarCard(c,idx);});
+  el.innerHTML=html;
+  cars.forEach(function(c){
+    var idx=allCars.indexOf(c);
+    loadCarImageInto(carCardImgId(c,idx),c[COL.siteUrl]);
+  });
+}
+
 // ===== RENDER ADMIN LIST =====
 function renderAdminList(cars){
+  document.querySelector('#atab-stock .list-wrap').style.display = adminViewMode==='grid' ? 'none' : '';
+  document.getElementById('admin-grid').style.display = adminViewMode==='grid' ? '' : 'none';
+  if(adminViewMode==='grid'){ renderCarGrid('admin-grid',cars); return; }
   var tbody=document.getElementById('admin-tbody');
   if(!cars.length){tbody.innerHTML='<tr><td colspan="12"><div class="empty">ไม่มีข้อมูล</div></td></tr>';return;}
   var html='';
