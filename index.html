@@ -413,9 +413,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
           <!-- สาขา -->
           <div class="filter-group">
             <div class="filter-group-label">สาขา</div>
-            <div class="branch-btns" id="sf-branch-btns">
-              <button class="branch-btn active" onclick="setBranch(this,'')" data-val="">ทั้งหมด</button>
-            </div>
+            <select id="sf-branch-select" onchange="sfBranch=this.value;filterSales();"><option value="">ทั้งหมด</option></select>
           </div>
           <div class="filter-divider"></div>
           <!-- ยี่ห้อ -->
@@ -447,12 +445,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
           <!-- เรียงลำดับ -->
           <div class="filter-group">
             <div class="filter-group-label">เรียงลำดับ</div>
-            <div class="sort-pills">
-              <button class="sort-pill active" onclick="setSort(this,'')" data-val="">ล่าสุด</button>
-              <button class="sort-pill" onclick="setSort(this,'oldest')" data-val="oldest">เก่าสุด</button>
-              <button class="sort-pill" onclick="setSort(this,'price_asc')" data-val="price_asc">ราคาต่ำ→สูง</button>
-              <button class="sort-pill" onclick="setSort(this,'price_desc')" data-val="price_desc">ราคาสูง→ต่ำ</button>
-            </div>
+            <select id="sf-sort-select" onchange="sfSort=this.value;filterSales();">
+              <option value="">ล่าสุด</option>
+              <option value="oldest">เก่าสุด</option>
+              <option value="price_asc">ราคาต่ำ→สูง</option>
+              <option value="price_desc">ราคาสูง→ต่ำ</option>
+            </select>
           </div>
           <div style="display:flex;align-items:flex-end;">
             <button class="btn btn-out btn-sm" onclick="resetSF()">รีเซ็ต</button>
@@ -486,9 +484,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
         <div class="filter-tags-row">
           <div class="filter-group">
             <div class="filter-group-label">สาขา</div>
-            <div class="branch-btns" id="ssf-branch-btns">
-              <button class="branch-btn active" onclick="setSoldBranch(this,'')" data-val="">ทั้งหมด</button>
-            </div>
+            <select id="ssf-branch-select" onchange="ssfBranch=this.value;filterSoldSales();"><option value="">ทั้งหมด</option></select>
           </div>
           <div class="filter-divider"></div>
           <div class="filter-group">
@@ -624,9 +620,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
         <div class="filter-tags-row">
           <div class="filter-group">
             <div class="filter-group-label">สาขา</div>
-            <div class="branch-btns" id="af-branch-btns">
-              <button class="branch-btn active" onclick="setAdminBranch(this,'')" data-val="">ทั้งหมด</button>
-            </div>
+            <select id="af-branch-select" onchange="afBranch=this.value;filterAdmin();"><option value="">ทั้งหมด</option></select>
           </div>
           <div class="filter-divider"></div>
           <div class="filter-group">
@@ -641,15 +635,23 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
             <div class="filter-group-label">ปี</div>
             <select id="af-year" onchange="filterAdmin()"><option value="">ทั้งหมด</option></select>
           </div>
+          <div class="filter-group">
+            <div class="filter-group-label">สี</div>
+            <select id="af-color" onchange="filterAdmin()"><option value="">ทั้งหมด</option></select>
+          </div>
+          <div class="filter-group">
+            <div class="filter-group-label">เกียร์</div>
+            <select id="af-gear" onchange="filterAdmin()"><option value="">ทั้งหมด</option></select>
+          </div>
           <div class="filter-divider"></div>
           <div class="filter-group">
             <div class="filter-group-label">เรียงลำดับ</div>
-            <div class="sort-pills">
-              <button class="sort-pill active" onclick="setAdminSort(this,'')" data-val="">ล่าสุด</button>
-              <button class="sort-pill" onclick="setAdminSort(this,'oldest')" data-val="oldest">เก่าสุด</button>
-              <button class="sort-pill" onclick="setAdminSort(this,'price_asc')" data-val="price_asc">ราคาต่ำ→สูง</button>
-              <button class="sort-pill" onclick="setAdminSort(this,'price_desc')" data-val="price_desc">ราคาสูง→ต่ำ</button>
-            </div>
+            <select id="af-sort-select" onchange="afSort=this.value;filterAdmin();">
+              <option value="">ล่าสุด</option>
+              <option value="oldest">เก่าสุด</option>
+              <option value="price_asc">ราคาต่ำ→สูง</option>
+              <option value="price_desc">ราคาสูง→ต่ำ</option>
+            </select>
           </div>
           <div style="display:flex;align-items:flex-end;">
             <button class="btn btn-out btn-sm" onclick="resetAF()">รีเซ็ต</button>
@@ -683,9 +685,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
         <div class="filter-tags-row">
           <div class="filter-group">
             <div class="filter-group-label">สาขา</div>
-            <div class="branch-btns" id="asd-branch-btns">
-              <button class="branch-btn active" onclick="setSoldAdminBranch(this,'')" data-val="">ทั้งหมด</button>
-            </div>
+            <select id="asd-branch-select" onchange="asdBranch=this.value;filterSold();"><option value="">ทั้งหมด</option></select>
           </div>
           <div class="filter-divider"></div>
           <div class="filter-group">
@@ -1757,21 +1757,16 @@ async function runCarGroupAIAnalysis(){
   }
 }
 
-// ===== BUILD BRANCH BUTTONS =====
+// ===== BUILD BRANCH DROPDOWNS =====
 function buildBranchBtns(){
-  var sets=[
-    {id:'sf-branch-btns',fn:'setBranch'},
-    {id:'ssf-branch-btns',fn:'setSoldBranch'},
-    {id:'af-branch-btns',fn:'setAdminBranch'},
-    {id:'asd-branch-btns',fn:'setSoldAdminBranch'},
-  ];
-  sets.forEach(function(s){
-    var el=document.getElementById(s.id);if(!el)return;
-    var html='<button class="branch-btn active" onclick="'+s.fn+'(this,\'\')" data-val="">ทั้งหมด</button>';
-    branches.forEach(function(b){
-      html+='<button class="branch-btn" onclick="'+s.fn+'(this,\''+b+'\')" data-val="'+b+'">'+b+'</button>';
-    });
+  var ids=['sf-branch-select','ssf-branch-select','af-branch-select','asd-branch-select'];
+  ids.forEach(function(id){
+    var el=document.getElementById(id);if(!el)return;
+    var current=el.value;
+    var html='<option value="">ทั้งหมด</option>';
+    branches.forEach(function(b){html+='<option value="'+b+'">'+b+'</option>';});
     el.innerHTML=html;
+    if(current)el.value=current; // คงค่าที่เลือกไว้เดิม ถ้ายังมีสาขานั้นอยู่ (เช่น โหลดข้อมูลใหม่/รีเฟรช)
   });
   fillDashYears();
 }
@@ -1785,18 +1780,6 @@ function fillDashYears(){
     if(current)el.value=current;
   });
 }
-
-function setBranch(btn,val){sfBranch=val;activateBtn(btn,'sf-branch-btns');filterSales();}
-function setSoldBranch(btn,val){ssfBranch=val;activateBtn(btn,'ssf-branch-btns');filterSoldSales();}
-function setAdminBranch(btn,val){afBranch=val;activateBtn(btn,'af-branch-btns');filterAdmin();}
-function setSoldAdminBranch(btn,val){asdBranch=val;activateBtn(btn,'asd-branch-btns');filterSold();}
-function activateBtn(btn,containerId){
-  var c=document.getElementById(containerId);if(!c)return;
-  c.querySelectorAll('.branch-btn').forEach(function(b){b.classList.remove('active');});
-  btn.classList.add('active');
-}
-function setSort(btn,val){sfSort=val;document.querySelectorAll('#stab-stock .sort-pill').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');filterSales();}
-function setAdminSort(btn,val){afSort=val;document.querySelectorAll('#atab-stock .sort-pill').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');filterAdmin();}
 
 // ===== BUILD FILTERS =====
 function uniq(arr){return[...new Set(arr.filter(Boolean))];}
@@ -1815,6 +1798,8 @@ function buildAdminFilters(cars,sold){
   fillSel('af-brand',uniq(cars.map(function(c){return c[COL.brand];})).sort());
   fillSel('af-model',uniq(cars.map(function(c){return c[COL.model];})).sort());
   fillSel('af-year',uniq(cars.map(function(c){return String(c[COL.year]||'');})).sort(function(a,b){return b-a;}));
+  fillSel('af-color',uniq(cars.map(function(c){return c[COL.color];})).sort());
+  fillSel('af-gear',uniq(cars.map(function(c){return String(c[COL.gear]||'');})).sort());
   fillSel('asd-brand',uniq(sold.map(function(c){return c[COL.brand];})).sort());
   fillSel('asd-model',uniq(sold.map(function(c){return c[COL.model];})).sort());
   fillSel('ssf-brand',uniq(sold.map(function(c){return c[COL.brand];})).sort());
@@ -1889,11 +1874,7 @@ function filterSales(){
 }
 function resetSF(){
   sfBranch='';sfSort='';
-  ['sf-q','sf-brand','sf-model','sf-year','sf-color','sf-gear'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
-  document.querySelectorAll('#sf-branch-btns .branch-btn').forEach(function(b){b.classList.remove('active');});
-  var first=document.querySelector('#sf-branch-btns .branch-btn');if(first)first.classList.add('active');
-  document.querySelectorAll('#stab-stock .sort-pill').forEach(function(b){b.classList.remove('active');});
-  var fp=document.querySelector('#stab-stock .sort-pill');if(fp)fp.classList.add('active');
+  ['sf-q','sf-brand','sf-model','sf-year','sf-color','sf-gear','sf-branch-select','sf-sort-select'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   filterSales();
 }
 
@@ -1903,12 +1884,16 @@ function filterAdmin(){
   var brand=document.getElementById('af-brand').value;
   var model=document.getElementById('af-model').value;
   var year=document.getElementById('af-year').value;
+  var color=document.getElementById('af-color').value;
+  var gear=document.getElementById('af-gear').value;
   var res=allCars.filter(function(c){
     if(afBranch&&c['_sheet']!==afBranch)return false;
     if(qChunks.length){var s=(c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'');if(!matchesQuery(s,qChunks))return false;}
     if(brand&&c[COL.brand]!==brand)return false;
     if(model&&c[COL.model]!==model)return false;
     if(year&&String(c[COL.year])!==year)return false;
+    if(color&&c[COL.color]!==color)return false;
+    if(gear&&String(c[COL.gear])!==gear)return false;
     return true;
   });
   adminFiltered=applySort(res,afSort);
@@ -1917,11 +1902,7 @@ function filterAdmin(){
 }
 function resetAF(){
   afBranch='';afSort='';
-  ['af-q','af-brand','af-model','af-year'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
-  document.querySelectorAll('#af-branch-btns .branch-btn').forEach(function(b){b.classList.remove('active');});
-  var first=document.querySelector('#af-branch-btns .branch-btn');if(first)first.classList.add('active');
-  document.querySelectorAll('#atab-stock .sort-pill').forEach(function(b){b.classList.remove('active');});
-  var fp=document.querySelector('#atab-stock .sort-pill');if(fp)fp.classList.add('active');
+  ['af-q','af-brand','af-model','af-year','af-color','af-gear','af-branch-select','af-sort-select'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   filterAdmin();
 }
 
@@ -1945,9 +1926,7 @@ function filterSold(){
   renderSoldList(filteredSold,'admin-sold-tbody',9,true);
 }
 function resetASD(){
-  asdBranch='';['asd-q','asd-brand','asd-model','asd-df','asd-dt'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
-  document.querySelectorAll('#asd-branch-btns .branch-btn').forEach(function(b){b.classList.remove('active');});
-  var first=document.querySelector('#asd-branch-btns .branch-btn');if(first)first.classList.add('active');
+  asdBranch='';['asd-q','asd-brand','asd-model','asd-df','asd-dt','asd-branch-select'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   filterSold();
 }
 
@@ -1970,9 +1949,7 @@ function filterSoldSales(){
   renderSoldList(filteredSoldSales,'s-sold-tbody',8,false);
 }
 function resetSSF(){
-  ssfBranch='';['ssf-q','ssf-brand','ssf-model','ssf-df','ssf-dt'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
-  document.querySelectorAll('#ssf-branch-btns .branch-btn').forEach(function(b){b.classList.remove('active');});
-  var first=document.querySelector('#ssf-branch-btns .branch-btn');if(first)first.classList.add('active');
+  ssfBranch='';['ssf-q','ssf-brand','ssf-model','ssf-df','ssf-dt','ssf-branch-select'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   filterSoldSales();
 }
 function resetDashFilter(p){
@@ -2061,7 +2038,23 @@ function buildCarCard(car,idx){
     +'</div></div>';
 }
 
-/** เรนเดอร์การ์ดทั้งหมดของ container ที่ระบุ แล้วค่อยยิงขอรูปแต่ละคันทีหลัง (ให้เห็นโครงการ์ดก่อน ไม่ต้องรอรูปครบ) */
+/**
+ * ทยอยโหลดรูปทีละกลุ่มแทนการยิงพร้อมกันหมดทุกคันในครั้งเดียว — Google Apps Script รับ request
+ * พร้อมกันได้จำกัดต่อสคริปต์ ถ้ายิง 30-40 คันพร้อมกันจะเข้าคิวรอกันเองจนดูเหมือนช้าทั้งหน้า
+ * ฟังก์ชันนี้ทยอยส่งทีละ IMAGE_LOAD_BATCH_SIZE คัน รอชุดก่อนเสร็จ (หรือ error ก็ไม่เป็นไร) ค่อยส่งชุดถัดไป
+ * ผลคือรูปจะทยอยขึ้นเป็นระลอกๆ แต่ภาพรวมโหลดเสร็จเร็วกว่ายิงพร้อมกันหมดแล้วรอคิวเซิร์ฟเวอร์
+ */
+var IMAGE_LOAD_BATCH_SIZE=4;
+var carGridLoadToken=0; // ใช้ยกเลิกคิวเก่าเวลาผู้ใช้กรอง/สลับหน้าเร็วๆ ก่อนโหลดรูปรอบก่อนจะเสร็จ
+async function loadCarImagesQueued(items,myToken){
+  for(var i=0;i<items.length;i+=IMAGE_LOAD_BATCH_SIZE){
+    if(myToken!==carGridLoadToken)return; // มีการเรนเดอร์ใหม่ทับไปแล้ว เลิกทำคิวเก่าทิ้ง
+    var batch=items.slice(i,i+IMAGE_LOAD_BATCH_SIZE);
+    await Promise.all(batch.map(function(it){return loadCarImageInto(it.elId,it.url);}));
+  }
+}
+
+/** เรนเดอร์การ์ดทั้งหมดของ container ที่ระบุ แล้วค่อยทยอยขอรูปเป็นชุดๆ ทีหลัง (ให้เห็นโครงการ์ดก่อน ไม่ต้องรอรูปครบ) */
 function renderCarGrid(containerId,cars){
   var el=document.getElementById(containerId);
   if(!el)return;
@@ -2069,10 +2062,12 @@ function renderCarGrid(containerId,cars){
   var html='';
   cars.forEach(function(c){var idx=allCars.indexOf(c);html+=buildCarCard(c,idx);});
   el.innerHTML=html;
-  cars.forEach(function(c){
+  var items=cars.map(function(c){
     var idx=allCars.indexOf(c);
-    loadCarImageInto(carCardImgId(c,idx),c[COL.siteUrl]);
+    return {elId:carCardImgId(c,idx),url:c[COL.siteUrl]};
   });
+  carGridLoadToken++;
+  loadCarImagesQueued(items,carGridLoadToken);
 }
 
 // ===== RENDER ADMIN LIST =====
