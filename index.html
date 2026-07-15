@@ -1093,13 +1093,16 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
   <div class="modal" style="max-width:380px;">
     <div class="mh"><h3>📋 รายงานละเอียด</h3><button class="mc" onclick="closeMo('modal-detailed-report')">✕</button></div>
     <div class="mb">
-      <p style="font-size:12px;color:var(--gray-500);margin-bottom:14px;">รายงานนี้แจกแจงเป็นรายคัน: รับไปกี่เบอร์ จบรถอะไร ปล่อยรถอะไร หลุดรถอะไร และรอผลอยู่กี่คัน — นับถอยหลังจากวันนี้</p>
-      <div class="fg"><label>ช่วงเวลา</label>
-        <select id="dr-period">
-          <option value="7">7 วันล่าสุด</option>
-          <option value="14">14 วันล่าสุด</option>
-          <option value="30">30 วันล่าสุด (1 เดือน)</option>
-        </select>
+      <p style="font-size:12px;color:var(--gray-500);margin-bottom:14px;">รายงานนี้แจกแจงเป็นรายคัน: รับไปกี่เบอร์ จบรถอะไร ปล่อยรถอะไร หลุดรถอะไร และรอผลอยู่กี่คัน — เลือกช่วงวันที่ที่ต้องการดูได้เอง</p>
+      <div class="form-2col">
+        <div class="fg"><label>จากวันที่</label><input type="date" id="dr-date-from"></div>
+        <div class="fg"><label>ถึงวันที่</label><input type="date" id="dr-date-to"></div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:-6px;margin-bottom:6px;">
+        <button class="btn btn-out btn-xs" onclick="setDrQuickRange(0)">วันนี้</button>
+        <button class="btn btn-out btn-xs" onclick="setDrQuickRange(6)">7 วันล่าสุด</button>
+        <button class="btn btn-out btn-xs" onclick="setDrQuickRange(13)">14 วันล่าสุด</button>
+        <button class="btn btn-out btn-xs" onclick="setDrQuickRange(29)">30 วันล่าสุด</button>
       </div>
     </div>
     <div class="mf">
@@ -3706,19 +3709,30 @@ async function exportSalesStatsReport(format){
   }
 }
 
-// ===== รายงานละเอียด (แยกรายคัน) — 7/14/30 วัน =====
+// ===== รายงานละเอียด (แยกรายคัน) — เลือกช่วงวันที่เองได้อิสระ =====
 function openDetailedReportModal(){
   var menu=document.getElementById('export-menu');
   if(menu)menu.style.display='none';
+  setDrQuickRange(6); // ค่าเริ่มต้น: 7 วันล่าสุด (ปรับเองต่อได้)
   openMo('modal-detailed-report');
 }
 
+/** ตั้งช่วงวันที่แบบลัด — daysBack=0 คือวันนี้วันเดียว, 6 คือ 7 วันล่าสุด เป็นต้น ผู้ใช้ยังแก้ช่องวันที่เองต่อได้ */
+function setDrQuickRange(daysBack){
+  var to=new Date();
+  var from=new Date();
+  from.setDate(from.getDate()-daysBack);
+  document.getElementById('dr-date-from').value=dateToISOLocal(from);
+  document.getElementById('dr-date-to').value=dateToISOLocal(to);
+}
+
 async function generateDetailedReport(){
-  var days=document.getElementById('dr-period').value;
+  var dateFrom=safeDateFromInput('dr-date-from');
+  var dateTo=safeDateFromInput('dr-date-to');
   var btn=document.getElementById('dr-generate-btn');
   btn.disabled=true;btn.textContent='⏳ กำลังสร้าง...';
   try{
-    var res=await apiGet('getSalesStatsDetailedReport',{days:days});
+    var res=await apiGet('getSalesStatsDetailedReport',{dateFrom:dateFrom,dateTo:dateTo});
     if(!res||res.success===false)throw new Error((res&&res.error)||'สร้างรายงานไม่สำเร็จ');
     renderDetailedReportPrintWindow(res);
     closeMo('modal-detailed-report');
@@ -3730,7 +3744,7 @@ async function generateDetailedReport(){
 }
 
 function renderDetailedReportPrintWindow(res){
-  var periodLabel=res.days+' วันล่าสุด ('+fmtDate(res.dateFrom)+' — '+fmtDate(res.dateTo)+')';
+  var periodLabel=fmtDate(res.dateFrom)+' — '+fmtDate(res.dateTo)+' (รวม '+res.days+' วัน)';
   var carLine=function(c){return (c.brand||'')+' '+(c.model||'')+' — ทะเบียน '+(c.plate||'-')+' ('+(c.branch||'-')+') '+(c.date?'• '+fmtDate(c.date):'');};
 
   var sections='';
