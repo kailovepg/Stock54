@@ -132,6 +132,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 .bb.ratch{background:#FDE8E8;color:#922B21;}
 .bb.kalpa{background:#DBEAFE;color:#1E40AF;}
 .bb.bangyai{background:#E6F4EE;color:#1A6B4A;}
+.mile-adj-badge{font-size:11px;cursor:help;}
 
 /* STATS */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:18px;}
@@ -1417,6 +1418,15 @@ function getDisplayMile(c){
   if(last && last!=='' && last!=='-') return last;
   return c[COL.mileFirst]||'—';
 }
+/** โชว์เลขไมล์สำหรับตารางรายการ — ถ้าคันไหนมีค่าในช่อง "เลขไมล์xxx" (ปรับไมล์แล้ว) จะโชว์เลขนั้นเป็นหลัก
+ * พร้อมสัญลักษณ์ 🔄 กำกับให้เห็นเลยว่าเป็นไมล์ที่ถูกปรับ ไม่ต้องกดเข้าไปดูรายละเอียดรถถึงจะรู้ */
+function mileDisplayHtml(c){
+  var last=String(c[COL.mileLast]||'').trim();
+  if(last && last!=='' && last!=='-'){
+    return last+' <span class="mile-adj-badge" title="คันนี้มีการปรับไมล์ (เลขไมล์xxx)">🔄</span>';
+  }
+  return String(c[COL.mileFirst]||'—');
+}
 function priceDisplay(raw){
   var nums=parsePNums(raw);
   if(!nums.length)return '<span style="color:var(--gray-500);">—</span>';
@@ -2041,7 +2051,7 @@ function renderSalesList(cars){
       +'<td class="mono">'+String(car[COL.year]||'—')+'</td>'
       +'<td>'+String(car[COL.color]||'—')+' / '+String(car[COL.gear]||'—')+'</td>'
       +'<td class="mono">'+String(car[COL.plate]||'—')+'</td>'
-      +'<td class="mono">'+String(car[COL.mileFirst]||'—')+'</td>'
+      +'<td class="mono">'+mileDisplayHtml(car)+'</td>'
       +'<td>'+branchBadge(car['_sheet'])+'</td>'
       +'<td>'+priceDisplay(car[COL.price])+'</td>'
       +'</tr>';
@@ -2229,7 +2239,7 @@ function renderAdminList(cars){
       +'<td>'+String(c[COL.color]||'—')+'</td>'
       +'<td>'+String(c[COL.gear]||'—')+'</td>'
       +'<td class="mono">'+String(c[COL.plate]||'—')+'</td>'
-      +'<td class="mono">'+String(c[COL.mileFirst]||'—')+'</td>'
+      +'<td class="mono">'+mileDisplayHtml(c)+'</td>'
       +'<td>'+branchBadge(c['_sheet'])+'</td>'
       +'<td>'+priceDisplay(c[COL.price])+'</td>'
       +'<td onclick="event.stopPropagation()"><div style="display:flex;gap:4px;flex-wrap:wrap;">'
