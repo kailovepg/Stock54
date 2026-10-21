@@ -555,6 +555,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       </div>
 
       <div class="stats-grid" id="a-stats"><div class="loading"><div class="spinner"></div></div></div>
+		<div id="a-undated-note" style="display:none;background:var(--amber-light);color:#92400e;border-radius:var(--r);padding:10px 14px;font-size:12px;margin-bottom:14px;"></div>
       <div class="charts-grid">
         <div class="chart-card"><div class="chart-title">สต๊อกแยกยี่ห้อ <span class="chart-hint">(คลิกดูรุ่นย่อย)</span></div><div class="chart-wrap"><canvas id="chart-brand"></canvas></div></div>
         <div class="chart-card"><div class="chart-title">แยกตามสาขา</div><div class="chart-wrap"><canvas id="chart-branch"></canvas></div></div>
@@ -1995,7 +1996,7 @@ function filterSold(){
     if(qRaw.trim()){var s=(c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'');if(!matchesQuerySmart(s,qRaw))return false;}
     if(brand&&c[COL.brand]!==brand)return false;
     if(model&&c[COL.model]!==model)return false;
-    if(df||dt){var d=toDate(c[COL.soldDate]||c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;}
+    if(df||dt){var d=toDate(c[COL.soldDate]||c[COL.date]);if(!dateInRange(d,df,dt))return false;}
     return true;
   });
   document.getElementById('admin-sold-count').textContent=filteredSold.length+' คัน';
@@ -2898,6 +2899,14 @@ function drowInput(l,id,v){return'<div class="drow"><div class="drow-lbl">'+l+'<
 function equipBox(l,v){var has=v&&String(v).trim()&&String(v).trim()!=='-'&&String(v).toUpperCase()!=='FALSE'&&String(v).toUpperCase()!=='ไม่มี';return'<div class="equip-box '+(has?'has':'no')+'"><div>'+(has?'✅':'❌')+'</div><div class="equip-lbl">'+l+'</div></div>';}
 
 // ===== DASHBOARD =====
+function dateInRange(d,df,dt){
+  if(!df&&!dt)return true;   // ไม่ได้ตั้งตัวกรองวันที่ ผ่านหมด
+  if(!d)return false;        // ตั้งตัวกรองแล้ว แต่แถวไม่มีวันที่ที่อ่านได้ ไม่นับ (เดิมหลุดผ่านทุกครั้ง)
+  if(df&&d<new Date(df+'T00:00:00'))return false;
+  if(dt&&d>new Date(dt+'T23:59:59'))return false;
+  return true;
+}
+	
 function renderSalesDash(d){
   if(!d)return;
   var df=document.getElementById('sd-df').value, dt=document.getElementById('sd-dt').value;
@@ -3916,6 +3925,20 @@ function renderDealDetailList(cars){
   });
   el.innerHTML=html;
 }
+  var noteEl=document.getElementById('a-undated-note');
+  if(noteEl){
+    var undated={},undatedTotal=0;
+    soldCars.forEach(function(c){
+      if(toDate(c[COL.soldDate]||c[COL.date]))return;
+      var b=c['_branch']||c['_sheet']||'ไม่ระบุสาขา';undated[b]=(undated[b]||0)+1;undatedTotal++;
+    });
+    if(undatedTotal&&(df||dt)){
+      noteEl.style.display='';
+      noteEl.innerHTML='⚠️ มีรถออก <strong>'+undatedTotal+'</strong> แถวที่ไม่มีวันที่ออกที่อ่านได้ (ไม่นับรวมในตัวเลขข้างบน): '
+        +Object.keys(undated).map(function(b){return b+' '+undated[b];}).join(', ')
+        +' — ลองเปิดชีตรถออกของสาขานั้นเช็คคอลัมน์ "วันที่ออก" ว่าว่างหรือพิมพ์ผิดรูปแบบ';
+    }else noteEl.style.display='none';
+  }
 
 function renderSalesStatsTable(summary){
   var body=document.getElementById('ss-summary-body');
