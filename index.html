@@ -90,8 +90,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 .ph-title{font-size:18px;font-weight:700;}
 .ph-sub{font-size:12px;color:var(--gray-500);margin-top:2px;}
 .ph-acts{display:flex;gap:8px;}
-.dash-filter{display:flex;align-items:center;gap:6px;background:#fff;padding:4px 8px;border-radius:var(--r);border:1px solid var(--gray-100);box-shadow:var(--shadow-sm);}
-.dash-filter input{border:none;font-size:12px;color:var(--gray-600);outline:none;background:transparent;}
+.dash-filter{display:flex;align-items:center;gap:6px;background:#fff;padding:4px 8px;border-radius:var(--r);border:1px solid var(--gray-100);box-shadow:var(--sh);}
+.dash-filter input{border:none;font-size:12px;color:var(--gray-700);outline:none;background:transparent;}
 .dash-filter span{color:var(--gray-300);font-size:12px;}
 
 /* FILTER PANEL */
@@ -136,6 +136,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 
 /* STATS */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:18px;}
+/* แก้: ข้อความโหลด/ผิดพลาดใน stats-grid เคยถูกบีบอยู่ในช่องเดียวแคบๆ ให้ขยายเต็มแถว */
+.stats-grid>.loading,.stats-grid>.empty{grid-column:1/-1;}
 .stat-card{background:#fff;border-radius:var(--rl);padding:14px 16px;box-shadow:var(--sh);border-top:3px solid var(--gray-100);}
 .stat-card.g{border-color:var(--green);}
 .stat-card.r{border-color:var(--red);}
@@ -226,7 +228,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 .link-btn.lk2{background:var(--black);color:#fff;}
 .link-btn.lk2:hover{background:var(--gray-700);}
 
-	/* VIEW TOGGLE (List / Grid) */
+/* VIEW TOGGLE (List / Grid) */
 .view-toggle{display:flex;border:1.5px solid var(--gray-200);border-radius:var(--r);overflow:hidden;flex-shrink:0;}
 .view-toggle button{padding:6px 11px;background:#fff;border:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--gray-700);font-family:var(--font);}
 .view-toggle button.active{background:var(--black);color:#fff;}
@@ -244,9 +246,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 @media(max-width:640px){.stock-grid{grid-template-columns:repeat(2,1fr);gap:8px;}.car-card-img{height:100px;}}
 
 /* MISC */
-	.admin-access-btn{position:fixed;bottom:20px;right:20px;z-index:999;width:44px;height:44px;border-radius:50%;background:var(--black);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shl);opacity:0.2;transition:all 0.3s;}
-	.admin-access-btn:hover{opacity:1;transform:scale(1.1);}
-	.loading{display:flex;align-items:center;justify-content:center;padding:44px;color:var(--gray-500);font-size:13px;gap:8px;}
+.admin-access-btn{position:fixed;bottom:20px;right:20px;z-index:999;width:44px;height:44px;border-radius:50%;background:var(--black);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shl);opacity:0.2;transition:all 0.3s;}
+.admin-access-btn:hover{opacity:1;transform:scale(1.1);}
+.loading{display:flex;align-items:center;justify-content:center;padding:44px;color:var(--gray-500);font-size:13px;gap:8px;}
 .spinner{width:16px;height:16px;border:2px solid var(--gray-100);border-top-color:var(--black);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;padding:44px;color:var(--gray-500);font-size:13px;}
@@ -254,6 +256,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 #toast.show{transform:translateY(0);opacity:1;}
 #toast.e{background:var(--red);}
 #toast.s{background:var(--green);}
+/* แถบสถานะการซิงก์ข้อมูล (แสดงตอนกำลังอัปเดต / ใช้ข้อมูลแคช / เชื่อมต่อไม่ได้) */
+#sync-pill{position:fixed;left:18px;bottom:18px;z-index:998;background:var(--black);color:#fff;padding:8px 14px;border-radius:20px;font-size:12px;box-shadow:var(--shl);display:none;align-items:center;gap:8px;max-width:calc(100vw - 36px);}
+#sync-pill.show{display:flex;}
+#sync-pill.warn{background:var(--amber);}
+#sync-pill.ok{background:var(--green);}
+#sync-pill button{background:#fff;color:var(--black);border:none;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap;}
 #undo-bar{position:fixed;bottom:70px;right:18px;background:var(--black);color:#fff;padding:10px 14px;border-radius:var(--r);font-size:12px;z-index:999;display:none;align-items:center;gap:12px;box-shadow:var(--shl);max-width:320px;}
 #undo-bar.show{display:flex;}
 #undo-bar button{background:#fff;color:var(--black);border:none;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;}
@@ -312,6 +320,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
   .sort-pill{padding:8px 4px;font-size:11px;text-align:center;}
   .filter-tags-row > div:last-child { grid-column: 1 / -1; justify-content: center; margin-top: 4px; }
   .filter-tags-row > div:last-child .btn { width: 100%; justify-content: center; padding: 10px; }
+  #sync-pill{bottom:70px;}
 }
 </style>
 </head>
@@ -348,11 +357,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 <div id="page-sales" class="page">
   <nav>
     <div class="nav-logo">AutoStock Pro <span class="nbadge">SALES</span></div>
-	    <div class="nav-r">
-	      <div class="nav-user"><span id="sales-name"></span> <span id="sales-role-badge"></span></div>
-	      <button class="btn-nav" onclick="loadSalesData()" title="โหลดข้อมูลใหม่">รีเฟรช</button>
-	      <button id="sales-logout-btn" class="btn-nav" onclick="logout()">ออก</button>
-	    </div>
+    <div class="nav-r">
+      <div class="nav-user"><span id="sales-name"></span> <span id="sales-role-badge"></span></div>
+      <button class="btn-nav" onclick="loadSalesData()" title="โหลดข้อมูลใหม่">รีเฟรช</button>
+      <button id="sales-logout-btn" class="btn-nav" onclick="logout()">ออก</button>
+    </div>
   </nav>
   <div class="main">
     <div class="tabs" id="sales-tabs">
@@ -412,39 +421,32 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
           <button class="btn-filter-toggle" onclick="this.parentElement.nextElementSibling.classList.toggle('show'); this.classList.toggle('active');"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg></button>
         </div>
         <div class="filter-tags-row">
-          <!-- สาขา -->
           <div class="filter-group">
             <div class="filter-group-label">สาขา</div>
             <select id="sf-branch-select" onchange="sfBranch=this.value;filterSales();"><option value="">ทั้งหมด</option></select>
           </div>
           <div class="filter-divider"></div>
-          <!-- ยี่ห้อ -->
           <div class="filter-group">
             <div class="filter-group-label">ยี่ห้อ</div>
             <select id="sf-brand" onchange="filterSales();updateModelFilter()"><option value="">ทั้งหมด</option></select>
           </div>
-          <!-- รุ่น -->
           <div class="filter-group">
             <div class="filter-group-label">รุ่น</div>
             <select id="sf-model" onchange="filterSales()"><option value="">ทั้งหมด</option></select>
           </div>
-          <!-- ปี -->
           <div class="filter-group">
             <div class="filter-group-label">ปี</div>
             <select id="sf-year" onchange="filterSales()"><option value="">ทั้งหมด</option></select>
           </div>
-          <!-- สี -->
           <div class="filter-group">
             <div class="filter-group-label">สี</div>
             <select id="sf-color" onchange="filterSales()"><option value="">ทั้งหมด</option></select>
           </div>
-          <!-- เกียร์ -->
           <div class="filter-group">
             <div class="filter-group-label">เกียร์</div>
             <select id="sf-gear" onchange="filterSales()"><option value="">ทั้งหมด</option></select>
           </div>
           <div class="filter-divider"></div>
-          <!-- เรียงลำดับ -->
           <div class="filter-group">
             <div class="filter-group-label">เรียงลำดับ</div>
             <select id="sf-sort-select" onchange="sfSort=this.value;filterSales();">
@@ -555,7 +557,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       </div>
 
       <div class="stats-grid" id="a-stats"><div class="loading"><div class="spinner"></div></div></div>
-		<div id="a-undated-note" style="display:none;background:var(--amber-light);color:#92400e;border-radius:var(--r);padding:10px 14px;font-size:12px;margin-bottom:14px;"></div>
+      <div id="a-undated-note" style="display:none;background:var(--amber-light);color:#92400e;border-radius:var(--r);padding:10px 14px;font-size:12px;margin-bottom:14px;"></div>
       <div class="charts-grid">
         <div class="chart-card"><div class="chart-title">สต๊อกแยกยี่ห้อ <span class="chart-hint">(คลิกดูรุ่นย่อย)</span></div><div class="chart-wrap"><canvas id="chart-brand"></canvas></div></div>
         <div class="chart-card"><div class="chart-title">แยกตามสาขา</div><div class="chart-wrap"><canvas id="chart-branch"></canvas></div></div>
@@ -758,7 +760,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
       </div>
       <div class="set-section">
         <div class="set-title">🤖 ตั้งค่าการวิเคราะห์ด้วย AI</div>
-        
+
         <div class="fg" style="max-width:380px;margin-bottom:20px;">
           <label>ผู้ให้บริการ AI ที่ใช้งานปัจจุบัน</label>
           <select id="set-ai-provider" onchange="saveAiProvider()" style="width:100%;padding:10px;border-radius:var(--r);border:2px solid var(--gray-200);font-weight:600;">
@@ -1124,6 +1126,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--black);}
 </div>
 
 <div id="toast"></div>
+<div id="sync-pill"></div>
 <div id="undo-bar"><span id="undo-bar-text"></span><button onclick="performUndoMarkSold()">↩️ เลิกทำ</button></div>
 
 <script>
@@ -1140,6 +1143,14 @@ const BRANCH_COLORS={'ราชพฤกษ์':'#FDE8E8','กัลปพฤก
 const BRANCH_TEXT_COLORS={'ราชพฤกษ์':'#922B21','กัลปพฤกษ์':'#1E40AF','บางใหญ่':'#1A6B4A'};
 const BRANCH_CSS={'ราชพฤกษ์':'ratch','กัลปพฤกษ์':'kalpa','บางใหญ่':'bangyai'};
 
+// ค่าคงที่ของระบบแคช (ต้องประกาศก่อนถูกเรียกใช้ด้านล่าง)
+const DATA_CACHE_PREFIX='as_cache_v2_';
+const PERM_CACHE_PREFIX='as_perm_v1_';
+const IMG_CACHE_KEY='as_imgcache_v1';
+const DATA_CACHE_MAX_AGE=7*24*3600*1000; // แคชข้อมูลเก่าเกิน 7 วันไม่ใช้
+const IMG_CACHE_MAX_AGE=7*24*3600*1000;
+const IMG_CACHE_MAX_ENTRIES=600;
+
 var role='', userName='', authToken='';
 var allCars=[], soldCars=[], dashData={}, settings={hiddenCols:[]}, branches=[];
 var adminDashFilteredCars=[], adminDashFilteredSold=[];
@@ -1152,36 +1163,143 @@ var charts={};
 var myPermissions={purchaseCost:'none',expenseCost:'none'};
 // โหมดแสดงผลหน้าสต๊อกรถ: 'list' (ตารางเดิม) หรือ 'grid' (การ์ดรูปภาพ) — จำแยกกันระหว่างหน้า Sales กับ Admin
 var adminViewMode='list', salesViewMode='list';
-// แคชรูปภาพที่ดึงมาจาก 54niwat.com ไว้ในหน่วยความจำของหน้าเว็บ (key = ลิงก์ 54niwat, value = URL รูปภาพ หรือ '' ถ้าไม่เจอ)
-// กันไม่ให้ยิงขอรูปซ้ำๆ ของรถคันเดิมเวลาสลับตัวกรอง/แท็บไปมาในเซสชันเดียวกัน
-var carImageCache={};
+var lastLoadOK=0;
+
+// ===== Polyfill เล็กๆ สำหรับ webview เก่า (เบราว์เซอร์ในแอป LINE/Facebook บางรุ่น) =====
+if(!Promise.allSettled){
+  Promise.allSettled=function(ps){
+    return Promise.all(ps.map(function(p){
+      return Promise.resolve(p).then(function(v){return{status:'fulfilled',value:v};},function(r){return{status:'rejected',reason:r};});
+    }));
+  };
+}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+function settledValue(r){return (r&&r.status==='fulfilled')?r.value:null;}
+/** รอ promise ได้ไม่เกิน ms มิลลิวินาที ถ้าช้าเกินหรือ error ให้ได้ null (ใช้กับข้อมูลรองที่ไม่ควรหน่วงหน้าหลัก) */
+function softTimeout(p,ms){
+  return new Promise(function(resolve){
+    var t=setTimeout(function(){resolve(null);},ms);
+    p.then(function(v){clearTimeout(t);resolve(v);},function(){clearTimeout(t);resolve(null);});
+  });
+}
+
+// ===== แคชรูปรถ (เก็บถาวรในเครื่อง — ลดการยิง getCarImage ซ้ำๆ ซึ่งกิน UrlFetch quota ของ Apps Script) =====
+function loadImgCache(){
+  try{
+    var s=localStorage.getItem(IMG_CACHE_KEY);
+    if(!s)return {};
+    var o=JSON.parse(s);
+    if(!o||!o.d||!o.t||(Date.now()-o.t>IMG_CACHE_MAX_AGE))return {};
+    return o.d;
+  }catch(e){return {};}
+}
+var imgCacheSaveTimer=null;
+var imgCacheStartedAt=Date.now();
+function saveImgCacheSoon(){
+  clearTimeout(imgCacheSaveTimer);
+  imgCacheSaveTimer=setTimeout(function(){
+    try{
+      var out={};
+      var keys=Object.keys(carImageCache).filter(function(k){return !!carImageCache[k];});
+      if(keys.length>IMG_CACHE_MAX_ENTRIES)keys=keys.slice(keys.length-IMG_CACHE_MAX_ENTRIES);
+      keys.forEach(function(k){out[k]=carImageCache[k];});
+      localStorage.setItem(IMG_CACHE_KEY,JSON.stringify({t:imgCacheStartedAt,d:out}));
+    }catch(e){}
+  },1500);
+}
+// แคชรูปภาพที่ดึงมาจาก 54niwat.com (key = ลิงก์ 54niwat, value = URL รูปภาพ หรือ '' ถ้าไม่เจอ)
+var carImageCache=loadImgCache();
+var carImageInflight={};
+
 const COST_DOMAIN_LABELS_TH={purchaseCost:'ต้นทุนซื้อเข้า',expenseCost:'ค่าใช้จ่าย/ค่าซ่อม'};
 const COST_PERM_RANK={manage:3,write:2,read:1,none:0};
 function costPermAtLeast(domain,minLevel){return (COST_PERM_RANK[myPermissions[domain]]||0) >= (COST_PERM_RANK[minLevel]||0);}
 async function loadMyPermissions(){
   try{
     var res=await apiGet('getMyPermissions',{});
-    if(res&&res.success)myPermissions=res.permissions||myPermissions;
-  }catch(e){ /* เงียบไว้ — ถ้าโหลดไม่สำเร็จ ค่าเริ่มต้น "none" ทั้งคู่ก็ยังปลอดภัย แค่ซ่อนปุ่มต้นทุนไปเฉยๆ */ }
+    if(res&&res.success){
+      myPermissions=res.permissions||myPermissions;
+      try{localStorage.setItem(PERM_CACHE_PREFIX+role,JSON.stringify(myPermissions));}catch(e){}
+    }
+  }catch(e){ /* เงียบไว้ — ถ้าโหลดไม่สำเร็จ ใช้ค่าที่แคชไว้/ค่าเริ่มต้น "none" ซึ่งปลอดภัย แค่ซ่อนปุ่มต้นทุนไปเฉยๆ */ }
 }
+function loadCachedPermissions(){
+  try{
+    var s=localStorage.getItem(PERM_CACHE_PREFIX+role);
+    if(s){var p=JSON.parse(s);if(p&&typeof p==='object')myPermissions=p;}
+  }catch(e){}
+}
+
+// ===== แคชข้อมูลหลัก (stale-while-revalidate): เปิดแอปแล้วเห็นข้อมูลล่าสุดทันที แล้วค่อยอัปเดตเบื้องหลัง =====
+function sanitizeSettingsForCache(st){
+  var out={};
+  if(!st||typeof st!=='object')return out;
+  Object.keys(st).forEach(function(k){
+    if(/(key|token|secret)/i.test(k)&&typeof st[k]==='string')return; // ไม่เก็บค่า secret ลงเครื่องเด็ดขาด
+    out[k]=st[k];
+  });
+  return out;
+}
+function cacheSave(obj){
+  try{
+    localStorage.setItem(DATA_CACHE_PREFIX+role,JSON.stringify({t:Date.now(),d:obj}));
+  }catch(e){
+    try{clearDataCache();}catch(_){}
+  }
+}
+function cacheLoad(){
+  try{
+    var s=localStorage.getItem(DATA_CACHE_PREFIX+role);
+    if(!s)return null;
+    var o=JSON.parse(s);
+    if(!o||!o.d||!o.t)return null;
+    if(Date.now()-o.t>DATA_CACHE_MAX_AGE)return null;
+    return o;
+  }catch(e){return null;}
+}
+function clearDataCache(){
+  try{
+    var ks=[];
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(k&&(k.indexOf(DATA_CACHE_PREFIX)===0||k.indexOf(PERM_CACHE_PREFIX)===0))ks.push(k);
+    }
+    ks.forEach(function(k){localStorage.removeItem(k);});
+  }catch(e){}
+}
+function fmtSyncTime(t){
+  var d=new Date(t), now=new Date();
+  var hm=d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+  return d.toDateString()===now.toDateString()?hm:(d.getDate()+'/'+(d.getMonth()+1)+' '+hm);
+}
+var syncPillTimer=null;
+function setSyncPill(kind,msg,retryFn){
+  var el=document.getElementById('sync-pill');if(!el)return;
+  clearTimeout(syncPillTimer);
+  if(!kind){el.className='';el.innerHTML='';return;}
+  el.className='show '+kind;
+  el.innerHTML='<span>'+msg+'</span>'+(retryFn?'<button onclick="'+retryFn+'">ลองใหม่</button>':'');
+  if(kind==='ok')syncPillTimer=setTimeout(function(){el.className='';},2500);
+}
+function isAdminGroup(r){return r==='admin'||r==='ceo'||r==='superadmin'||r==='accounting';}
+function reloadCurrent(){if(isAdminGroup(role))loadAdminData();else loadSalesData();}
 
 /**
  * บาง webview ในตัว (เช่น เบราว์เซอร์ในแอป LINE / Facebook / Messenger ที่พนักงานมักใช้เปิดหน้านี้บนมือถือ)
  * ไม่รองรับ <input type="date"> แบบเนทีฟ ทำให้ผู้ใช้พิมพ์วันที่เป็นรูปแบบอื่นที่ไม่ใช่ "YYYY-MM-DD"
  * พอส่งไป backend แล้วแปลงเป็น Date ไม่ได้ (Invalid Date) จะถูกเขียนลง Google Sheets เป็น "ช่องว่าง" แบบเงียบๆ
- * ไม่มี error ให้เห็น ทำให้ดูเหมือนวันที่ "หายไป" ทั้งที่ข้อมูลอื่นบันทึกปกติ
  * ฟังก์ชันนี้ตรวจสอบว่าเบราว์เซอร์รองรับ date picker แบบเนทีฟจริงไหม ถ้าไม่รองรับ จะเปลี่ยนช่องนั้นเป็น
- * text input ที่พิมพ์แล้วใส่ขีด "-" ให้อัตโนมัติ (เช่น พิมพ์ 04072026 -> กลายเป็น 2026-07-04) กันปัญหานี้ตั้งแต่ต้นทาง
+ * text input ที่พิมพ์แล้วใส่ขีด "-" ให้อัตโนมัติ (เช่น พิมพ์ 04072026 -> กลายเป็น 2026-07-04)
  */
 function polyfillDateInputs(){
   var test=document.createElement('input');
   test.setAttribute('type','date');
-  test.value='ก'; // ค่าที่ไม่ใช่วันที่ — ถ้าเบราว์เซอร์รองรับ date จริง ค่านี้จะถูกปฏิเสธ (value กลับเป็น '')
+  test.value='ก';
   var supportsDate = (test.type==='date') && (test.value==='');
-  if(supportsDate) return; // รองรับปกติ ไม่ต้องทำอะไรเพิ่ม
+  if(supportsDate) return;
 
   document.querySelectorAll('input[type="date"]').forEach(function(el){
-    var existingVal=el.value; // เผื่อมีการตั้งค่าเริ่มต้นไว้ก่อนหน้านี้แล้ว (เช่น todayISO())
+    var existingVal=el.value;
     el.type='text';
     el.placeholder='YYYY-MM-DD';
     el.setAttribute('inputmode','numeric');
@@ -1197,7 +1315,7 @@ function polyfillDateInputs(){
   });
 }
 
-/** ตรวจว่าเป็นวันที่รูปแบบ "YYYY-MM-DD" ที่ถูกต้องจริงหรือไม่ (ไม่ใช่แค่รูปแบบตัวอักษรตรง แต่ต้องเป็นวันที่มีอยู่จริงด้วย) */
+/** ตรวจว่าเป็นวันที่รูปแบบ "YYYY-MM-DD" ที่ถูกต้องจริงหรือไม่ */
 function isValidISODate(str){
   if(!str||!/^\d{4}-\d{2}-\d{2}$/.test(str))return false;
   var d=new Date(str+'T00:00:00');
@@ -1206,7 +1324,7 @@ function isValidISODate(str){
 function dateToISOLocal(d){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
-/** คืนค่าวันที่ที่ถูกต้องจาก id ของ input ถ้าพิมพ์มาไม่ถูกรูปแบบ (เช่น webview ไม่รองรับ date picker) จะ fallback เป็นวันนี้แทนการปล่อยให้ backend ได้ค่าว่าง/ผิดรูปแบบ */
+/** คืนค่าวันที่ที่ถูกต้องจาก id ของ input ถ้าพิมพ์มาไม่ถูกรูปแบบ จะ fallback เป็นวันนี้ */
 function safeDateFromInput(id){
   var el=document.getElementById(id);
   var v=el?el.value.trim():'';
@@ -1217,130 +1335,182 @@ function safeDateFromInput(id){
 
 polyfillDateInputs();
 
-	// ===== INIT — บังคับ login ทุกครั้ง เว้นแต่มี token ที่ valid อยู่จริง (ตรวจกับ backend) =====
-	(function(){
-	  var saved=localStorage.getItem('as_session');
-	  if(saved){
-	    try{
-	      var d=JSON.parse(saved);
-	      if(d.token){
-	        validateSavedSession(d.token);
-	        return;
-	      }
-	    }catch(e){}
-	  }
-	  showLoginPage();
-	})();
+// ===== NETWORK HELPERS =====
+/** fetch + timeout + retry สำหรับงานที่ไม่ผ่าน apiGet (เช่น login / validateSession) */
+async function fetchJsonRetry(url,tries,timeoutMs){
+  var lastErr;
+  for(var i=0;i<tries;i++){
+    var controller=new AbortController();
+    var tid=setTimeout(function(){controller.abort();},timeoutMs);
+    try{
+      var res=await fetch(url,{signal:controller.signal});
+      var text=await res.text();
+      clearTimeout(tid);
+      return JSON.parse(text);
+    }catch(e){
+      clearTimeout(tid);
+      lastErr=(e&&e.name==='AbortError')?new Error('เชื่อมต่อหมดเวลา (timeout)'):e;
+      if(i<tries-1)await sleep(1000);
+    }
+  }
+  throw lastErr;
+}
 
-	async function validateSavedSession(token){
-	  try{
-	    var res=await fetch(API+'?action=validateSession&token='+encodeURIComponent(token));
-	    var d=await res.json();
-	    if(d.success){
-	      authToken=token;
-	      role=d.role;
-	      userName=d.name;
-	      route();
-	    } else {
-	      localStorage.removeItem('as_session');
-	      showLoginPage();
-	    }
-	  }catch(e){
-	    // เชื่อมต่อไม่ได้ชั่วคราว -> ให้ลองเข้าหน้าเดิมไปก่อน (กันกรณีเน็ตกระตุก) แทนการบังคับ login ใหม่ทันที
-	    showLoginPage('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง: '+e.message);
-	  }
-	}
+// ตัวจำกัดจำนวนคำขอพร้อมกัน — Apps Script รับ request พร้อมกันได้จำกัด ถ้ายิงรัวๆ จะเข้าคิวและช้าทั้งระบบ
+var LIMITERS={main:{max:4,active:0,queue:[]},low:{max:2,active:0,queue:[]}};
+function limiterRun(name,fn){
+  var L=LIMITERS[name]||LIMITERS.main;
+  return new Promise(function(resolve,reject){
+    function done(){L.active--;var nx=L.queue.shift();if(nx)nx();}
+    function start(){
+      L.active++;
+      var p;
+      try{p=fn();}catch(e){done();reject(e);return;}
+      p.then(function(v){done();resolve(v);},function(e){done();reject(e);});
+    }
+    if(L.active<L.max)start();else L.queue.push(start);
+  });
+}
 
-	function showLoginPage(errMsg){
-	  showPage('login');
-	  var errEl=document.getElementById('login-err');
-	  if(errMsg){errEl.textContent=errMsg;errEl.style.display='block';}
-	  else {errEl.style.display='none';}
-	  setTimeout(function(){var p=document.getElementById('login-pwd');if(p)p.focus();},100);
-	}
+// ===== INIT — เปิดแอปทันทีด้วย session ที่จำไว้ (ไม่รอ validate) แล้วตรวจ token เบื้องหลัง =====
+(function(){
+  var saved=localStorage.getItem('as_session');
+  if(saved){
+    try{
+      var d=JSON.parse(saved);
+      if(d.token){
+        authToken=d.token;
+        if(d.role&&d.name){
+          role=d.role;
+          userName=d.name;
+          route();
+          validateSavedSession(d.token,true);
+        }else{
+          validateSavedSession(d.token,false);
+        }
+        return;
+      }
+    }catch(e){}
+  }
+  showLoginPage();
+})();
 
-	// ===== AUTH =====
-	async function doLogin(){
-	  var pwd=document.getElementById('login-pwd').value;
-	  var remember=document.getElementById('login-remember').checked;
-	  var errEl=document.getElementById('login-err');
-	  var btn=document.getElementById('login-btn');
-	  if(!pwd){
-	    errEl.textContent='กรุณากรอกรหัสผ่าน';
-	    errEl.style.display='block';
-	    return;
-	  }
-	  errEl.style.display='none';
-	  btn.disabled=true;
-	  btn.textContent='กำลังเข้าสู่ระบบ...';
-	  try{
-	    var res=await fetch(API+'?action=login&password='+encodeURIComponent(pwd)+'&remember='+(remember?'1':'0'));
-	    var d=await res.json();
-	    if(d.success){
-	      authToken=d.token;
-	      role=d.role;
-	      userName=d.name;
-	      localStorage.setItem('as_session',JSON.stringify({token:d.token}));
-	      document.getElementById('login-pwd').value='';
-	      route();
-	    } else {
-	      errEl.textContent=d.error||'รหัสผ่านไม่ถูกต้อง';
-	      errEl.style.display='block';
-	    }
-	  }catch(e){
-	    errEl.textContent='เชื่อมต่อ API ไม่ได้: '+e.message;
-	    errEl.style.display='block';
-	  }finally{
-	    btn.disabled=false;
-	    btn.textContent='เข้าสู่ระบบ';
-	  }
-	}
+async function validateSavedSession(token,silent){
+  try{
+    var d=await fetchJsonRetry(API+'?action=validateSession&token='+encodeURIComponent(token),2,25000);
+    if(d.success){
+      authToken=token;
+      var changed=(d.role!==role||d.name!==userName);
+      role=d.role;
+      userName=d.name;
+      localStorage.setItem('as_session',JSON.stringify({token:token,role:role,name:userName}));
+      if(!silent||changed)route();
+    } else {
+      handleAuthExpired(silent?'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่':'');
+    }
+  }catch(e){
+    // เชื่อมต่อไม่ได้ชั่วคราว: ถ้าเปิดแอปด้วยข้อมูลที่จำไว้อยู่แล้ว (silent) ก็ใช้งานต่อได้ ไม่ต้องเด้งออก
+    if(!silent)showLoginPage('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง: '+e.message);
+  }
+}
 
-	async function logout(){
-	  try{ if(authToken) await fetch(API+'?action=logout&token='+encodeURIComponent(authToken)); }catch(e){}
-	  localStorage.removeItem('as_session');
-	  authToken='';
-	  role='';
-	  userName='';
-	  allCars=[];
-	  showLoginPage();
-	  showToast('ออกจากระบบแล้ว','');
-	}
+function showLoginPage(errMsg){
+  showPage('login');
+  var errEl=document.getElementById('login-err');
+  if(errMsg){errEl.textContent=errMsg;errEl.style.display='block';}
+  else {errEl.style.display='none';}
+  setTimeout(function(){var p=document.getElementById('login-pwd');if(p)p.focus();},100);
+}
 
-	/** เรียกตอน API คืน 401 (token หมดอายุ/ไม่ถูกต้อง) — เด้งกลับไปหน้า login ทันที */
-	function handleAuthExpired(){
-	  localStorage.removeItem('as_session');
-	  authToken='';
-	  role='';
-	  userName='';
-	  showLoginPage('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่');
-	}
+// ===== AUTH =====
+async function doLogin(){
+  var pwd=document.getElementById('login-pwd').value;
+  var remember=document.getElementById('login-remember').checked;
+  var errEl=document.getElementById('login-err');
+  var btn=document.getElementById('login-btn');
+  if(!pwd){
+    errEl.textContent='กรุณากรอกรหัสผ่าน';
+    errEl.style.display='block';
+    return;
+  }
+  errEl.style.display='none';
+  btn.disabled=true;
+  btn.textContent='กำลังเข้าสู่ระบบ...';
+  try{
+    var d=await fetchJsonRetry(API+'?action=login&password='+encodeURIComponent(pwd)+'&remember='+(remember?'1':'0'),2,40000);
+    if(d.success){
+      authToken=d.token;
+      role=d.role;
+      userName=d.name;
+      localStorage.setItem('as_session',JSON.stringify({token:d.token,role:d.role,name:d.name}));
+      document.getElementById('login-pwd').value='';
+      route();
+    } else {
+      errEl.textContent=d.error||'รหัสผ่านไม่ถูกต้อง';
+      errEl.style.display='block';
+    }
+  }catch(e){
+    errEl.textContent='เชื่อมต่อ API ไม่ได้: '+e.message;
+    errEl.style.display='block';
+  }finally{
+    btn.disabled=false;
+    btn.textContent='เข้าสู่ระบบ';
+  }
+}
 
-	async function route(){
-	  await loadMyPermissions();
-	  if(role==='admin'||role==='ceo'||role==='superadmin'||role==='accounting'){
-	    showPage('admin');
-	    applyRolePermissions();
-	    loadAdminData();
-	  } else {
-	    showPage('sales');
-	    document.getElementById('sales-name').textContent = userName;
-	    var badgeEl=document.getElementById('sales-role-badge');
-	    if(badgeEl) badgeEl.outerHTML = role==='maintenance' ? '<span class="rbadge maintenance">ทีมช่าง</span>' : '<span class="rbadge sales">พนักงานขาย</span>';
-	    loadSalesData();
-	    if(role==='maintenance'){
-	      document.getElementById('sales-tabs').style.display='none'; // ทีมช่างไม่ต้องเห็นแท็บ Dashboard/รถออก แค่ค้นหารถแล้วแก้ไมล์เท่านั้น
-	      switchSalesTab('stock');
-	    }
-	  }
-	}
+function resetAppState(){
+  localStorage.removeItem('as_session');
+  clearDataCache();
+  if(refreshTimer){clearInterval(refreshTimer);refreshTimer=null;}
+  authToken='';
+  role='';
+  userName='';
+  allCars=[];soldCars=[];dashData={};settings={hiddenCols:[]};branches=[];
+  myPermissions={purchaseCost:'none',expenseCost:'none'};
+  setSyncPill(null);
+}
+
+function logout(){
+  // ยิงแจ้ง logout แบบไม่รอผล (เดิม await — ถ้าเซิร์ฟเวอร์ช้าจะกดออกแล้วค้าง)
+  try{ if(authToken) fetch(API+'?action=logout&token='+encodeURIComponent(authToken)).catch(function(){}); }catch(e){}
+  resetAppState();
+  showLoginPage();
+  showToast('ออกจากระบบแล้ว','');
+}
+
+/** เรียกตอน API คืน 401 (token หมดอายุ/ไม่ถูกต้อง) — เด้งกลับไปหน้า login ทันที */
+function handleAuthExpired(msg){
+  resetAppState();
+  showLoginPage(msg===''?'':(msg||'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่'));
+}
+
+async function route(){
+  loadCachedPermissions();
+  if(isAdminGroup(role)){
+    showPage('admin');
+    applyRolePermissions();
+    loadAdminData();
+  } else {
+    showPage('sales');
+    document.getElementById('sales-name').textContent = userName;
+    var badgeEl=document.getElementById('sales-role-badge');
+    if(badgeEl) badgeEl.outerHTML = role==='maintenance' ? '<span class="rbadge maintenance">ทีมช่าง</span>' : '<span class="rbadge sales">พนักงานขาย</span>';
+    loadSalesData();
+    if(role==='maintenance'){
+      document.getElementById('sales-tabs').style.display='none'; // ทีมช่างไม่ต้องเห็นแท็บ Dashboard/รถออก แค่ค้นหารถแล้วแก้ไมล์เท่านั้น
+      switchSalesTab('stock');
+    }
+  }
+  // โหลดสิทธิ์แบบขนานกับข้อมูลหลัก (เดิม await ก่อน ทำให้หน้าจอรอสิทธิ์จนเสร็จก่อนค่อยเริ่มโหลดข้อมูล)
+  loadMyPermissions().then(function(){ if(isAdminGroup(role))applyRolePermissions(); });
+}
 
 function applyRolePermissions(){
   var badge = document.getElementById('nav-role-badge');
   var pill = document.getElementById('nav-role-pill');
   var roleLabelMap={admin:'ADMIN',ceo:'CEO',superadmin:'SUPER ADMIN',accounting:'บัญชี'};
   var roleClassMap={admin:'admin',ceo:'ceo',superadmin:'superadmin',accounting:'accounting'};
-  var label = roleLabelMap[role] || role.toUpperCase();
+  var label = roleLabelMap[role] || String(role).toUpperCase();
   if(badge) badge.textContent = label;
   if(pill){
     pill.textContent = label;
@@ -1352,11 +1522,11 @@ function applyRolePermissions(){
     var btn = document.getElementById('tab-btn-'+t);
     if(btn) btn.style.display = fullAccessTabs ? '' : 'none';
   });
-  // ส่วนจัดการสิทธิ์ (_Permissions) และ audit log — Super Admin เท่านั้นที่เห็น แม้จะอยู่ในแท็บตั้งค่าเดียวกับ Admin ก็ตาม
+  // ส่วนจัดการสิทธิ์ (_Permissions) และ audit log — Super Admin เท่านั้นที่เห็น
   document.querySelectorAll('.js-superadmin-only').forEach(function(el){
     el.style.display = (role==='superadmin') ? '' : 'none';
   });
-  // ปุ่มจัดการรถ (เพิ่ม/วิเคราะห์กลุ่ม) — บัญชียังไม่มีสิทธิ์แก้ไขข้อมูลรถในรอบนี้ (backend บล็อกอยู่แล้ว ซ่อนปุ่มไปเลยกันสับสน)
+  // ปุ่มจัดการรถ (เพิ่ม/วิเคราะห์กลุ่ม) — บัญชียังไม่มีสิทธิ์แก้ไขข้อมูลรถ (backend บล็อกอยู่แล้ว ซ่อนปุ่มกันสับสน)
   document.querySelectorAll('.js-car-manage-btn').forEach(function(el){
     el.style.display = (role==='accounting') ? 'none' : '';
   });
@@ -1366,30 +1536,43 @@ function applyRolePermissions(){
 }
 
 // ===== API =====
-async function apiGet(action,params){
+/**
+ * GET พร้อม: จำกัดคำขอพร้อมกัน, timeout, และ retry อัตโนมัติ 1 ครั้งเมื่อ timeout/เครือข่าย/ตอบกลับไม่ใช่ JSON
+ * opts: {timeout:ms, retries:n, low:true (คิวความสำคัญต่ำ เช่นรูปภาพ)}
+ */
+async function apiGet(action,params,opts){
+  opts=opts||{};
   var url=API+'?action='+action+'&token='+encodeURIComponent(authToken);
   if(params)Object.keys(params).forEach(function(k){url+='&'+k+'='+encodeURIComponent(params[k]);});
-  var controller=new AbortController();
-  var tid=setTimeout(function(){controller.abort();},30000);
-  try{
-    var res=await fetch(url,{signal:controller.signal});
-    clearTimeout(tid);
-    var text=await res.text();
-    var data;
-    try{data=JSON.parse(text);}
-    catch(pe){console.error('JSON parse error for action='+action+':',text.substring(0,300));throw new Error('API ตอบกลับข้อมูลไม่ถูกต้อง ('+action+'): '+text.substring(0,80));}
-    if(res.status===401||data.code==='AUTH_REQUIRED'){handleAuthExpired();throw new Error('เซสชันหมดอายุ');}
-    return data;
-  }catch(fe){
-    clearTimeout(tid);
-    if(fe.name==='AbortError')throw new Error('เชื่อมต่อหมดเวลา (timeout) กรุณาลองใหม่');
-    throw fe;
-  }
+  var timeoutMs=opts.timeout||40000;
+  var retries=(opts.retries!==undefined)?opts.retries:1;
+  return limiterRun(opts.low?'low':'main',async function(){
+    var lastErr;
+    for(var attempt=0;attempt<=retries;attempt++){
+      var controller=new AbortController();
+      var tid=setTimeout(function(){controller.abort();},timeoutMs);
+      try{
+        var res=await fetch(url,{signal:controller.signal});
+        var text=await res.text();
+        clearTimeout(tid);
+        var data;
+        try{data=JSON.parse(text);}
+        catch(pe){console.error('JSON parse error for action='+action+':',text.substring(0,300));throw new Error('API ตอบกลับข้อมูลไม่ถูกต้อง ('+action+'): '+text.substring(0,80));}
+        if(res.status===401||(data&&data.code==='AUTH_REQUIRED')){handleAuthExpired();var ae=new Error('เซสชันหมดอายุ');ae.fatal=true;throw ae;}
+        return data;
+      }catch(fe){
+        clearTimeout(tid);
+        if(fe&&fe.fatal)throw fe;
+        lastErr=(fe&&fe.name==='AbortError')?new Error('เชื่อมต่อหมดเวลา (timeout) กรุณาลองใหม่'):fe;
+        if(attempt<retries)await sleep(1200*(attempt+1));
+      }
+    }
+    throw lastErr;
+  });
 }
 async function apiPost(data){
   data.token=authToken;
-  // ตั้ง timeout ไว้ 5 นาที (ใกล้เคียงเพดานสูงสุดที่ Apps Script รันได้จริงคือ 6 นาที) — เดิมไม่มี timeout เลย
-  // ทำให้ตอนที่ backend ค้าง/ช้าผิดปกติ (เช่น query ข้อมูลเยอะเกินไป) หน้าเว็บจะรอเงียบๆ ไม่มีที่สิ้นสุด ไม่รู้ว่าเกิดอะไรขึ้น
+  // timeout 5 นาที (ใกล้เพดานสูงสุดที่ Apps Script รันได้จริงคือ 6 นาที) — ไม่ retry อัตโนมัติ เพราะเป็นงานเขียนข้อมูล กันบันทึกซ้ำ
   var controller=new AbortController();
   var tid=setTimeout(function(){controller.abort();},300000);
   try{
@@ -1419,8 +1602,7 @@ function getDisplayMile(c){
   if(last && last!=='' && last!=='-') return last;
   return c[COL.mileFirst]||'—';
 }
-/** โชว์เลขไมล์สำหรับตารางรายการ — ถ้าคันไหนมีค่าในช่อง "เลขไมล์xxx" (ปรับไมล์แล้ว) จะโชว์เลขนั้นเป็นหลัก
- * พร้อมสัญลักษณ์ 🔄 กำกับให้เห็นเลยว่าเป็นไมล์ที่ถูกปรับ ไม่ต้องกดเข้าไปดูรายละเอียดรถถึงจะรู้ */
+/** โชว์เลขไมล์สำหรับตารางรายการ — ถ้าคันไหนมีค่าในช่อง "เลขไมล์xxx" (ปรับไมล์แล้ว) จะโชว์เลขนั้นพร้อมสัญลักษณ์ 🔄 */
 function mileDisplayHtml(c){
   var last=String(c[COL.mileLast]||'').trim();
   if(last && last!=='' && last!=='-'){
@@ -1465,7 +1647,7 @@ function branchBadge(name){
 function setDefaultCurrentMonthFilter(dfId,dtId){
   var dfEl=document.getElementById(dfId), dtEl=document.getElementById(dtId);
   if(!dfEl||!dtEl) return;
-  if(dfEl.value||dtEl.value) return; // มีค่าอยู่แล้ว (ผู้ใช้ปรับเอง หรือเคยตั้งไปแล้ว) ไม่ไปแก้ทับ
+  if(dfEl.value||dtEl.value) return;
   var now=new Date();
   var first=new Date(now.getFullYear(),now.getMonth(),1);
   var last=new Date(now.getFullYear(),now.getMonth()+1,0);
@@ -1475,104 +1657,193 @@ function setDefaultCurrentMonthFilter(dfId,dtId){
 }
 
 var refreshTimer=null;
+function refreshInBackground(){
+  if(!role||!authToken)return;
+  if(document.querySelector('.mo.open'))return; // ถ้าเปิดหน้าต่างอะไรค้างไว้ ไม่ต้องรีเฟรช
+  if(isAdminGroup(role))loadAdminData({background:true});else loadSalesData({background:true});
+}
 function startAutoRefresh(){
   if(refreshTimer)clearInterval(refreshTimer);
-  // ปรับเป็น 10 นาที (600,000 ms) เพื่อลดการรบกวน และรีเฟรชเฉพาะเมื่อหน้าจอไม่ได้เปิด Modal ใดๆ ค้างไว้
+  // รีเฟรชทุก 10 นาที เฉพาะตอนเปิดแท็บ Dashboard อยู่ และหน้าจอไม่ได้ถูกซ่อน — แบบเงียบ ไม่ล้างหน้าจอ
   refreshTimer=setInterval(function(){
-    var anyModalOpen = document.querySelector('.mo.open');
-    if(anyModalOpen) return; // ถ้าเปิดหน้าต่างอะไรค้างไว้ ไม่ต้องรีเฟรช
-
+    if(document.hidden)return;
     var dashboardTab=document.getElementById('stab-dashboard')||document.getElementById('atab-dashboard');
-    if(dashboardTab && dashboardTab.style.display !== 'none'){
-      if(role==='admin'||role==='ceo'||role==='superadmin') loadAdminData(); else loadSalesData();
-    }
-  },600000); 
+    var activeDash=false;
+    if(isAdminGroup(role)){var a=document.getElementById('atab-dashboard');activeDash=a&&a.style.display!=='none';}
+    else{var s=document.getElementById('stab-dashboard');activeDash=s&&s.style.display!=='none';}
+    if(activeDash)refreshInBackground();
+  },600000);
 }
+// กลับมาเปิดแอปหลังพักไปนาน (เช่น สลับจากไลน์กลับมา) ให้ดึงข้อมูลใหม่เบื้องหลังถ้าเก่าเกิน 10 นาที
+document.addEventListener('visibilitychange',function(){
+  if(!document.hidden&&role&&lastLoadOK&&(Date.now()-lastLoadOK>600000))refreshInBackground();
+});
 
 // ===== LOAD DATA =====
-async function loadSalesData(){
-  // แสดง loading state
+/** หาชื่อสาขาจากหลายแหล่ง: getDashboard → settings.branches → ค่าเดิม → ชื่อชีตของรถ */
+function deriveBranches(dd,st,cars,sold){
+  if(dd&&Array.isArray(dd.branches)&&dd.branches.length)return dd.branches;
+  if(st&&typeof st.branches==='string'&&st.branches.trim()){
+    var l=st.branches.split(',').map(function(p){return p.split(':')[0].trim();}).filter(Boolean);
+    if(l.length)return l;
+  }
+  if(branches&&branches.length)return branches;
+  var set=[];
+  (cars||[]).forEach(function(c){var b=c['_sheet'];if(b&&set.indexOf(b)===-1)set.push(b);});
+  (sold||[]).forEach(function(c){var b=c['_branch']||c['_sheet'];if(b&&set.indexOf(b)===-1)set.push(b);});
+  return set;
+}
+
+function applySalesData(d){
+  allCars=d.cars||[];soldCars=d.sold||[];dashData=d.dash||{};branches=d.branches||[];
+  buildBranchBtns();
+  buildFilters(allCars);
+  // แก้บั๊ก: ตัวกรองยี่ห้อ/รุ่นของหน้า "รถออก" ฝั่ง Sales เดิมไม่เคยถูกเติมตัวเลือก
+  fillSel('ssf-brand',uniq(soldCars.map(function(c){return c[COL.brand];})).sort());
+  fillSel('ssf-model',uniq(soldCars.map(function(c){return c[COL.model];})).sort());
+  setDefaultCurrentMonthFilter('sd-df','sd-dt');
+  filterSales();
+  filterSoldSales();
+  renderSalesDash(dashData);
+}
+
+var salesLoading=false, salesReloadQueued=false;
+async function loadSalesData(opts){
+  opts=opts||{};
+  startAutoRefresh();
+  if(salesLoading){salesReloadQueued=true;return;}
+  salesLoading=true;
   var sStats=document.getElementById('s-stats');
-  if(sStats)sStats.innerHTML='<div class="loading"><div class="spinner"></div>กำลังโหลดข้อมูล...</div>';
+  var hadData=allCars.length>0||soldCars.length>0;
+  var cached=null;
+  if(!hadData){
+    cached=cacheLoad();
+    if(cached&&cached.d&&Array.isArray(cached.d.cars)){applySalesData(cached.d);hadData=true;}else cached=null;
+  }
+  if(!opts.background){
+    if(cached)setSyncPill('loading','⏳ กำลังอัปเดตข้อมูล (ข้อมูลที่แสดงบันทึกไว้เมื่อ '+fmtSyncTime(cached.t)+')');
+    else if(hadData)setSyncPill('loading','⏳ กำลังอัปเดตข้อมูล...');
+    else if(sStats)sStats.innerHTML='<div class="loading"><div class="spinner"></div>กำลังโหลดข้อมูล...</div>';
+  }
   try{
-    // ดึงข้อมูลทั้ง  3 อย่างพร้อมกัน (parallel)
-    var results=await Promise.all([
+    var settled=await Promise.allSettled([
       apiGet('getCars',{role:'sales'}),
       apiGet('getSoldCars'),
-      apiGet('getDashboard')
+      softTimeout(apiGet('getDashboard',{},{retries:0,timeout:20000}),6000) // ข้อมูลรอง: ช้าเกิน 6 วิไม่รอ ใช้สาขาจากข้อมูลรถแทน
     ]);
-	    var cd=results[0], sd=results[1], dd=results[2];
-	    allCars  = (cd && Array.isArray(cd.cars)) ? cd.cars : [];
-	    soldCars = (sd && Array.isArray(sd.cars)) ? sd.cars : [];
-	    dashData = dd || {};
-	    branches = (dd && Array.isArray(dd.branches)) ? dd.branches : [];
-	    
-	    // กรณีไม่มีข้อมูลสาขาจาก API ให้ดึงจากข้อมูลรถ
-	    if(branches.length === 0 && allCars.length > 0) {
-	      branches = [...new Set(allCars.map(c => c._sheet))];
-	    }
-    if(sd && sd.debug && sd.debug.length) console.log('getSoldCars debug:',sd.debug);
-    if(!allCars.length) console.warn('⚠️ getCars คืนค่าว่าง ตรวจสอบชื่อ Sheet ใน _Settings', cd);
-    if(!soldCars.length) console.warn('⚠️ getSoldCars คืนค่าว่าง ตรวจสอบชื่อ Sheet รถออกใน _Settings', sd);
-    buildBranchBtns();
-    buildFilters(allCars);
-    setDefaultCurrentMonthFilter('sd-df','sd-dt');
-    filterSales();
-    filterSoldSales();
-    renderSalesDash(dashData);
-    startAutoRefresh();
+    var cd=settledValue(settled[0]), sd=settledValue(settled[1]), dd=settledValue(settled[2]);
+    var carsOk=!!(cd&&Array.isArray(cd.cars)), soldOk=!!(sd&&Array.isArray(sd.cars));
+    if(!carsOk&&!soldOk){
+      var firstErr=settled[0].status==='rejected'?settled[0].reason:(settled[1].status==='rejected'?settled[1].reason:new Error((cd&&cd.error)||(sd&&sd.error)||'เซิร์ฟเวอร์ไม่ส่งข้อมูลรถกลับมา'));
+      throw firstErr;
+    }
+    var newCars=carsOk?cd.cars:allCars, newSold=soldOk?sd.cars:soldCars;
+    var data={cars:newCars,sold:newSold,dash:dd||dashData||{},branches:deriveBranches(dd,null,newCars,newSold)};
+    applySalesData(data);
+    if(sd&&sd.debug&&sd.debug.length)console.log('getSoldCars debug:',sd.debug);
+    if(carsOk&&soldOk){
+      cacheSave({cars:newCars,sold:newSold,dash:{},branches:data.branches});
+      lastLoadOK=Date.now();
+      if(opts.background)setSyncPill(null);else setSyncPill('ok','✅ อัปเดตข้อมูลแล้ว');
+    }else{
+      setSyncPill('warn','⚠️ อัปเดตข้อมูลได้เพียงบางส่วน (บางรายการโหลดไม่สำเร็จ)','reloadCurrent()');
+    }
   }catch(e){
     console.error('loadSalesData error:',e);
-    showToast('⚠️ โหลดข้อมูลไม่ได้: '+e.message,'e');
-    if(sStats)sStats.innerHTML='<div class="empty">❌ ไม่สามารถโหลดข้อมูล: '+e.message+'<br><button class="btn btn-act btn-sm" style="margin-top:10px" onclick="loadSalesData()">ลองใหม่</button></div>';
+    if(hadData){
+      setSyncPill('warn','⚠️ เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ('+e.message+') — กำลังแสดงข้อมูลที่บันทึกไว้','reloadCurrent()');
+    }else{
+      showToast('⚠️ โหลดข้อมูลไม่ได้: '+e.message,'e');
+      if(sStats)sStats.innerHTML='<div class="empty">❌ ไม่สามารถโหลดข้อมูล: '+e.message+'<br><button class="btn btn-act btn-sm" style="margin-top:10px" onclick="loadSalesData()">ลองใหม่</button></div>';
+    }
+  }finally{
+    salesLoading=false;
+    if(salesReloadQueued){salesReloadQueued=false;loadSalesData({background:true});}
   }
 }
 
-async function loadAdminData(){
+function applyAdminData(d){
+  allCars=d.cars||[];soldCars=d.sold||[];dashData=d.dash||{};
+  settings=d.settings||{hiddenCols:[]};
+  branches=d.branches||[];
+  buildBranchBtns();
+  buildAdminFilters(allCars,soldCars);
+  setDefaultCurrentMonthFilter('ad-df','ad-dt');
+  filterAdmin();
+  filterSold();
+  renderAdminDash(dashData);
+  renderColToggles(allCars);
+  if(settings.branches)document.getElementById('set-branches').value=settings.branches;
+  if(settings.searchGroups)document.getElementById('set-search-groups').value=settings.searchGroups;
+  searchGroupsCache=null; // ล้างแคชกลุ่มคำค้นหาฝั่งหน้าเว็บ เผื่อมีการแก้ไขมาจากที่อื่น
+  document.getElementById('set-min-received').value=(settings.minReceivedThreshold!==undefined&&settings.minReceivedThreshold!==null)?settings.minReceivedThreshold:5;
+  updateGeminiKeyStatus(!!settings.geminiApiKeySet);
+  updateLineKeyStatus(!!settings.lineChannelAccessTokenSet);
+  // เติมสถานะ DeepSeek/OpenAI/ผู้ให้บริการ AI ที่เลือกไว้ — ทำเฉพาะเมื่อ backend ส่งฟิลด์เหล่านี้มาจริง (กันแสดงสถานะผิด)
+  if(settings.deepseekApiKeySet!==undefined)updateDeepSeekKeyStatus(!!settings.deepseekApiKeySet);
+  if(settings.openaiApiKeySet!==undefined)updateOpenAIKeyStatus(!!settings.openaiApiKeySet);
+  if(settings.aiProvider){var ps=document.getElementById('set-ai-provider');if(ps)ps.value=settings.aiProvider;}
+}
+
+var adminLoading=false, adminReloadQueued=false;
+async function loadAdminData(opts){
+  opts=opts||{};
+  startAutoRefresh();
+  if(adminLoading){adminReloadQueued=true;return;}
+  adminLoading=true;
   var aStats=document.getElementById('a-stats');
-  if(aStats)aStats.innerHTML='<div class="loading"><div class="spinner"></div>กำลังโหลดข้อมูล...</div>';
+  var hadData=allCars.length>0||soldCars.length>0;
+  var cached=null;
+  if(!hadData){
+    cached=cacheLoad();
+    if(cached&&cached.d&&Array.isArray(cached.d.cars)){applyAdminData(cached.d);hadData=true;}else cached=null;
+  }
+  if(!opts.background){
+    if(cached)setSyncPill('loading','⏳ กำลังอัปเดตข้อมูล (ข้อมูลที่แสดงบันทึกไว้เมื่อ '+fmtSyncTime(cached.t)+')');
+    else if(hadData)setSyncPill('loading','⏳ กำลังอัปเดตข้อมูล...');
+    else if(aStats)aStats.innerHTML='<div class="loading"><div class="spinner"></div>กำลังโหลดข้อมูล...</div>';
+  }
   try{
-    var results=await Promise.all([
+    var settled=await Promise.allSettled([
       apiGet('getCars',{role:'admin'}),
       apiGet('getSoldCars'),
-      apiGet('getDashboard'),
-      apiGet('getSettings')
+      apiGet('getSettings'),
+      softTimeout(apiGet('getDashboard',{},{retries:0,timeout:20000}),6000) // ข้อมูลรอง: ไม่ให้หน่วงหน้าหลัก
     ]);
-	    var cd=results[0], sd=results[1], dd=results[2], st=results[3];
-	    allCars  = (cd && Array.isArray(cd.cars)) ? cd.cars : [];
-	    soldCars = (sd && Array.isArray(sd.cars)) ? sd.cars : [];
-	    dashData = dd || {};
-	    branches = (dd && Array.isArray(dd.branches)) ? dd.branches : [];
-	    
-	    if(branches.length === 0 && allCars.length > 0) {
-	      branches = [...new Set(allCars.map(c => c._sheet))];
-	    }
-	    
-	    settings = st || {hiddenCols:[]};
-    if(sd && sd.debug && sd.debug.length) console.log('getSoldCars debug:',sd.debug);
-    if(!allCars.length) console.warn('⚠️ getCars คืนค่าว่าง', cd);
-    if(!soldCars.length) console.warn('⚠️ getSoldCars คืนค่าว่าง', sd);
-    buildBranchBtns();
-    buildAdminFilters(allCars,soldCars);
-    setDefaultCurrentMonthFilter('ad-df','ad-dt');
-    filterAdmin();
-    filterSold();
-    renderAdminDash(dashData);
-    renderColToggles(allCars);
+    var cd=settledValue(settled[0]), sd=settledValue(settled[1]), st=settledValue(settled[2]), dd=settledValue(settled[3]);
+    var carsOk=!!(cd&&Array.isArray(cd.cars)), soldOk=!!(sd&&Array.isArray(sd.cars));
+    var stOk=!!(st&&typeof st==='object'&&st.success!==false&&!st.error);
+    if(!carsOk&&!soldOk){
+      var firstErr=settled[0].status==='rejected'?settled[0].reason:(settled[1].status==='rejected'?settled[1].reason:new Error((cd&&cd.error)||(sd&&sd.error)||'เซิร์ฟเวอร์ไม่ส่งข้อมูลรถกลับมา'));
+      throw firstErr;
+    }
+    var newCars=carsOk?cd.cars:allCars, newSold=soldOk?sd.cars:soldCars, newSettings=stOk?st:settings;
+    var data={cars:newCars,sold:newSold,dash:dd||dashData||{},settings:newSettings,branches:deriveBranches(dd,newSettings,newCars,newSold)};
+    applyAdminData(data);
+    if(sd&&sd.debug&&sd.debug.length)console.log('getSoldCars debug:',sd.debug);
+    if(carsOk&&soldOk){
+      cacheSave({cars:newCars,sold:newSold,dash:{},settings:sanitizeSettingsForCache(newSettings),branches:data.branches});
+      lastLoadOK=Date.now();
+      if(opts.background)setSyncPill(null);else setSyncPill('ok','✅ อัปเดตข้อมูลแล้ว');
+    }else{
+      setSyncPill('warn','⚠️ อัปเดตข้อมูลได้เพียงบางส่วน (บางรายการโหลดไม่สำเร็จ)','reloadCurrent()');
+    }
+    // งานรอง (ผลงานเซลล์ + การแจ้งเตือน) — ยิงหลังข้อมูลหลักขึ้นจอแล้วเท่านั้น ไม่แย่งคิวกัน
     initSalesStatsDashboardDefaults();
     loadSalesStatsDashboard();
-    if(settings.branches)document.getElementById('set-branches').value=settings.branches;
-    if(settings.searchGroups)document.getElementById('set-search-groups').value=settings.searchGroups;
-    searchGroupsCache=null; // ล้างแคชกลุ่มคำค้นหาฝั่งหน้าเว็บ เผื่อมีการแก้ไขมาจากที่อื่น ให้คำนวณใหม่จากค่าล่าสุด
-    document.getElementById('set-min-received').value=(settings.minReceivedThreshold!==undefined&&settings.minReceivedThreshold!==null)?settings.minReceivedThreshold:5;
-    updateGeminiKeyStatus(!!settings.geminiApiKeySet);
-    updateLineKeyStatus(!!settings.lineChannelAccessTokenSet);
-    if(role!=='accounting') loadAlerts(); else { var ac=document.getElementById('alert-cards'); if(ac)ac.innerHTML=''; }
-    startAutoRefresh();
+    if(role!=='accounting')loadAlerts(); else { var ac=document.getElementById('alert-cards'); if(ac)ac.innerHTML=''; }
   }catch(e){
     console.error('loadAdminData error:',e);
-    showToast('⚠️ โหลดข้อมูลไม่ได้: '+e.message,'e');
-    if(aStats)aStats.innerHTML='<div class="empty">❌ ไม่สามารถโหลดข้อมูล: '+e.message+'<br><button class="btn btn-act btn-sm" style="margin-top:10px" onclick="loadAdminData()">ลองใหม่</button></div>';
+    if(hadData){
+      setSyncPill('warn','⚠️ เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ('+e.message+') — กำลังแสดงข้อมูลที่บันทึกไว้','reloadCurrent()');
+    }else{
+      showToast('⚠️ โหลดข้อมูลไม่ได้: '+e.message,'e');
+      if(aStats)aStats.innerHTML='<div class="empty">❌ ไม่สามารถโหลดข้อมูล: '+e.message+'<br><button class="btn btn-act btn-sm" style="margin-top:10px" onclick="loadAdminData()">ลองใหม่</button></div>';
+      var ac2=document.getElementById('alert-cards'); if(ac2)ac2.innerHTML=''; // เดิมค้างเป็นวงกลมหมุน "กำลังตรวจสอบการแจ้งเตือน..." ตลอดไป
+    }
+  }finally{
+    adminLoading=false;
+    if(adminReloadQueued){adminReloadQueued=false;loadAdminData({background:true});}
   }
 }
 
@@ -1711,7 +1982,7 @@ function openAgingStockAlertModal(){
   document.getElementById('alert-detail-title').textContent='📦 สต๊อกค้างเกิน 90 วัน';
   document.getElementById('alert-detail-sub').textContent='รวม '+ag.count+' คัน — เรียงจากค้างนานสุดไปน้อยสุด';
   var aiSection=document.getElementById('alert-ai-section');
-  document.getElementById('alert-ai-result').innerHTML=''; // เคลียร์ผลวิเคราะห์ครั้งก่อน (ถ้ามี)
+  document.getElementById('alert-ai-result').innerHTML='';
   aiSection.style.display=ag.items.length?'':'none';
   var body=document.getElementById('alert-detail-body');
   if(!ag.items.length){body.innerHTML='<div class="empty" style="padding:20px 0;">ไม่มีรถสต๊อกค้างเกิน 90 วันในขณะนี้ 🎉</div>';openMo('modal-alert-detail');return;}
@@ -1727,10 +1998,10 @@ function openAgingStockAlertModal(){
   openMo('modal-alert-detail');
 }
 
-/** กดปุ่ม "วิเคราะห์ด้วย AI" ในการ์ดสต๊อกค้าง — ส่งรายการรถค้างไปให้ Gemini วิเคราะห์ pattern แล้วแสดงผลในกล่องด้านล่างปุ่ม */
+/** กดปุ่ม "วิเคราะห์ด้วย AI" ในการ์ดสต๊อกค้าง — ส่งรายการรถค้างไปให้ AI วิเคราะห์ pattern แล้วแสดงผลในกล่องด้านล่างปุ่ม */
 var agingStockAIRunning=false;
 async function runAgingStockAIAnalysis(){
-  if(agingStockAIRunning)return; // กันกดซ้ำตอนยังรอผลจากครั้งก่อนอยู่ (ป้องกันยิง request ซ้อนกันหลายตัว)
+  if(agingStockAIRunning)return;
   agingStockAIRunning=true;
   var btn=document.getElementById('alert-ai-btn');
   var resultEl=document.getElementById('alert-ai-result');
@@ -1738,9 +2009,8 @@ async function runAgingStockAIAnalysis(){
   btn.textContent='⏳ กำลังวิเคราะห์...';
   resultEl.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังส่งข้อมูลให้ AI วิเคราะห์ (อาจใช้เวลา 5-15 วินาที)...</div>';
   try{
-    var res=await apiGet('analyzeAgingStock',{});
+    var res=await apiGet('analyzeAgingStock',{},{retries:0,timeout:90000});
     if(!res||res.success===false)throw new Error((res&&res.error)||'วิเคราะห์ไม่สำเร็จ');
-    // แปลง markdown ตัวหนา **text** แบบง่ายๆ เป็น <strong> เพื่อให้อ่านง่ายขึ้น (Gemini มักตอบมาเป็น markdown)
     var formatted=String(res.analysis||'').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
     resultEl.innerHTML='<div class="ai-result-box">✨ '+formatted+'</div>';
   }catch(e){
@@ -1805,7 +2075,7 @@ function buildBranchBtns(){
     var html='<option value="">ทั้งหมด</option>';
     branches.forEach(function(b){html+='<option value="'+b+'">'+b+'</option>';});
     el.innerHTML=html;
-    if(current)el.value=current; // คงค่าที่เลือกไว้เดิม ถ้ายังมีสาขานั้นอยู่ (เช่น โหลดข้อมูลใหม่/รีเฟรช)
+    if(current)el.value=current;
   });
   fillDashYears();
 }
@@ -1822,9 +2092,12 @@ function fillDashYears(){
 
 // ===== BUILD FILTERS =====
 function uniq(arr){return[...new Set(arr.filter(Boolean))];}
+/** เติมตัวเลือกใน dropdown — แก้: คงค่าที่ผู้ใช้เลือกไว้เดิม (เดิมทุกครั้งที่รีเฟรชข้อมูลตัวกรองจะถูกรีเซ็ตทิ้ง) */
 function fillSel(id,vals){
   var el=document.getElementById(id);if(!el)return;
+  var cur=el.value;
   el.innerHTML='<option value="">ทั้งหมด</option>'+vals.map(function(v){return'<option>'+v+'</option>';}).join('');
+  if(cur&&vals.some(function(v){return String(v)===cur;}))el.value=cur;
 }
 function buildFilters(cars){
   fillSel('sf-brand',uniq(cars.map(function(c){return c[COL.brand];})).sort());
@@ -1908,9 +2181,8 @@ function getSearchGroups(){
   return searchGroupsCache;
 }
 /**
- * ค้นหาแบบฉลาด: แยกคำค้นหาด้วยช่องว่างเป็นคำๆ (แต่ละคำต้องเจอ — AND กันเอง เหมือน "revo กระบะตอนเดียว" ต้องเจอทั้งคู่)
+ * ค้นหาแบบฉลาด: แยกคำค้นหาด้วยช่องว่างเป็นคำๆ (แต่ละคำต้องเจอ — AND กันเอง)
  * ถ้าคำไหนตรงกับ "ชื่อกลุ่ม" ที่ตั้งไว้พอดี จะเปลี่ยนไปเช็คแบบ "เจอคำใดคำหนึ่งในกลุ่มก็นับผ่าน" (OR) แทน
- * เช่นกลุ่ม "กระบะตอนเดียว" มี SINGLECAB,STANDARD,STD — เจอคำไหนคำหนึ่งในชื่อรุ่นก็ถือว่าตรง ไม่ต้องเจอครบทุกคำ
  * ถ้าคำนั้นไม่ตรงกับกลุ่มไหนเลย จะกลับไปค้นหาแบบเดิม (fuzzy chunk ตัวอักษร/ตัวเลข)
  */
 function matchesQuerySmart(text,rawQuery){
@@ -2019,7 +2291,8 @@ function filterSoldSales(){
     if(qRaw.trim()){var s=(c[COL.brand]||'')+' '+(c[COL.model]||'')+' '+(c[COL.plate]||'')+' '+(c[COL.color]||'');if(!matchesQuerySmart(s,qRaw))return false;}
     if(brand&&c[COL.brand]!==brand)return false;
     if(model&&c[COL.model]!==model)return false;
-    if(df||dt){var d=toDate(c[COL.soldDate]||c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;}
+    // แก้: ใช้ dateInRange เหมือนฝั่ง Admin (เดิมใช้ new Date(df) ซึ่งตีความเป็น UTC ทำให้คลาดเคลื่อนขอบวัน และปล่อยแถวไม่มีวันที่ผ่านทุกครั้ง)
+    if(df||dt){var d=toDate(c[COL.soldDate]||c[COL.date]);if(!dateInRange(d,df,dt))return false;}
     return true;
   });
   document.getElementById('s-sold-count').textContent=filteredSoldSales.length+' คัน';
@@ -2074,21 +2347,28 @@ function setSalesView(mode){
   renderSalesList(filteredCars);
 }
 
-// ===== ดึงรูปแรกจาก 54niwat.com มาใส่ในการ์ด (เรียก backend ทีละคัน + มีแคชกันขอซ้ำ) =====
+// ===== ดึงรูปแรกจาก 54niwat.com มาใส่ในการ์ด (เรียก backend ทีละคัน + แคชถาวรในเครื่อง) =====
 function carCardImgId(car,idx){return 'cimg-'+String(car['_sheet']||'').replace(/[^a-zA-Z0-9ก-๙]/g,'')+'-'+(car['_row']||idx);}
 /** ขอรูป + เก็บเข้าแคช โดยไม่ต้องอิงกับ element บนหน้าจอ (ใช้ตอนส่งออกภาพ ที่ยังไม่ได้เปิดโหมด Grid ก็ต้องขอรูปได้) */
 async function ensureCarImageCached(url){
   if(!url||url.indexOf('http')!==0)return '';
   if(carImageCache.hasOwnProperty(url))return carImageCache[url];
-  try{
-    var res=await apiGet('getCarImage',{url:url});
-    var img=(res&&res.success)?(res.image||''):'';
-    carImageCache[url]=img;
-    return img;
-  }catch(e){
-    carImageCache[url]='';
-    return '';
-  }
+  if(carImageInflight[url])return carImageInflight[url]; // กำลังขออยู่แล้ว รอผลเดียวกัน ไม่ยิงซ้ำ
+  carImageInflight[url]=(async function(){
+    try{
+      var res=await apiGet('getCarImage',{url:url},{low:true,retries:0,timeout:30000});
+      var img=(res&&res.success)?(res.image||''):'';
+      carImageCache[url]=img;
+      if(img)saveImgCacheSoon();
+      return img;
+    }catch(e){
+      carImageCache[url]='';
+      return '';
+    }
+  })();
+  var out=await carImageInflight[url];
+  delete carImageInflight[url];
+  return out;
 }
 async function loadCarImageInto(elId,url){
   if(!url||url.indexOf('http')!==0){var elEmpty=document.getElementById(elId);if(elEmpty)elEmpty.innerHTML='<div class="ph-icon">🚗</div>';return;}
@@ -2120,22 +2400,20 @@ function buildCarCard(car,idx){
 }
 
 /**
- * ทยอยโหลดรูปทีละกลุ่มแทนการยิงพร้อมกันหมดทุกคันในครั้งเดียว — Google Apps Script รับ request
- * พร้อมกันได้จำกัดต่อสคริปต์ ถ้ายิง 30-40 คันพร้อมกันจะเข้าคิวรอกันเองจนดูเหมือนช้าทั้งหน้า
- * ฟังก์ชันนี้ทยอยส่งทีละ IMAGE_LOAD_BATCH_SIZE คัน รอชุดก่อนเสร็จ (หรือ error ก็ไม่เป็นไร) ค่อยส่งชุดถัดไป
- * ผลคือรูปจะทยอยขึ้นเป็นระลอกๆ แต่ภาพรวมโหลดเสร็จเร็วกว่ายิงพร้อมกันหมดแล้วรอคิวเซิร์ฟเวอร์
+ * ทยอยโหลดรูปทีละกลุ่มแทนการยิงพร้อมกันหมดทุกคัน — Google Apps Script รับ request พร้อมกันได้จำกัดต่อสคริปต์
+ * ตอนนี้รูปที่เคยโหลดแล้วจะอยู่ในแคชถาวรของเครื่อง (ไม่ยิงซ้ำ) และคิวรูปแยกจากคิวข้อมูลหลัก ไม่แย่งกัน
  */
 var IMAGE_LOAD_BATCH_SIZE=4;
-var carGridLoadToken=0; // ใช้ยกเลิกคิวเก่าเวลาผู้ใช้กรอง/สลับหน้าเร็วๆ ก่อนโหลดรูปรอบก่อนจะเสร็จ
+var carGridLoadToken=0;
 async function loadCarImagesQueued(items,myToken){
   for(var i=0;i<items.length;i+=IMAGE_LOAD_BATCH_SIZE){
-    if(myToken!==carGridLoadToken)return; // มีการเรนเดอร์ใหม่ทับไปแล้ว เลิกทำคิวเก่าทิ้ง
+    if(myToken!==carGridLoadToken)return;
     var batch=items.slice(i,i+IMAGE_LOAD_BATCH_SIZE);
     await Promise.all(batch.map(function(it){return loadCarImageInto(it.elId,it.url);}));
   }
 }
 
-/** เรนเดอร์การ์ดทั้งหมดของ container ที่ระบุ แล้วค่อยทยอยขอรูปเป็นชุดๆ ทีหลัง (ให้เห็นโครงการ์ดก่อน ไม่ต้องรอรูปครบ) */
+/** เรนเดอร์การ์ดทั้งหมดของ container ที่ระบุ แล้วค่อยทยอยขอรูปเป็นชุดๆ ทีหลัง */
 function renderCarGrid(containerId,cars){
   var el=document.getElementById(containerId);
   if(!el)return;
@@ -2151,7 +2429,7 @@ function renderCarGrid(containerId,cars){
   loadCarImagesQueued(items,carGridLoadToken);
 }
 
-/** ทยอยขอรูปให้ครบทุกคันในลิสต์ (ไม่สนใจว่ามี element บนจอไหม) ใช้ก่อนส่งออกภาพให้ลูกค้า เผื่อยังไม่เคยเปิดโหมด Grid มาก่อน */
+/** ทยอยขอรูปให้ครบทุกคันในลิสต์ ใช้ก่อนส่งออกภาพให้ลูกค้า */
 async function ensureImagesForExport(cars){
   for(var i=0;i<cars.length;i+=IMAGE_LOAD_BATCH_SIZE){
     var batch=cars.slice(i,i+IMAGE_LOAD_BATCH_SIZE);
@@ -2160,10 +2438,8 @@ async function ensureImagesForExport(cars){
 }
 
 /**
- * ส่งออกรายการรถที่กรองอยู่เป็น "หน้าต่างพิมพ์" แบบการ์ดรูปภาพ+ราคา (คล้ายที่แคปจาก 54niwat.com ส่งลูกค้า)
- * ใช้วิธีเปิดหน้าต่างใหม่แล้วสั่งพิมพ์ (เหมือน exportPDF/exportSalesStatsReport เดิม) แทนการแคปหน้าจอด้วย html2canvas
- * เพราะรูปภาพมาจาก 54niwat.com คนละโดเมน ถ้าเว็บนั้นไม่เปิด CORS ให้ การแคปด้วย html2canvas จะได้ภาพเสีย/ว่างเปล่า
- * แต่การแสดงรูปใน <img> ธรรมดาแล้วสั่ง "พิมพ์/บันทึกเป็น PDF" ผ่านเบราว์เซอร์ไม่ติดปัญหานี้ ใช้ได้เสมอ
+ * ส่งออกรายการรถที่กรองอยู่เป็น "หน้าต่างพิมพ์" แบบการ์ดรูปภาพ+ราคา (ส่งลูกค้า)
+ * ใช้วิธีเปิดหน้าต่างใหม่แล้วสั่งพิมพ์ แทนการแคปด้วย html2canvas เพราะรูปมาจากคนละโดเมน (ติด CORS)
  */
 var carImageExportRunning=false;
 async function exportCarGridImages(cars,title){
@@ -2332,9 +2608,7 @@ function showDetail(idx){
   if(niwat&&niwat.indexOf('http')===0)html+='<a href="'+niwat+'" target="_blank" class="link-btn lk2">🔗 54niwat.com</a>';
   html+='</div>';
 
-  // ปุ่มแก้ไข/ขายแล้ว — เดิมมีแค่ในตารางที่จอกว้าง แต่บนมือถือคอลัมน์ "จัดการ" ถูกซ่อนไปกับคอลัมน์ที่ 5 เป็นต้นไป
-  // (ดู CSS: .list-table td:nth-child(n+5){display:none}) ทำให้กดแก้ไข/บันทึกขายจากมือถือไม่ได้เลย
-  // ย้ายมาใส่ในนี้ด้วย เพื่อให้กดได้จากหน้ารายละเอียดเสมอ ไม่ว่าจะเปิดจากจอมือถือหรือจอกว้าง
+  // ปุ่มแก้ไข/ขายแล้ว — บนมือถือคอลัมน์ "จัดการ" ในตารางถูกซ่อน (CSS: .list-table td:nth-child(n+5){display:none}) จึงใส่ไว้ในหน้ารายละเอียดด้วย
   if(role==='admin'||role==='ceo'||role==='superadmin'){
     html+='<div style="display:flex;gap:8px;margin-top:12px;">'
       +'<button class="btn btn-out" style="flex:1;" onclick="closeMo(\'modal-detail\');openEditCarModal('+idx+')">✏️ แก้ไขข้อมูลรถ</button>'
@@ -2342,7 +2616,7 @@ function showDetail(idx){
       +'</div>';
   }
 
-  // ปุ่มดูต้นทุน/ค่าใช้จ่าย — โชว์เฉพาะ role ที่มีสิทธิ์อ่านอย่างน้อย 1 ใน 2 โดเมน (ไม่งั้นกดไปก็เจอ error 403 เฉยๆ)
+  // ปุ่มดูต้นทุน/ค่าใช้จ่าย — โชว์เฉพาะ role ที่มีสิทธิ์อ่านอย่างน้อย 1 ใน 2 โดเมน
   if(costPermAtLeast('purchaseCost','read')||costPermAtLeast('expenseCost','read')){
     html+='<div style="margin-top:15px;padding-top:15px;border-top:1px dashed var(--gray-200);">'
       +'<button class="btn btn-out" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;" onclick="openCarCostModal('+idx+')">'
@@ -2351,7 +2625,7 @@ function showDetail(idx){
       +'</div>';
   }
 
-  // เพิ่มปุ่มสร้างคอนเทนต์ AI (เฉพาะ Admin/CEO)
+  // ปุ่มสร้างคอนเทนต์ AI (เฉพาะ Admin/CEO)
   if(role==='admin'||role==='ceo'||role==='superadmin'){
     html+='<div style="margin-top:15px;padding-top:15px;border-top:1px dashed var(--gray-200);">'
       +'<button class="btn btn-act" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;" onclick="generateCarContentAI('+idx+')">'
@@ -2371,13 +2645,11 @@ async function generateCarContentAI(idx){
   var resDiv=document.getElementById('ai-content-result');
   resDiv.style.display='block';
   resDiv.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังให้ AI ช่วยคิดคอนเทนต์...</div>';
-  
+
   try{
-    // ส่งข้อมูลรถเฉพาะคันที่เลือกไปให้ AI
     var res=await apiPost({action:'generateCarContent',carData:car});
     if(!res||res.success===false)throw new Error((res&&res.error)||'AI ทำงานไม่สำเร็จ');
-    
-    // แสดงผลลัพธ์
+
     var content = res.analysis.replace(/\n/g, '<br>');
     resDiv.innerHTML='<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:var(--r);padding:15px;font-size:13px;line-height:1.6;color:#1e293b;max-height:400px;overflow-y:auto;">'
       +'<div style="font-weight:700;color:var(--green);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">'
@@ -2405,7 +2677,6 @@ function copyAiContent(){
 
 // ===== ต้นทุน / ค่าใช้จ่ายรถรายคัน (_CarCosts) =====
 // สิทธิ์แยก 2 โดเมนอิสระกัน: purchaseCost (ทุนซื้อเข้า+ข้อมูลผู้ขาย) กับ expenseCost (ค่าใช้จ่าย/ค่าซ่อม 18 รายการ)
-// ปุ่ม/ช่องกรอกแต่ละส่วนจะโชว์แบบแก้ไขได้เฉพาะถ้ามีสิทธิ์ write/manage ในโดเมนนั้น ไม่งั้นโชว์เป็นตัวเลขอ่านอย่างเดียว
 var ccCurrentPlate='', ccCurrentBranch='';
 const EXPENSE_FIELDS_UI=[
   {key:'feePct5',label:'5%ซื้อ'},
@@ -2441,8 +2712,7 @@ function openCarCostModal(idx){
 
 /**
  * บันทึกต้นทุนล่วงหน้าก่อนรถจะมาถึง/เข้าสต๊อกจริง (เช่น บัญชีจ่ายเงินซื้อไปแล้วแต่รถยังไม่ถึงโชว์รูม)
- * ผู้ใช้พิมพ์ทะเบียน+เลือกสาขาเอง แทนที่จะเลือกจากแถวในตารางสต๊อก — ข้อมูลจะถูกจับคู่อัตโนมัติกับรถจริง
- * ในภายหลังตราบใดที่ Admin พิมพ์ทะเบียนตรงกัน (ระบบเทียบแบบตัดช่องว่าง/ตัวพิมพ์ใหญ่-เล็กให้อัตโนมัติ ไม่ต้องเป๊ะ 100%)
+ * ข้อมูลจะถูกจับคู่อัตโนมัติกับรถจริงภายหลังตราบใดที่ Admin พิมพ์ทะเบียนตรงกัน
  */
 function openCarCostModalPreEntry(){
   document.getElementById('cc-title').textContent='💰 บันทึกต้นทุนล่วงหน้า (รถยังไม่เข้าสต๊อก)';
@@ -2668,7 +2938,7 @@ function renderAuditLog(rows){
   body.innerHTML=html;
 }
 
-/** เปลี่ยนสถานะรถ (ขาย/ใช้งาน) จาก dropdown ในหน้ารายละเอียดรถ — บันทึกเข้าชีตทันที ไม่ต้องเปิด Google Sheets */
+/** เปลี่ยนสถานะรถ (ขาย/ใช้งาน) จาก dropdown ในหน้ารายละเอียดรถ — บันทึกเข้าชีตทันที */
 async function updateCarStatusFromDetail(idx){
   var car=allCars[idx];if(!car)return;
   var sel=document.getElementById('detail-car-status');
@@ -2677,12 +2947,12 @@ async function updateCarStatusFromDetail(idx){
   try{
     var res=await apiPost({action:'updateCarStatus',sheet:car['_sheet'],row:car['_row'],status:newStatus});
     if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
-    car[COL.carStatus]=newStatus; // อัปเดตค่าใน cache ทันที ไม่ต้องรอโหลดข้อมูลใหม่ทั้งหมด
+    car[COL.carStatus]=newStatus;
     showToast('✅ '+(res.message||'บันทึกสำเร็จ'),'s');
-    loadAlerts(); // รีเฟรชการ์ดแจ้งเตือนสต๊อกค้าง เผื่อคันนี้เคยอยู่ในรายการนั้น
+    loadAlerts();
   }catch(e){
     showToast('⚠️ '+e.message,'e');
-    sel.value=String(car[COL.carStatus]||'ขาย').trim()||'ขาย'; // คืนค่าเดิมถ้าบันทึกไม่สำเร็จ
+    sel.value=String(car[COL.carStatus]||'ขาย').trim()||'ขาย';
   }finally{
     sel.disabled=false;
   }
@@ -2753,7 +3023,7 @@ function openEditCarModal(idx){
   var branchSel=document.getElementById('ac-branch');
   branchSel.innerHTML='<option value="'+(car['_sheet']||'')+'">'+(car['_sheet']||'')+'</option>';
   branchSel.value=car['_sheet']||'';
-  branchSel.disabled=true; // ไม่ให้ย้ายสาขาผ่านฟอร์มแก้ไข (ป้องกันความซับซ้อนเรื่องย้ายชีต)
+  branchSel.disabled=true; // ไม่ให้ย้ายสาขาผ่านฟอร์มแก้ไข
   document.getElementById('ac-date').value=toISOInput(car[COL.date]);
   document.getElementById('ac-brand').value=car[COL.brand]||'';
   document.getElementById('ac-model').value=car[COL.model]||'';
@@ -2901,19 +3171,18 @@ function equipBox(l,v){var has=v&&String(v).trim()&&String(v).trim()!=='-'&&Stri
 // ===== DASHBOARD =====
 function dateInRange(d,df,dt){
   if(!df&&!dt)return true;   // ไม่ได้ตั้งตัวกรองวันที่ ผ่านหมด
-  if(!d)return false;        // ตั้งตัวกรองแล้ว แต่แถวไม่มีวันที่ที่อ่านได้ ไม่นับ (เดิมหลุดผ่านทุกครั้ง)
+  if(!d)return false;        // ตั้งตัวกรองแล้ว แต่แถวไม่มีวันที่ที่อ่านได้ ไม่นับ
   if(df&&d<new Date(df+'T00:00:00'))return false;
   if(dt&&d>new Date(dt+'T23:59:59'))return false;
   return true;
 }
-	
+
 function renderSalesDash(d){
   if(!d)return;
   var df=document.getElementById('sd-df').value, dt=document.getElementById('sd-dt').value;
   var fAll=allCars.filter(function(c){var d=toDate(c[COL.date]);if(df&&d&&d<new Date(df))return false;if(dt&&d&&d>new Date(dt+'T23:59:59'))return false;return true;});
   var sc=document.getElementById('s-stats');if(!sc)return;
   var now=new Date(), curM=now.getMonth(), curY=now.getFullYear();
-  var curMSold=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);return d&&d.getMonth()===curM&&d.getFullYear()===curY;}).length;
   var curMSoldCars=soldCars.filter(function(c){var d=toDate(c[COL.soldDate]||c[COL.date]);return d&&d.getMonth()===curM&&d.getFullYear()===curY;});
   var statsHtml='<div class="stat-card g clickable" onclick="showDrillDown(\'รถเข้าสต๊อกใหม่\',allCars,true)"><div class="stat-val">'+fAll.length+'</div><div class="stat-lbl">รถเข้าสต๊อกใหม่</div></div>'
     +'<div class="stat-card r clickable" onclick="showDrillDown(\'รถออกรวม (เดือนนี้)\',curMSoldCars,false)"><div class="stat-val">'+curMSoldCars.length+'</div><div class="stat-lbl">รถออกรวม</div></div>';
@@ -2940,7 +3209,7 @@ function renderSalesDash(d){
   },80);
 }
 
-/** เรนเดอร์เฉพาะส่วน "รถออกแยกสาขา" — แสดงเฉพาะเดือนปัจจุบันเสมอ (ไม่มีตัวกรองของตัวเอง ใช้ฟิลเตอร์หลักด้านบนถ้าต้องการช่วงอื่น) */
+/** เรนเดอร์เฉพาะส่วน "รถออกแยกสาขา" — แสดงเฉพาะเดือนปัจจุบันเสมอ */
 function renderSoldChartsSection(){
   var now=new Date();
   var y=now.getFullYear(), m=now.getMonth();
@@ -2978,8 +3247,6 @@ function renderSoldCharts(d,containerId,customCars){
   },120);
 }
 
-
-
 function renderAdminDash(d){
   if(!d)return;
   var df=document.getElementById('ad-df').value, dt=document.getElementById('ad-dt').value;
@@ -2989,7 +3256,6 @@ function renderAdminDash(d){
   var fAll=adminDashFilteredCars, fSold=adminDashFilteredSold;
 
   var el=document.getElementById('a-stats');if(!el)return;
-  // "รถออกรวม" ผูกกับฟิลเตอร์เดียวกับการ์ดอื่นทั้งหมด (เดิมเคยล็อกไว้ที่เดือนปัจจุบันแยกจากฟิลเตอร์ ทำให้ตัวเลขไม่ตรงกับการ์ด "ออก" แต่ละสาขา — แก้ให้สอดคล้องกันแล้ว)
   var html='<div class="stat-card g clickable" onclick="showDrillDown(\'รถเข้าสต๊อกใหม่\',adminDashFilteredCars,true)"><div class="stat-val">'+fAll.length+'</div><div class="stat-lbl">รถเข้าสต๊อกใหม่</div></div>'
     +'<div class="stat-card r clickable" onclick="showDrillDown(\'รถออกรวม\',adminDashFilteredSold,false)"><div class="stat-val">'+fSold.length+'</div><div class="stat-lbl">รถออกรวม</div></div>';
   var bc={};fAll.forEach(function(c){var b=c['_sheet']||'';if(b)bc[b]=(bc[b]||0)+1;});
@@ -2999,6 +3265,22 @@ function renderAdminDash(d){
     html+='<div class="stat-card r clickable" onclick="showDrillDown(\'รถออก — '+b+'\',adminDashFilteredSold.filter(function(c){return (c[\'_branch\']||c[\'_sheet\'])===\''+b+'\'}),false)"><div class="stat-val">'+(sc[b]||0)+'</div><div class="stat-lbl">ออก'+b+'</div></div>';
   });
   el.innerHTML=html;
+
+  // แก้: บล็อกนี้เดิมหลุดไปอยู่นอกฟังก์ชัน (ทำงานแค่ตอนโหลดสคริปต์ ไม่เคยแสดงเตือนจริง และอ้างตัวแปร df/dt ที่ไม่มีอยู่) ย้ายกลับมาไว้ที่นี่
+  var noteEl=document.getElementById('a-undated-note');
+  if(noteEl){
+    var undated={},undatedTotal=0;
+    soldCars.forEach(function(c){
+      if(toDate(c[COL.soldDate]||c[COL.date]))return;
+      var b=c['_branch']||c['_sheet']||'ไม่ระบุสาขา';undated[b]=(undated[b]||0)+1;undatedTotal++;
+    });
+    if(undatedTotal&&(df||dt)){
+      noteEl.style.display='';
+      noteEl.innerHTML='⚠️ มีรถออก <strong>'+undatedTotal+'</strong> แถวที่ไม่มีวันที่ออกที่อ่านได้ (ไม่นับรวมในตัวเลขข้างบน): '
+        +Object.keys(undated).map(function(b){return b+' '+undated[b];}).join(', ')
+        +' — ลองเปิดชีตรถออกของสาขานั้นเช็คคอลัมน์ "วันที่ออก" ว่าว่างหรือพิมพ์ผิดรูปแบบ';
+    }else noteEl.style.display='none';
+  }
 
   setTimeout(function(){
     var brc={};fAll.forEach(function(c){var b=c[COL.brand]||'';if(b)brc[b]=(brc[b]||0)+1;});
@@ -3079,7 +3361,6 @@ function drawChart(id,type,labels,data,colors,drillable,carsRef,drillType){
         else showBrandDrill(labels[idx],carsRef);
       }
     };
-    // เปลี่ยน cursor เป็น pointer เมื่อ hover เหนือแท่งกราฟที่คลิกได้
     opts.onHover=function(e,els){
       e.native.target.style.cursor = els.length ? 'pointer' : 'default';
     };
@@ -3135,7 +3416,7 @@ async function saveSearchGroups(){
   var res=await apiPost({action:'saveSettings',data:{searchGroups:val}});
   if(res.success){
     settings.searchGroups=val;
-    searchGroupsCache=null; // บังคับให้ parse กลุ่มคำค้นหาใหม่จากค่าที่เพิ่งบันทึก
+    searchGroupsCache=null;
     showToast('บันทึกกลุ่มคำค้นหาแล้ว ✅','s');
   }else{
     showToast(res.error||'ไม่สำเร็จ','e');
@@ -3148,7 +3429,7 @@ async function saveMinReceivedThreshold(){
   var res=await apiPost({action:'saveSettings',data:{minReceivedThreshold:n}});
   if(res.success){
     showToast('บันทึกเกณฑ์แล้ว ✅ ('+n+' เบอร์ขึ้นไป)','s');
-    loadAlerts(); // รีเฟรชการ์ดแจ้งเตือนให้ใช้เกณฑ์ใหม่ทันที
+    loadAlerts();
   }else{
     showToast(res.error||'ไม่สำเร็จ','e');
   }
@@ -3229,7 +3510,7 @@ async function testGeminiConnection(){
   var startTime=Date.now();
   resultEl.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังทดสอบ...</div>';
   try{
-    var res=await apiGet('testGemini',{});
+    var res=await apiGet('testGemini',{},{retries:0,timeout:60000});
     var elapsed=((Date.now()-startTime)/1000).toFixed(1);
     if(!res||res.success===false)throw new Error((res&&res.error)||'ทดสอบไม่สำเร็จ');
     resultEl.innerHTML='<div class="ai-result-box">✅ สำเร็จ! ('+elapsed+' วินาที)<br>Gemini: "'+res.analysis+'"</div>';
@@ -3245,7 +3526,7 @@ async function testDeepSeekConnection(){
   var startTime=Date.now();
   resultEl.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังทดสอบ...</div>';
   try{
-    var res=await apiGet('testDeepSeek',{});
+    var res=await apiGet('testDeepSeek',{},{retries:0,timeout:60000});
     var elapsed=((Date.now()-startTime)/1000).toFixed(1);
     if(!res||res.success===false)throw new Error((res&&res.error)||'ทดสอบไม่สำเร็จ');
     resultEl.innerHTML='<div class="ai-result-box">✅ สำเร็จ! ('+elapsed+' วินาที)<br>DeepSeek: "'+res.analysis+'"</div>';
@@ -3261,7 +3542,7 @@ async function testOpenAIConnection(){
   var startTime=Date.now();
   resultEl.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังทดสอบ...</div>';
   try{
-    var res=await apiGet('testOpenAI',{});
+    var res=await apiGet('testOpenAI',{},{retries:0,timeout:60000});
     var elapsed=((Date.now()-startTime)/1000).toFixed(1);
     if(!res||res.success===false)throw new Error((res&&res.error)||'ทดสอบไม่สำเร็จ');
     resultEl.innerHTML='<div class="ai-result-box">✅ สำเร็จ! ('+elapsed+' วินาที)<br>OpenAI: "'+res.analysis+'"</div>';
@@ -3302,7 +3583,7 @@ async function testLineBotConnection(){
   var startTime=Date.now();
   resultEl.innerHTML='<div class="ai-loading-row"><div class="spinner"></div>กำลังทดสอบ...</div>';
   try{
-    var res=await apiGet('testLineBot',{});
+    var res=await apiGet('testLineBot',{},{retries:0,timeout:60000});
     var elapsed=((Date.now()-startTime)/1000).toFixed(1);
     if(!res||res.success===false)throw new Error((res&&res.error)||'ทดสอบไม่สำเร็จ');
     resultEl.innerHTML='<div class="ai-result-box">✅ เชื่อมต่อสำเร็จ! ('+elapsed+' วินาที)<br>ชื่อบอท: "'+res.botName+'"</div>';
@@ -3367,12 +3648,11 @@ function renderUsersList(users){
   body.innerHTML=html;
 }
 
-/** ซ่อนตัวเลือก "Super Admin" ออกจาก dropdown ถ้าคนที่ล็อกอินอยู่ไม่ใช่ Super Admin เอง — กัน Admin ทั่วไปตั้งคนอื่นเป็น Super Admin ได้ตามใจ */
+/** ซ่อนตัวเลือก "Super Admin" ออกจาก dropdown ถ้าคนที่ล็อกอินอยู่ไม่ใช่ Super Admin เอง */
 function restrictRoleOptions(){
   var sel=document.getElementById('u-role');
   var superOpt=sel.querySelector('option[value="superadmin"]');
-  // bootstrap: ถ้าในระบบยังไม่มีใครเป็น superadmin เลยสักคน เปิดให้เลือกได้ชั่วคราว (ไม่งั้นจะไม่มีใครตั้งคนแรกได้เลย)
-  // พอมี superadmin คนแรกเกิดขึ้นแล้ว จะล็อกกลับมาเป็น "เฉพาะ superadmin เท่านั้นที่ตั้งคนต่อไปได้" ทันที
+  // bootstrap: ถ้าในระบบยังไม่มีใครเป็น superadmin เลย เปิดให้เลือกได้ชั่วคราว
   var noSuperAdminYet = !usersCache.some(function(u){return u.role==='superadmin';});
   var canPick = (role==='superadmin') || noSuperAdminYet;
   if(superOpt) superOpt.style.display = canPick ? '' : 'none';
@@ -3402,7 +3682,6 @@ function openEditUserModal(rowIndex){
   document.getElementById('user-modal-title').textContent='แก้ไขพนักงาน — '+u.name;
   document.getElementById('u-name').value=u.name;
   document.getElementById('u-role').value=u.role;
-  // แก้ไขชื่อ/บทบาทเท่านั้น — เปลี่ยนรหัสผ่านแยกไปอีก modal เพื่อความชัดเจน
   document.getElementById('u-pwd-group').style.display='none';
   document.getElementById('u-pwd-hint').style.display='none';
   document.getElementById('u-save-btn').textContent='บันทึกการแก้ไข';
@@ -3412,16 +3691,16 @@ function openEditUserModal(rowIndex){
 
 async function saveUserModal(){
   var name=document.getElementById('u-name').value.trim();
-  var role=document.getElementById('u-role').value;
+  var uRole=document.getElementById('u-role').value;
   if(!name){showToast('กรุณากรอกชื่อ','e');return;}
 
   try{
     var res;
     if(userModalMode==='add'){
       var pwd=document.getElementById('u-pwd').value;
-      res=await apiPost({action:'addUser',data:{name:name,password:pwd,role:role}});
+      res=await apiPost({action:'addUser',data:{name:name,password:pwd,role:uRole}});
     } else {
-      res=await apiPost({action:'updateUser',rowIndex:userModalEditRow,name:name,role:role});
+      res=await apiPost({action:'updateUser',rowIndex:userModalEditRow,name:name,role:uRole});
     }
     if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
     showToast('✅ '+(res.message||'บันทึกสำเร็จ'),'s');
@@ -3510,78 +3789,79 @@ function exportCSV(cars,name){
   a.download=(name||'export')+'_'+new Date().toLocaleDateString('th-TH')+'.csv';a.click();
   showToast('Export แล้ว ✅','s');
 }
-	function exportPDF(cars,title){
-	  if(!cars||!cars.length){showToast('ไม่มีข้อมูล','e');return;}
-	  var now=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
-	  var rows='';
-	  cars.forEach(function(c,i){
-	    var pnums=parsePNums(c[COL.price]);
-	    var latest=pnums.length?'฿'+fmtM(pnums[pnums.length-1]):'—';
-	    var prev=pnums.length>=2?'<div style="text-decoration:line-through;color:#aaa;font-size:9px;">฿'+fmtM(pnums[pnums.length-2])+'</div>':'';
-	    
-	    // อุปกรณ์ประกอบ
-	    var eq = [];
-	    if(isHas(c[COL.bookService])) eq.push('Book');
-	    if(isHas(c[COL.manual])) eq.push('คู่มือ');
-	    if(isHas(c[COL.spareKey])) eq.push('กุญแจ');
-	    var eqTxt = eq.length ? '<div style="font-size:9px;color:#666;margin-top:2px;">📦 '+eq.join(',')+'</div>' : '';
-	    
-	    // หมายเหตุ
-	    var rem = String(c[COL.remark]||'').trim();
-	    var remTxt = (rem && rem !== '-') ? '<div style="font-size:9px;color:#D97706;margin-top:2px;">📝 '+rem+'</div>' : '';
+function exportPDF(cars,title){
+  if(!cars||!cars.length){showToast('ไม่มีข้อมูล','e');return;}
+  var now=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+  var rows='';
 
-	    rows+='<tr>'
-	      +'<td style="text-align:center;">'+(i+1)+'</td>'
-	      +'<td>'+fmtDate(c[COL.date])+'</td>'
-	      +'<td>'
-	        +'<div style="font-weight:700;">'+(c[COL.brand]||'')+' '+(c[COL.model]||'')+'</div>'
-	        +'<div style="font-size:9px;color:#555;">เกียร์: '+(c[COL.gear]||'—')+' | เชื้อเพลิง: '+(c[COL.fuel]||'—')+'</div>'
-	        +eqTxt + remTxt
-	      +'</td>'
-	      +'<td style="text-align:center;">'+(c[COL.year]||'—')+'</td>'
-	      +'<td>'+(c[COL.color]||'—')+'</td>'
-	      +'<td>'+(c[COL.plate]||'—')+'</td>'
-	      +'<td style="text-align:right;">'+getDisplayMile(c)+'</td>'
-	      +'<td>'+(c['_sheet']||c['_branch']||'—')+'</td>'
-	      +'<td style="color:#C0392B;font-weight:700;text-align:right;">'+latest+prev+'</td>'
-	      +'</tr>';
-	  });
-	  
-	  function isHas(v){
-	    if(!v) return false;
-	    var s = String(v).trim().toUpperCase();
-	    return s!=='' && s!=='-' && s!=='FALSE' && s!=='ไม่มี';
-	  }
+  function isHas(v){
+    if(!v) return false;
+    var s = String(v).trim().toUpperCase();
+    return s!=='' && s!=='-' && s!=='FALSE' && s!=='ไม่มี';
+  }
 
-	  var win=window.open('','_blank');
-	  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title>'
-	    +'<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">'
-	    +'<style>'
-	    +'*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Sarabun,sans-serif;font-size:10px;color:#111;padding:15px;line-height:1.3;}'
-	    +'h1{font-size:16px;font-weight:700;margin-bottom:2px;}.sub{font-size:10px;color:#666;margin-bottom:12px;}'
-	    +'table{width:100%;border-collapse:collapse;margin-bottom:10px;}th{background:#0D0D0D;color:#fff;padding:6px 5px;text-align:left;font-size:9px;border:1px solid #0D0D0D;}'
-	    +'td{padding:5px;border:1px solid #DDD;vertical-align:top;}'
-	    +'tr:nth-child(even) td{background:#FAFAFA;}'
-	    +'.foot{text-align:right;font-size:11px;font-weight:700;margin-top:5px;}'
-	    +'@media print{body{padding:5px;}@page{margin:10mm;size:landscape;}}'
-	    +'</style>'
-	    +'</head><body>'
-	    +'<h1>'+title+'</h1><div class="sub">ข้อมูล ณ วันที่: '+now+' | ทั้งหมด '+cars.length+' คัน</div>'
-	    +'<table><thead><tr>'
-	    +'<th style="width:30px;text-align:center;">#</th>'
-	    +'<th style="width:70px;">วันที่เข้า</th>'
-	    +'<th>รายละเอียดรถ</th>'
-	    +'<th style="width:45px;text-align:center;">ปี</th>'
-	    +'<th style="width:70px;">สี</th>'
-	    +'<th style="width:90px;">ทะเบียน</th>'
-	    +'<th style="width:80px;text-align:right;">เลขไมล์</th>'
-	    +'<th style="width:80px;">สาขา</th>'
-	    +'<th style="width:90px;text-align:right;">ราคา</th>'
-	    +'</tr></thead><tbody>'+rows+'</tbody></table>'
-	    +'<div class="foot">รวมทั้งสิ้น '+cars.length+' คัน</div>'
-	    +'<script>window.onload=function(){setTimeout(function(){window.print();},500);}<\/script></body></html>');
-	  win.document.close();
-	}
+  cars.forEach(function(c,i){
+    var pnums=parsePNums(c[COL.price]);
+    var latest=pnums.length?'฿'+fmtM(pnums[pnums.length-1]):'—';
+    var prev=pnums.length>=2?'<div style="text-decoration:line-through;color:#aaa;font-size:9px;">฿'+fmtM(pnums[pnums.length-2])+'</div>':'';
+
+    // อุปกรณ์ประกอบ
+    var eq = [];
+    if(isHas(c[COL.bookService])) eq.push('Book');
+    if(isHas(c[COL.manual])) eq.push('คู่มือ');
+    if(isHas(c[COL.spareKey])) eq.push('กุญแจ');
+    var eqTxt = eq.length ? '<div style="font-size:9px;color:#666;margin-top:2px;">📦 '+eq.join(',')+'</div>' : '';
+
+    // หมายเหตุ
+    var rem = String(c[COL.remark]||'').trim();
+    var remTxt = (rem && rem !== '-') ? '<div style="font-size:9px;color:#D97706;margin-top:2px;">📝 '+rem+'</div>' : '';
+
+    rows+='<tr>'
+      +'<td style="text-align:center;">'+(i+1)+'</td>'
+      +'<td>'+fmtDate(c[COL.date])+'</td>'
+      +'<td>'
+        +'<div style="font-weight:700;">'+(c[COL.brand]||'')+' '+(c[COL.model]||'')+'</div>'
+        +'<div style="font-size:9px;color:#555;">เกียร์: '+(c[COL.gear]||'—')+' | เชื้อเพลิง: '+(c[COL.fuel]||'—')+'</div>'
+        +eqTxt + remTxt
+      +'</td>'
+      +'<td style="text-align:center;">'+(c[COL.year]||'—')+'</td>'
+      +'<td>'+(c[COL.color]||'—')+'</td>'
+      +'<td>'+(c[COL.plate]||'—')+'</td>'
+      +'<td style="text-align:right;">'+getDisplayMile(c)+'</td>'
+      +'<td>'+(c['_sheet']||c['_branch']||'—')+'</td>'
+      +'<td style="color:#C0392B;font-weight:700;text-align:right;">'+latest+prev+'</td>'
+      +'</tr>';
+  });
+
+  var win=window.open('','_blank');
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title>'
+    +'<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">'
+    +'<style>'
+    +'*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Sarabun,sans-serif;font-size:10px;color:#111;padding:15px;line-height:1.3;}'
+    +'h1{font-size:16px;font-weight:700;margin-bottom:2px;}.sub{font-size:10px;color:#666;margin-bottom:12px;}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:10px;}th{background:#0D0D0D;color:#fff;padding:6px 5px;text-align:left;font-size:9px;border:1px solid #0D0D0D;}'
+    +'td{padding:5px;border:1px solid #DDD;vertical-align:top;}'
+    +'tr:nth-child(even) td{background:#FAFAFA;}'
+    +'.foot{text-align:right;font-size:11px;font-weight:700;margin-top:5px;}'
+    +'@media print{body{padding:5px;}@page{margin:10mm;size:landscape;}}'
+    +'</style>'
+    +'</head><body>'
+    +'<h1>'+title+'</h1><div class="sub">ข้อมูล ณ วันที่: '+now+' | ทั้งหมด '+cars.length+' คัน</div>'
+    +'<table><thead><tr>'
+    +'<th style="width:30px;text-align:center;">#</th>'
+    +'<th style="width:70px;">วันที่เข้า</th>'
+    +'<th>รายละเอียดรถ</th>'
+    +'<th style="width:45px;text-align:center;">ปี</th>'
+    +'<th style="width:70px;">สี</th>'
+    +'<th style="width:90px;">ทะเบียน</th>'
+    +'<th style="width:80px;text-align:right;">เลขไมล์</th>'
+    +'<th style="width:80px;">สาขา</th>'
+    +'<th style="width:90px;text-align:right;">ราคา</th>'
+    +'</tr></thead><tbody>'+rows+'</tbody></table>'
+    +'<div class="foot">รวมทั้งสิ้น '+cars.length+' คัน</div>'
+    +'<script>window.onload=function(){setTimeout(function(){window.print();},500);}<\/script></body></html>');
+  win.document.close();
+}
 
 // ===== TAB SWITCHING =====
 function switchSalesTab(tab){
@@ -3593,7 +3873,8 @@ function switchSalesTab(tab){
 function switchTab(tab){
   ['dashboard','stock','sold','salesstats','settings','users'].forEach(function(t){var el=document.getElementById('atab-'+t);if(el)el.style.display=t===tab?'':'none';});
   document.querySelectorAll('#page-admin .tab').forEach(function(t,i){t.classList.toggle('active',['dashboard','stock','sold','salesstats','settings','users'][i]===tab);});
-  if(tab==='dashboard'){setTimeout(function(){renderAdminCharts(dashData);},60);initSalesStatsDashboardDefaults();loadSalesStatsDashboard();}
+  // แก้บั๊ก: เดิมเรียก renderAdminCharts() ซึ่งไม่มีอยู่จริงในโค้ด ทำให้เกิด error ทุกครั้งที่กลับมาแท็บ Dashboard
+  if(tab==='dashboard'){setTimeout(function(){renderAdminDash(dashData);},60);initSalesStatsDashboardDefaults();loadSalesStatsDashboard();}
   if(tab==='stock')filterAdmin();
   if(tab==='sold')filterSold();
   if(tab==='salesstats')initSalesStatsTab();
@@ -3629,12 +3910,13 @@ function initSalesStatsTab(){
   if(!dEl.value)dEl.value=todayISO();
   loadSalesStatsForm();
 }
+/** ตั้งค่าเริ่มต้นช่วงวันที่ของ Dashboard ผลงานเซลล์ (เดือนปัจจุบัน) — ไม่ยิง API เอง ผู้เรียกต้องเรียก loadSalesStatsDashboard() ต่อ (แก้: เดิมยิงซ้ำ 2 รอบทุกครั้งที่โหลด) */
 function initSalesStatsDashboardDefaults(){
   var fEl=document.getElementById('ss-date-from'), tEl=document.getElementById('ss-date-to');
-  if(fEl&&tEl&&!fEl.value&&!tEl.value)setSsQuickRange('month'); // ค่าเริ่มต้น: เดือนปัจจุบัน (เหมือนพฤติกรรมเดิม)
+  if(fEl&&tEl&&!fEl.value&&!tEl.value)setSsQuickRange('month',true);
 }
-/** ตั้งช่วงวันที่แบบลัดให้ Dashboard ผลงานเซลล์ — ผู้ใช้ยังปรับช่องวันที่เองต่อได้หลังกด */
-function setSsQuickRange(kind){
+/** ตั้งช่วงวันที่แบบลัดให้ Dashboard ผลงานเซลล์ — noLoad=true คือแค่ตั้งค่า ไม่โหลดข้อมูลต่อ */
+function setSsQuickRange(kind,noLoad){
   var now=new Date(), from, to=new Date();
   if(kind==='today'){
     from=new Date();
@@ -3646,7 +3928,7 @@ function setSsQuickRange(kind){
   }
   document.getElementById('ss-date-from').value=dateToISOLocal(from);
   document.getElementById('ss-date-to').value=dateToISOLocal(to);
-  loadSalesStatsDashboard();
+  if(!noLoad)loadSalesStatsDashboard();
 }
 
 async function loadSalesStatsForm(){
@@ -3693,7 +3975,7 @@ async function saveSalesStatsForm(){
     if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
     showToast('✅ บันทึกข้อมูลสำเร็จ','s');
     msg.textContent='บันทึกล่าสุด: '+new Date().toLocaleTimeString('th-TH');
-    await loadSalesStatsForm(); // โหลดใหม่: รีเซ็ตช่อง +เพิ่มวันนี้ กลับเป็น 0 และอัปเดตยอดรอผลล่าสุด
+    await loadSalesStatsForm();
     loadSalesStatsDashboard();
   }catch(e){
     showToast('⚠️ บันทึกไม่สำเร็จ: '+e.message,'e');
@@ -3737,7 +4019,6 @@ async function exportSalesStatsReport(format){
       a.click();
       showToast('ส่งออก JPG แล้ว ✅','s');
     }else{
-      // PDF: เปิดหน้าต่างใหม่ใส่รูปที่ capture มา แล้วเรียก print -> เลือก "Save as PDF" (เหมือนกับ exportPDF ของรายการรถ)
       var imgData=canvas.toDataURL('image/jpeg',0.95);
       var win=window.open('','_blank');
       win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+fileBase+'</title>'
@@ -3757,11 +4038,11 @@ async function exportSalesStatsReport(format){
 function openDetailedReportModal(){
   var menu=document.getElementById('export-menu');
   if(menu)menu.style.display='none';
-  setDrQuickRange(6); // ค่าเริ่มต้น: 7 วันล่าสุด (ปรับเองต่อได้)
+  setDrQuickRange(6);
   openMo('modal-detailed-report');
 }
 
-/** ตั้งช่วงวันที่แบบลัด — daysBack=0 คือวันนี้วันเดียว, 6 คือ 7 วันล่าสุด เป็นต้น ผู้ใช้ยังแก้ช่องวันที่เองต่อได้ */
+/** ตั้งช่วงวันที่แบบลัด — daysBack=0 คือวันนี้วันเดียว, 6 คือ 7 วันล่าสุด เป็นต้น */
 function setDrQuickRange(daysBack){
   var to=new Date();
   var from=new Date();
@@ -3776,7 +4057,7 @@ async function generateDetailedReport(){
   var btn=document.getElementById('dr-generate-btn');
   btn.disabled=true;btn.textContent='⏳ กำลังสร้าง...';
   try{
-    var res=await apiGet('getSalesStatsDetailedReport',{dateFrom:dateFrom,dateTo:dateTo});
+    var res=await apiGet('getSalesStatsDetailedReport',{dateFrom:dateFrom,dateTo:dateTo},{retries:0,timeout:90000});
     if(!res||res.success===false)throw new Error((res&&res.error)||'สร้างรายงานไม่สำเร็จ');
     renderDetailedReportPrintWindow(res);
     closeMo('modal-detailed-report');
@@ -3849,7 +4130,7 @@ async function loadSalesStatsDashboard(){
     renderSalesStatsChart(res.summary||[]);
     renderSalesStatsTable(res.summary||[]);
   }catch(e){
-    body.innerHTML='<tr><td colspan="8"><div class="empty">❌ โหลดข้อมูลไม่ได้: '+e.message+'</div></td></tr>';
+    body.innerHTML='<tr><td colspan="8"><div class="empty">❌ โหลดข้อมูลไม่ได้: '+e.message+' <button class="btn btn-out btn-xs" onclick="loadSalesStatsDashboard()">ลองใหม่</button></div></td></tr>';
     document.getElementById('ss-num-strip').innerHTML='';
   }
 }
@@ -3925,20 +4206,6 @@ function renderDealDetailList(cars){
   });
   el.innerHTML=html;
 }
-  var noteEl=document.getElementById('a-undated-note');
-  if(noteEl){
-    var undated={},undatedTotal=0;
-    soldCars.forEach(function(c){
-      if(toDate(c[COL.soldDate]||c[COL.date]))return;
-      var b=c['_branch']||c['_sheet']||'ไม่ระบุสาขา';undated[b]=(undated[b]||0)+1;undatedTotal++;
-    });
-    if(undatedTotal&&(df||dt)){
-      noteEl.style.display='';
-      noteEl.innerHTML='⚠️ มีรถออก <strong>'+undatedTotal+'</strong> แถวที่ไม่มีวันที่ออกที่อ่านได้ (ไม่นับรวมในตัวเลขข้างบน): '
-        +Object.keys(undated).map(function(b){return b+' '+undated[b];}).join(', ')
-        +' — ลองเปิดชีตรถออกของสาขานั้นเช็คคอลัมน์ "วันที่ออก" ว่าว่างหรือพิมพ์ผิดรูปแบบ';
-    }else noteEl.style.display='none';
-  }
 
 function renderSalesStatsTable(summary){
   var body=document.getElementById('ss-summary-body');
@@ -4002,6 +4269,8 @@ function onDealSearchInput(){
     try{
       var res=await apiGet('searchCarsForDeal',{query:q});
       if(!res||res.success===false)throw new Error((res&&res.error)||'ค้นหาไม่สำเร็จ');
+      // กันผลค้นหาเก่าที่ตอบช้ากลับมาทับผลของคำค้นล่าสุด
+      if(document.getElementById('dd-search-q').value.trim()!==q)return;
       renderDealSearchResults(res.cars||[]);
     }catch(e){
       resultsEl.innerHTML='<div class="empty">❌ '+e.message+'</div>';
@@ -4052,8 +4321,8 @@ async function selectDealCar(idx){
       loadPendingDealsList();
     }else{
       // โหมดสร้าง "จบ" ใหม่
-      var res=await apiPost({action:'saveDeal',name:ddCurrentName,branch:c.branch,brand:c.brand,model:c.model,plate:c.plate,date:dateStr});
-      if(!res||res.success===false)throw new Error((res&&res.error)||'บันทึกไม่สำเร็จ');
+      var res2=await apiPost({action:'saveDeal',name:ddCurrentName,branch:c.branch,brand:c.brand,model:c.model,plate:c.plate,date:dateStr});
+      if(!res2||res2.success===false)throw new Error((res2&&res2.error)||'บันทึกไม่สำเร็จ');
       showToast('✅ บันทึก "จบ" สำเร็จ: '+c.plate,'s');
       closeMo('modal-deal-search');
     }
